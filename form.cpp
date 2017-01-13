@@ -601,7 +601,8 @@ void Form::checkSanshokudoukou4(Form::Yakus &ys, const Explain4 &exp) const
 {
     auto check = [](T34 l, T34 m, T34 r) -> bool {
         // suits must different (except vertical overflow bug)
-        return l.val() == m.val() && m.val() == r.val();
+        return l.isNum() && m.isNum() && r.isNum()
+                && l.val() == m.val() && m.val() == r.val();
     };
 
     const auto &h = exp.heads(); // save typing

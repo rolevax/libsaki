@@ -99,10 +99,14 @@ int Ai::happy(const TableView &view, int iter, const Action &action)
 
 Action Ai::placeHolder(const TableView &view)
 {
-    if (view.iCan(ActCode::SPIN_OUT))
-        return Action(ActCode::SPIN_OUT);
-    if (view.iCan(ActCode::PASS))
-        return Action(ActCode::PASS);
+    std::vector<ActCode> just {
+        ActCode::NEXT_ROUND, ActCode::END_TABLE, ActCode::DICE,
+        ActCode::SPIN_OUT, ActCode::PASS
+    };
+
+    for (ActCode act : just)
+        if (view.iCan(act))
+            return Action(act);
 
     return Action(ActCode::NOTHING);
 }

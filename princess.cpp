@@ -16,12 +16,13 @@ using namespace tiles37;
 
 #ifdef CHEAT
 static const std::array<std::vector<T37>, 4> CHEAT_TAR = {
+    std::vector<T37> { 1_m, 2_m, 3_m, 4_m, 5_m, 6_m, 7_m, 8_m, 1_f, 1_f, 2_p, 3_p },
     std::vector<T37> {  },
     std::vector<T37> {  },
-    std::vector<T37> { 1_m, 2_m, 3_m, 1_m, 2_m, 3_m, 4_p, 5_p, 6_p, 4_p, 5_p, 4_f, 4_f },
     std::vector<T37> {  }
 };
 static const std::vector<T37> CHEAT_WALL = {
+    9_m, 1_y, 1_y, 1_y, 1_p, 1_p, 1_p, 1_p
 };
 static const std::vector<T37> CHEAT_DEAD = {
 };

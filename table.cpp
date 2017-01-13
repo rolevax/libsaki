@@ -450,10 +450,10 @@ void Table::nextRound()
 #ifdef CHEAT_REPLAY
     mRound = 0;
     mExtraRound = 0;
-    mDealer = Who(2);
+    mDealer = Who(3);
     mAllLast = false;
     mDeposit = 0;
-    mySetState(1802639679);
+    mySetState(1802639689);
 #else
     if (mToChangeDealer) {
         mDealer = mDealer.right();

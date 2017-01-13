@@ -39,7 +39,7 @@ std::vector<Explain4> Explain4::make(const TileCount &count, const std::vector<M
         auto insertSequence = [&exp](T34 head) {
             auto &tar = exp.sequences;
             auto it = std::find_if_not(tar.begin(), tar.end(),
-                                       [head](T34 t) { return head < t; });
+                                       [head](T34 t) { return t < head; });
             tar.insert(it, head);
         };
 
