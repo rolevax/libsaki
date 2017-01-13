@@ -364,7 +364,7 @@ std::vector<T37> Mount::popPolar(Exist::Polar &polar, TileCount &stoch, int need
 {
     std::vector<T37> res;
     res.reserve(need);
-    int sum;
+    int sum = 0;
 
     if (!polar.pos.empty()) { // init pos-polar
         auto plus = [](int s, const Exist::Polar::Cy &p) { return s + p.e; };

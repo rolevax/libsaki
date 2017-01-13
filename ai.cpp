@@ -6,6 +6,7 @@
 #include "ai_senriyama.h"
 #include "ai_eisui.h"
 #include "ai_usuzan.h"
+#include "debug_cheat.h"
 
 
 
@@ -33,11 +34,15 @@ void Ai::onActivated(Table &table)
 
     Action decision;
 
+#ifdef LIBSAKI_CHEAT_AI
+    decision = placeHolder(view);
+#else
     if (view.myTickets().forwardAny())
         decision = forward(view);
 
     if (decision.act() == ActCode::NOTHING)
         decision = maxHappy(view);
+#endif
 
     assert(decision.act() != ActCode::NOTHING);
     table.action(mSelf, decision);

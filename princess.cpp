@@ -1,32 +1,12 @@
 #include "princess.h"
 #include "myrand.h"
 #include "util.h"
+#include "debug_cheat.h"
 
 
 
 namespace saki
 {
-
-
-
-using namespace tiles37;
-
-// uncomment the following line to enable debugging cheat mode
-//#define CHEAT
-
-#ifdef CHEAT
-static const std::array<std::vector<T37>, 4> CHEAT_TAR = {
-    std::vector<T37> { 1_m, 2_m, 3_m, 4_m, 5_m, 6_m, 7_m, 8_m, 1_f, 1_f, 2_p, 3_p },
-    std::vector<T37> {  },
-    std::vector<T37> {  },
-    std::vector<T37> {  }
-};
-static const std::vector<T37> CHEAT_WALL = {
-    9_m, 1_y, 1_y, 1_y, 1_p, 1_p, 1_p, 1_p
-};
-static const std::vector<T37> CHEAT_DEAD = {
-};
-#endif
 
 
 
@@ -79,15 +59,15 @@ std::array<TileCount, 4> Princess::nonMonkey()
 {
     std::array<TileCount, 4> res;
 
-#ifdef CHEAT
-    for (size_t pos = 0; pos < CHEAT_WALL.size(); pos++)
-        mMount.pin(Mount::WALL, pos, CHEAT_WALL[pos]);
+#ifdef LIBSAKI_CHEAT_PRINCESS
+    for (size_t pos = 0; pos < cheat::wall.size(); pos++)
+        mMount.pin(Mount::WALL, pos, cheat::wall[pos]);
 
-    for (size_t pos = 0; pos < CHEAT_DEAD.size(); pos++)
-        mMount.pin(Mount::DEAD, pos, CHEAT_DEAD[pos]);
+    for (size_t pos = 0; pos < cheat::dead.size(); pos++)
+        mMount.pin(Mount::DEAD, pos, cheat::dead[pos]);
 
     for (int w = 0; w < 4; w++)
-        for (const T37 &t : CHEAT_TAR[w])
+        for (const T37 &t : cheat::inits[w])
             res[w].inc(mMount.initPopExact(t), 1);
 #else
     std::bitset<Girl::NUM_NM_SKILL> presence;
@@ -160,6 +140,8 @@ std::array<Hand, 4> Princess::monkey(std::array<TileCount, 4> &inits)
 
 void Princess::doraMatters()
 {
+    using namespace tiles37;
+
     // NONE: the indicator will be scientifically choosen
     // ANY:  the indicator will be choosen from B-space by a one-hot distro
     // WALL: same as ANY, and the indicated dora must remain 4 in A-space

@@ -2,6 +2,7 @@
 #include "myrand.h"
 #include "princess.h"
 #include "util.h"
+#include "debug_cheat.h"
 
 #include <algorithm>
 #include <functional>
@@ -446,14 +447,13 @@ void Table::nextRound()
 {
     clean();
 
-//#define CHEAT_REPLAY
-#ifdef CHEAT_REPLAY
-    mRound = 0;
-    mExtraRound = 0;
-    mDealer = Who(3);
-    mAllLast = false;
-    mDeposit = 0;
-    mySetState(1802639689);
+#ifdef LIBSAKI_CHEAT_ROUND
+    mRound = cheat::round;
+    mExtraRound = cheat::extra;
+    mDealer = Who(cheat::dealer);
+    mAllLast = cheat::allLast;
+    mDeposit = cheat::deposit;
+    mySetState(cheat::state);
 #else
     if (mToChangeDealer) {
         mDealer = mDealer.right();
