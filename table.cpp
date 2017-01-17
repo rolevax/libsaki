@@ -759,7 +759,7 @@ void Table::chii(Who who, ActCode dir, bool showAka5)
     auto choices = (mHands[who.index()].*pChii)(getFocusTile(), showAka5);
 
     for (auto ob : mObservers)
-        ob->onBarked(*this, who, mHands[who.index()].barks().back());
+        ob->onBarked(*this, who, mHands[who.index()].barks().back(), false);
 
     mTicketFolders[who.index()].enableSwapOut(choices);
 }
@@ -772,7 +772,7 @@ void Table::pon(Who who, int showAka5)
     auto choices = mHands[who.index()].pon(getFocusTile(), showAka5, layIndex);
 
     for (auto ob : mObservers)
-        ob->onBarked(*this, who, mHands[who.index()].barks().back());
+        ob->onBarked(*this, who, mHands[who.index()].barks().back(), false);
 
     mTicketFolders[who.index()].enableSwapOut(choices);
 }
@@ -787,7 +787,7 @@ void Table::daiminkan(Who who)
     mHands[who.index()].daiminkan(getFocusTile(), layIndex);
 
     for (auto ob : mObservers)
-        ob->onBarked(*this, who, mHands[who.index()].barks().back());
+        ob->onBarked(*this, who, mHands[who.index()].barks().back(), false);
 
     finishKan(who);
 }
@@ -818,11 +818,13 @@ void Table::ankan(Who who, T34 tile)
         flip();
     }
 
-    mHands[who.index()].ankan(tile);
+    int w = who.index();
+    bool spin = mHands[w].drawn() == tile;
+    mHands[w].ankan(tile);
     mFocus.focusOnChankan(who, mHands[who.index()].barks().size() - 1);
 
     for (auto ob : mObservers)
-        ob->onBarked(*this, who, mHands[who.index()].barks().back());
+        ob->onBarked(*this, who, mHands[who.index()].barks().back(), spin);
 
 
     checkRon(true); // chankan from kokushimusou
@@ -842,12 +844,15 @@ void Table::kakan(Who who, int barkId)
         flip();
     }
 
-    mHands[who.index()].kakan(barkId);
+    int w = who.index();
+    bool spin = mHands[w].drawn() == mHands[w].barks()[barkId][0];
+
+    mHands[w].kakan(barkId);
     mFocus.focusOnChankan(who, barkId);
     const M37 &kanMeld = mHands[who.index()].barks().at(barkId);
 
     for (auto ob : mObservers)
-        ob->onBarked(*this, who, kanMeld);
+        ob->onBarked(*this, who, kanMeld, spin);
 
     checkRon(); // chankan
 

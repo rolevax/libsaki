@@ -66,10 +66,6 @@ public:
 
     int sum(const std::vector<T34> &ts) const;
     int sum() const;
-    int preceders(T34 t) const;
-    int preceders(const T37 &t) const;
-
-    T37 pointOut(int preceders) const;
 
 private:
     ///

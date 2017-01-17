@@ -91,10 +91,10 @@ public:
         (void) who;
     }
 
-    virtual void onBarked(const Table &table, Who who, const M37 &bark)
+    virtual void onBarked(const Table &table, Who who, const M37 &bark, bool spin)
     {
         // M37 param is required to know if kakan or not
-        (void) table; (void) who; (void) bark;
+        (void) table; (void) who; (void) bark; (void) spin;
     }
 
     virtual void onRoundEnded(const Table &table, RoundResult result,

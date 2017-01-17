@@ -27,7 +27,7 @@ public:
     void onFlipped(const Table &table) override;
     void onDiscarded(const Table &table, bool spin) override;
     void onRiichiCalled(Who who) override;
-    void onBarked(const Table &table, Who who, const M37 &bark) override;
+    void onBarked(const Table &table, Who who, const M37 &bark, bool spin) override;
     void onRoundEnded(const Table &table, RoundResult result,
                       const std::vector<Who> &openers, Who gunner,
                       const std::vector<Form> &fs) override;

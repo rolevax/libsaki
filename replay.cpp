@@ -136,8 +136,10 @@ void Replay::onRiichiCalled(Who who)
     mToEstablishRiichi = true;
 }
 
-void Replay::onBarked(const Table &table, Who who, const M37 &bark)
+void Replay::onBarked(const Table &table, Who who, const M37 &bark, bool spin)
 {
+    (void) spin;
+
     if (bark.isCpdmk())
         addSkip(who, table.getFocus().who());
 

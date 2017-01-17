@@ -54,9 +54,10 @@ void TokiMountTracker::onRiichiCalled(Who who)
     mExpr.push_back(SkillToken::RIICHI);
 }
 
-void TokiMountTracker::onBarked(const Table &table, Who who, const M37 &bark)
+void TokiMountTracker::onBarked(const Table &table, Who who, const M37 &bark, bool spin)
 {
     (void) table;
+    (void) spin;
 
     mExpr.push_back(tokenOf(who));
     mExpr.push_back(tokenOf(bark.type()));

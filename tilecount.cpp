@@ -455,36 +455,6 @@ int TileCount::sum() const
     return std::accumulate(c.begin(), c.end(), 0);
 }
 
-int TileCount::preceders(T34 t) const
-{
-    int res = 0;
-    for (int ti = 0; ti < t.id34(); ti++)
-        res += c[ti];
-    return res;
-}
-
-int TileCount::preceders(const T37 &t) const
-{
-    int res = 0;
-    for (int ti = 0; ti < t.id34(); ti++)
-        res += c[ti];
-    if (t.val() == 5 && !t.isAka5()) // count preceding reds
-        res += mAka5s[static_cast<int>(t.suit())];
-    return res;
-}
-
-T37 TileCount::pointOut(int preceders) const
-{
-    int ti = 0;
-    while (preceders >= c[ti]) {
-        preceders -= c[ti++];
-    }
-
-    T37 res(ti);
-    int reds = mAka5s[static_cast<int>(res.suit())];
-    return res.val() == 5 && preceders < reds ? res.toAka5() : res;
-}
-
 int TileCount::cutMeld(int id34, int maxCut) const
 {
     if (maxCut == 0)
