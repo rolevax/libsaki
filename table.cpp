@@ -458,9 +458,10 @@ void Table::nextRound()
     if (mToChangeDealer) {
         mDealer = mDealer.right();
         mRound++;
-        if (mRound + 1 == mRule.roundLimit)
-            mAllLast = true;
     }
+
+    if (mRound + 1 >= mRule.roundLimit)
+        mAllLast = true;
 
     // increase when renchan or HP
     mExtraRound = !mToChangeDealer || mPrevIsRyuu ? mExtraRound + 1 : 0;
