@@ -154,7 +154,7 @@ public:
     const TicketFolder &getTicketFolder(Who who) const;
     const Mount &getMount() const;
 
-    void popUp(Who who, const SkillExpr &expr) const;
+    void popUp(Who who) const;
 
 private:
     void process();

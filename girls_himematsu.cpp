@@ -27,7 +27,7 @@ void Suzu::onDice(const Table &table, TicketFolder &tickets)
         int threshold = remainRound < 4 ? 20 : 10;
         if (rand < threshold) {
             mExploded = true;
-            table.popUp(mSelf, { SkillToken::DUANG });
+            table.popUp(mSelf);
         }
     }
 }
@@ -82,11 +82,9 @@ void Suzu::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
             mount.lightA(t, Z_POWER);
 }
 
-std::string Suzu::stringOf(const SkillExpr &expr) const
+std::string Suzu::popUpStr() const
 {
-    if (!expr.empty() && expr[0] == SkillToken::DUANG)
-        return std::string("DUANG");
-    unreached("suzu expr2str: unhandled token");
+    return std::string("DUANG");
 }
 
 

@@ -4,6 +4,7 @@
 #include "girl.h"
 #include "tableobserver.h"
 #include "ticketfolder.h"
+#include "girls_util_toki.h"
 
 #include <sstream>
 
@@ -13,6 +14,8 @@ namespace saki
 {
 
 
+
+class TokiEvent;
 
 class Toki : public Girl
 {
@@ -25,7 +28,12 @@ public:
     void onInbox(Who who, const Action &action) override;
     TicketFolder forwardAction(const Table &table, Mount &mount, const Action &action) override;
 
-    std::string stringOf(const SkillExpr &expr) const override;
+    std::string popUpStr() const override;
+
+private:
+    enum class PopUpMode { GREEN, OO, FV };
+
+    void popUpBy(const Table &table, PopUpMode mode);
 
 private:
     TicketFolder mCleanTickets;
@@ -35,6 +43,8 @@ private:
     bool mCheckNextAction = false;
     std::vector<std::pair<ActCode, int>> mRecords;
     int mCd = 0;
+    PopUpMode mPopUpMode;
+    TokiEvents mEvents;
 };
 
 

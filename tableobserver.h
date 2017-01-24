@@ -115,9 +115,9 @@ public:
         (void) rank; (void) scores;
     }
 
-    virtual void onPoppedUp(const Table &table, Who who, const SkillExpr &expr)
+    virtual void onPoppedUp(const Table &table, Who who)
     {
-        (void) table; (void) who; (void) expr;
+        (void) table; (void) who;
     }
 };
 

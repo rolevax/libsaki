@@ -98,7 +98,7 @@ public:
                            const Princess &princess);
 
 
-    virtual std::string stringOf(const SkillExpr &expr) const;
+    virtual std::string popUpStr() const;
 
 protected:
     Girl(Who who, Id id);

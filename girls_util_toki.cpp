@@ -1,6 +1,9 @@
 #include "girls_util_toki.h"
 #include "table.h"
 #include "ai.h"
+#include "string_enum.h"
+
+#include <sstream>
 
 
 
@@ -9,11 +12,154 @@ namespace saki
 
 
 
+TokiEvents::TokiEvents(const TokiEvents &copy)
+{
+    for (const std::unique_ptr<TokiEvent> &p : copy.events)
+        events.emplace_back(p->clone());
+}
+
+TokiEvents &TokiEvents::operator=(TokiEvents assign)
+{
+    events.swap(assign.events);
+    return *this;
+}
+
+void TokiEvents::emplace_back(TokiEvent *event)
+{
+    events.emplace_back(event);
+}
+
+std::string TokiEvents::str() const
+{
+    bool inDiscardStream = false;
+
+    std::ostringstream oss;
+
+    for (const auto &p : events) {
+        const TokiEvent &e = *p;
+        if (e.isDiscard()) {
+            if (!inDiscardStream) {
+                oss << "\nDISCARD";
+                inDiscardStream = true;
+            }
+        } else {
+            inDiscardStream = false;
+        }
+
+        e.print(oss);
+    }
+
+    return oss.str().substr(1); // eliminate first '\n'
+}
+
+bool TokiEvent::isDiscard() const
+{
+    return false;
+}
+
+TokiEventDrawn::TokiEventDrawn(const T37 &t)
+    : mTile(t)
+{
+}
+
+TokiEventDrawn *TokiEventDrawn::clone() const
+{
+    return new TokiEventDrawn(*this);
+}
+
+void TokiEventDrawn::print(std::ostream &os) const
+{
+    os << "\nDRAW" << mTile.str();
+}
+
+TokiEventFlipped::TokiEventFlipped(const T37 &t)
+    : mTile(t)
+{
+}
+
+TokiEventFlipped *TokiEventFlipped::clone() const
+{
+    return new TokiEventFlipped(*this);
+}
+
+void TokiEventFlipped::print(std::ostream &os) const
+{
+    os << "\nKANDORAINDIC " << mTile;
+}
+
+TokiEventDiscarded::TokiEventDiscarded(const T37 &t, bool spin, bool riichi)
+    : mTile(t)
+    , mSpin(spin)
+    , mRiichi(riichi)
+{
+}
+
+TokiEventDiscarded *TokiEventDiscarded::clone() const
+{
+    return new TokiEventDiscarded(*this);
+}
+
+bool TokiEventDiscarded::isDiscard() const
+{
+    return true;
+}
+
+void TokiEventDiscarded::print(std::ostream &os) const
+{
+    os << (mSpin ? " *" : " ") << mTile.str() << (mRiichi ? "RII" : "");
+}
+
 TokiMountTracker::TokiMountTracker(Mount &mount, Who self)
     : mReal(mount)
     , mSelf(self)
 {
+}
 
+TokiEventBarked::TokiEventBarked(Who who, const M37 &m)
+    : mWho(who)
+    , mBark(m)
+{
+}
+
+TokiEventBarked *TokiEventBarked::clone() const
+{
+    return new TokiEventBarked(*this);
+}
+
+void TokiEventBarked::print(std::ostream &os) const
+{
+    os << '\n' << mWho.index() << "J " << saki::stringOf(mBark.type()) << ' ';
+    if (mBark.isKan())
+        os << T34(mBark[0]);
+    else
+        os << mBark;
+}
+
+TokiEventResult::TokiEventResult(RoundResult result,
+                                 const std::vector<Who> &openers,
+                                 const std::vector<std::vector<T37>> &closeds)
+    : mResult(result)
+    , mOpeners(openers)
+    , mCloseds(closeds)
+{
+}
+
+TokiEventResult::TokiEventResult(RoundResult result,
+                                 const std::vector<Who> &openers,
+                                 const std::vector<std::vector<T37>> &closeds,
+                                 const T37 &pick,
+                                 const std::vector<T37> &urids)
+    : mResult(result)
+    , mOpeners(openers)
+    , mCloseds(closeds)
+    , mPick(pick)
+    , mUrids(urids)
+{
+}
+
+TokiEventResult *TokiEventResult::clone() const
+{
+    return new TokiEventResult(*this);
 }
 
 void TokiMountTracker::onDrawn(const Table &table, Who who)
@@ -26,10 +172,8 @@ void TokiMountTracker::onDrawn(const Table &table, Who who)
               table.duringKan() ? mDeadPos++ : mWallPos++, t);
 
     // see self's draw, output to expr
-    if (table.getGirl(who).getId() == Girl::Id::ONJOUJI_TOKI) {
-        mExpr.push_back(SkillToken::DRAW);
-        mExpr.push_back(tokenOf(t));
-    }
+    if (table.getGirl(who).getId() == Girl::Id::ONJOUJI_TOKI)
+        mEvents.emplace_back(new TokiEventDrawn(t));
 }
 
 void TokiMountTracker::onFlipped(const Table &table)
@@ -38,37 +182,28 @@ void TokiMountTracker::onFlipped(const Table &table)
     const T37 &newIndic = table.getMount().getDrids().back();
     mReal.pin(Mount::DORA, mDoraPos++, newIndic);
 
-    mExpr.push_back(SkillToken::KANDORA_I);
-    mExpr.push_back(tokenOf(newIndic));
+    mEvents.emplace_back(new TokiEventFlipped(newIndic));
 }
 
 void TokiMountTracker::onDiscarded(const Table &table, bool spin)
 {
-    mExpr.push_back(spin ? SkillToken::TMKR : SkillToken::TKR);
-    mExpr.push_back(tokenOf(table.getFocusTile()));
+    bool riichi = mToRiichi;
+    if (riichi)
+        mToRiichi = false;
+    mEvents.emplace_back(new TokiEventDiscarded(table.getFocusTile(), spin, riichi));
 }
 
 void TokiMountTracker::onRiichiCalled(Who who)
 {
     (void) who;
-    mExpr.push_back(SkillToken::RIICHI);
+    mToRiichi = true;
 }
 
 void TokiMountTracker::onBarked(const Table &table, Who who, const M37 &bark, bool spin)
 {
     (void) table;
     (void) spin;
-
-    mExpr.push_back(tokenOf(who));
-    mExpr.push_back(tokenOf(bark.type()));
-    if (bark.type() == M37::Type::CHII || bark.type() == M37::Type::PON) {
-        // record all 3 tiles to note whether there is akadora
-        for (int i = 0; i < 3; i++)
-            mExpr.push_back(tokenOf(bark[i]));
-    } else {
-        // kan cases, one is enough
-        mExpr.push_back(tokenOf(bark[0]));
-    }
+    mEvents.emplace_back(new TokiEventBarked(who, bark));
 }
 
 void TokiMountTracker::onRoundEnded(const Table &table, RoundResult result,
@@ -78,50 +213,28 @@ void TokiMountTracker::onRoundEnded(const Table &table, RoundResult result,
     (void) gunner;
     (void) fs;
 
+    std::vector<std::vector<T37>> closeds;
+    for (Who w : openers)
+        closeds.emplace_back(table.getHand(w).closed().t37s(true));
+
     if (result == RoundResult::RON || result == RoundResult::TSUMO) {
         bool ron = result == RoundResult::RON;
         const T37 &pick = ron ? table.getFocusTile()
                               : table.getHand(openers[0]).drawn();
 
-        for (Who w : openers) {
-            mExpr.push_back(tokenOf(w));
-            // is form[0] is ron, all is ron
-            mExpr.push_back(tokenOf(result));
-            mExpr.push_back(tokenOf(pick));
-            for (const T37 &t : table.getHand(w).closed().t37s(true))
-                mExpr.push_back(tokenOf(t));
-        }
+        const std::vector<T37> &urids = table.getMount().getUrids();
+        for (size_t i = 0; i < urids.size(); i++)
+            mReal.pin(Mount::URADORA, i, urids[i]);
 
-        // show and fix uradora indicators
-        if (table.getRuleInfo().uradora) {
-            const std::vector<T37> &uraIndics = table.getMount().getUrids();
-            if (!uraIndics.empty()) {
-                mExpr.push_back(SkillToken::URADORA_I);
-                for (size_t i = 0; i < uraIndics.size(); i++) {
-                    const T37 &ind = uraIndics[i];
-                    mExpr.push_back(tokenOf(ind));
-                    mReal.pin(Mount::URADORA, i, ind);
-                }
-            }
-        }
+        mEvents.emplace_back(new TokiEventResult(result, openers, closeds, pick, urids));
     } else { // ryuukyoku
-        mExpr.push_back(tokenOf(result));
-
-        if (!openers.empty()) {
-            for (Who w : openers) {
-                if (table.getGirl(w).getId() != Girl::Id::ONJOUJI_TOKI) {
-                    mExpr.push_back(tokenOf(w));
-                    for (const T37 &t : table.getHand(w).closed().t37s(true))
-                        mExpr.push_back(tokenOf(t));
-                }
-            }
-        }
+        mEvents.emplace_back(new TokiEventResult(result, openers, closeds));
     }
 }
 
-const SkillExpr &TokiMountTracker::getExpr() const
+const TokiEvents &TokiMountTracker::getEvents() const
 {
-    return mExpr;
+    return mEvents;
 }
 
 
@@ -177,6 +290,25 @@ Action TokiAutoOp::think(const TableView &view)
     }
 
     return Action(); // halt the future table
+}
+
+void TokiEventResult::print(std::ostream &os) const
+{
+    if (mResult == RoundResult::TSUMO || mResult == RoundResult::RON) {
+        for (size_t w = 0; w < mOpeners.size(); w++) {
+            os << '\n' << mOpeners[w].index() << "J " << saki::stringOf(mResult)
+               << '\n' << mCloseds[w];
+        }
+        if (!mUrids.empty())
+            os << "\nURADORAINDIC " << mUrids;
+    } else if (mResult == RoundResult::HP) {
+        for (size_t w = 0; w < mOpeners.size(); w++) {
+            os << '\n' << mOpeners[w].index() << "J TENPAI "
+               << '\n' << mCloseds[w];
+        }
+    } else {
+        os << '\n' << saki::stringOf(mResult);
+    }
 }
 
 

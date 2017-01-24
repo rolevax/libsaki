@@ -68,21 +68,16 @@ void Shino::onDiscarded(const Table &table, Who who)
         return;
 
     if (hand.hasEffA(t)) {
-        SkillExpr expr;
-        expr.push_back(tokenOf(t));
-        table.popUp(mSelf, expr);
+        mBreakPair = t;
+        table.popUp(mSelf);
     }
 }
 
-std::string Shino::stringOf(const SkillExpr &expr) const
+std::string Shino::popUpStr() const
 {
-    if (!expr.empty() && tokenIsTile(expr[0])) {
-        std::ostringstream oss;
-        oss << tileOf(expr[0]) << "....";
-        return oss.str();
-    }
-
-    unreached("Shino::stringOf");
+    std::ostringstream oss;
+    oss << mBreakPair << "....";
+    return oss.str();
 }
 
 void Shino::powerPinfuIipei(const Hand &hand, const std::vector<T37> &river,

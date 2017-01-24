@@ -13,7 +13,7 @@ static std::uniform_int_distribution<int> distribution(0, 2147483647);
 uint32_t mySrand()
 {
     uint32_t s = std::chrono::system_clock::now().time_since_epoch().count();
-//uint32_t s = 1475495179548947482;
+//uint32_t s = 1744748566;
     generator.seed(s);
     return s;
 }

@@ -19,12 +19,15 @@ public:
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
     void onDiscarded(const Table &table, Who who) override;
 
-    std::string stringOf(const SkillExpr &expr) const override;
+    std::string popUpStr() const override;
 
 private:
     void powerPinfuIipei(const Hand &hand, const std::vector<T37> &r, Mount &m, int mk);
     void power3sk(const Hand &hand, Mount &mount, int mk);
     void powerChanta(const Hand &hand, Mount &m, int mk);
+
+private:
+    T34 mBreakPair;
 };
 
 

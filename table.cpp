@@ -120,11 +120,8 @@ Table::Table(const Table &orig,
 
 void Table::start()
 {
-    uint32_t seed = mySrand();
-    std::cout << "Table started, seed: " << seed << std::endl;
-
     for (auto ob : mObservers)
-        ob->onTableStarted(*this, seed);
+        ob->onTableStarted(*this, myState());
 
     activate();
 }
@@ -341,10 +338,10 @@ const Mount &Table::getMount() const
     return mMount;
 }
 
-void Table::popUp(Who who, const SkillExpr &expr) const
+void Table::popUp(Who who) const
 {
     for (auto ob : mObservers)
-        ob->onPoppedUp(*this, who, expr);
+        ob->onPoppedUp(*this, who);
 }
 
 

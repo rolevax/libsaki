@@ -144,10 +144,9 @@ TicketFolder Girl::forwardAction(const Table &table, Mount &mount, const Action 
     unreached("unoverriden forwardAction()");
 }
 
-std::string Girl::stringOf(const SkillExpr &expr) const
+std::string Girl::popUpStr() const
 {
-    (void) expr;
-    unreached(false && "unoverriden stringOf(SkillExpr)");
+    unreached("unoverriden popUpStr()");
 }
 
 void Girl::eraseRivered(std::vector<T34> &ts, const std::vector<T37> &river)

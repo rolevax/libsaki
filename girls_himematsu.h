@@ -19,7 +19,7 @@ public:
     bool checkInit(Who who, const Hand &init, const Princess &princess, int iter) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
 
-    std::string stringOf(const SkillExpr &expr) const override;
+    std::string popUpStr() const override;
 
 private:
     static const std::array<int, 4> POWERS;

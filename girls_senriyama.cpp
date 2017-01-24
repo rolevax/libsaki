@@ -1,5 +1,4 @@
 #include "girls_senriyama.h"
-#include "girls_util_toki.h"
 #include "table.h"
 #include "ai.h"
 #include "string_enum.h"
@@ -84,7 +83,7 @@ void Toki::onInbox(Who who, const Action &action)
 TicketFolder Toki::forwardAction(const Table &table, Mount &mount, const Action &action)
 {
     if (action.act() == ActCode::IRS_CLICK) {
-        table.popUp(mSelf, { SkillToken::GREEN });
+        popUpBy(table, PopUpMode::GREEN);
         if (mInFuture) { // to exit future
             mInFuture = false;
             mCheckNextAction = true;
@@ -101,7 +100,8 @@ TicketFolder Toki::forwardAction(const Table &table, Mount &mount, const Action 
         std::vector<T37> swappables;
         table.getHand(mSelf).declareRiichi(swappables, spinnable);
 
-        tickets.enableSwapOut(swappables);
+        if (!swappables.empty())
+            tickets.enableSwapOut(swappables);
         if (spinnable)
             tickets.enable(ActCode::SPIN_OUT);
 
@@ -109,8 +109,7 @@ TicketFolder Toki::forwardAction(const Table &table, Mount &mount, const Action 
         return tickets;
     }
 
-    SkillExpr expr { SkillToken::EMOJI_OO };
-    table.popUp(mSelf, expr);
+    popUpBy(table, PopUpMode::OO);
 
     // prepare operators
     std::array<Girl::Id, 4> ids;
@@ -140,123 +139,29 @@ TicketFolder Toki::forwardAction(const Table &table, Mount &mount, const Action 
     if (!util::has(mRecords, record))
         mRecords.push_back(record);
 
-    table.popUp(mSelf, mountTracker.getExpr());
+    mEvents = mountTracker.getEvents();
+    popUpBy(table, PopUpMode::FV);
     return mCrazyTickets;
 }
 
-std::string Toki::stringOf(const SkillExpr &expr) const
+std::string Toki::popUpStr() const
 {
-    if (!expr.empty() && expr[0] == SkillToken::EMOJI_OO)
-        return std::string("----  O.O ----");
-
-    if (!expr.empty() && expr[0] == SkillToken::GREEN)
+    switch (mPopUpMode) {
+    case PopUpMode::GREEN:
         return std::string("GREEN");
-
-    bool inDiscardStream = false;
-    bool toMarkRiichi = false;
-
-    std::ostringstream oss;
-
-    auto it = expr.begin();
-
-    while (it != expr.end()) {
-        switch (*it) {
-        case SkillToken::DRAW:
-            inDiscardStream = false;
-            oss << "\nDRAW ";
-            it++; // skip 'DRAW' token
-            oss << tileOf(*it++);
-            break;
-        case SkillToken::TMKR:
-        case SkillToken::TKR:
-            if (!inDiscardStream) {
-                oss << "\nDISCARD";
-                inDiscardStream = true;
-            }
-            oss << (*it++ == SkillToken::TMKR ? " *" : " ");
-            oss << tileOf(*it++);
-            if (toMarkRiichi) {
-                oss << "RII";
-                toMarkRiichi = false;
-            }
-            break;
-        case SkillToken::CHII: {
-            oss << saki::stringOf(barkTypeOf(*it++));
-            T37 l = tileOf(*it++);
-            T37 m = tileOf(*it++);
-            T37 r = tileOf(*it++);
-            oss << ' ' << M37::chii(l, m, r, 0); // last 'open=0' dummy/unused
-            break;
-        }
-        case SkillToken::PON: {
-            oss << saki::stringOf(barkTypeOf(*it++));
-            T37 l = tileOf(*it++);
-            T37 m = tileOf(*it++);
-            T37 r = tileOf(*it++);
-            oss << ' ' << M37::pon(l, m, r, 0); // last 'open=0' dummy/unused
-            break;
-        }
-        case SkillToken::DAIMINKAN:
-        case SkillToken::ANKAN:
-        case SkillToken::KAKAN:
-            oss << saki::stringOf(barkTypeOf(*it++));
-            oss << ' ' << tileOf(*it++);
-            break;
-        case SkillToken::RIICHI:
-            toMarkRiichi = true;
-            it++;
-            break;
-        case SkillToken::TSUMO:
-        case SkillToken::RON: {
-            oss << saki::stringOf(actOf(*it++));
-            oss << ' ' << tileOf(*it++);
-            std::vector<T37> ts;
-            while (it != expr.end() && tokenIsTile(*it))
-                ts.push_back(tileOf(*it++));
-            oss << '\n' << ts;
-            break;
-        }
-        case SkillToken::KANDORA_I:
-        case SkillToken::URADORA_I:
-            inDiscardStream = false;
-            oss << (*it++ == SkillToken::KANDORA_I ? "\nKANDORAINDIC"
-                                                   : "\nURADORAINDIC");
-            while (it != expr.end() && tokenIsTile(*it))
-                oss << ' ' << tileOf(*it++);
-            break;
-        case SkillToken::HP: {
-            oss << '\n' << saki::stringOf(resultOf(*it++));
-            while (it != expr.end()) {
-                oss << '\n' << whoOf(*it++).index() << "J TENPAI";
-                std::vector<T37> ts;
-                while (it != expr.end() && tokenIsTile(*it))
-                    ts.push_back(tileOf(*it++));
-                oss << '\n' << ts;
-            }
-            break;
-        }
-        case SkillToken::KSKP:
-        case SkillToken::SFRT:
-        case SkillToken::SKSR:
-        case SkillToken::SCRC:
-        case SkillToken::SCHR:
-        case SkillToken::NGSMG:
-            oss << '\n' << saki::stringOf(resultOf(*it++));
-            break;
-        case SkillToken::PLAYER0:
-        case SkillToken::PLAYER1:
-        case SkillToken::PLAYER2:
-        case SkillToken::PLAYER3:
-            inDiscardStream = false;
-            oss << '\n' << whoOf(*it++).index() << "J ";
-            break;
-        default:
-            unreached("toki expr2str: unhandled token");
-            break;
-        }
+    case PopUpMode::OO:
+        return std::string("----  O.O  ----");
+    case PopUpMode::FV:
+        return mEvents.str();
+    default:
+        unreached("Toki::popUpStr");
     }
+}
 
-    return oss.str().substr(1); // eliminate first '\n'
+void Toki::popUpBy(const Table &table, Toki::PopUpMode mode)
+{
+    mPopUpMode = mode;
+    table.popUp(mSelf);
 }
 
 

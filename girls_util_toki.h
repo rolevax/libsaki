@@ -15,6 +15,102 @@ namespace saki
 class TableView;
 class Mount;
 
+class TokiEvent
+{
+public:
+    static std::string stringOf(const std::vector<std::unique_ptr<TokiEvent>> &events);
+
+    virtual TokiEvent *clone() const = 0;
+    virtual ~TokiEvent() = default;
+    virtual bool isDiscard() const;
+    virtual void print(std::ostream &os) const = 0;
+};
+
+struct TokiEvents
+{
+    TokiEvents() = default;
+    TokiEvents(const TokiEvents &copy);
+    TokiEvents &operator=(TokiEvents assign);
+    void emplace_back(TokiEvent *event);
+    std::string str() const;
+    std::vector<std::unique_ptr<TokiEvent>> events;
+};
+
+class TokiEventDrawn : public TokiEvent
+{
+public:
+    explicit TokiEventDrawn(const T37 &t);
+    explicit TokiEventDrawn(const TokiEventDrawn &copy) = default;
+    TokiEventDrawn *clone() const override;
+    void print(std::ostream &os) const override;
+
+private:
+    T37 mTile;
+};
+
+class TokiEventFlipped : public TokiEvent
+{
+public:
+    explicit TokiEventFlipped(const T37 &t);
+    explicit TokiEventFlipped(const TokiEventFlipped &copy) = default;
+    TokiEventFlipped *clone() const override;
+    void print(std::ostream &os) const override;
+
+private:
+    T37 mTile;
+};
+
+class TokiEventDiscarded : public TokiEvent
+{
+public:
+    explicit TokiEventDiscarded(const T37 &t, bool spin, bool riichi = false);
+    explicit TokiEventDiscarded(const TokiEventDiscarded &copy) = default;
+    TokiEventDiscarded *clone() const override;
+    bool isDiscard() const override;
+    void print(std::ostream &os) const override;
+
+private:
+    T37 mTile;
+    bool mSpin;
+    bool mRiichi;
+};
+
+class TokiEventBarked : public TokiEvent
+{
+public:
+    explicit TokiEventBarked(Who who, const M37 &m);
+    explicit TokiEventBarked(const TokiEventBarked &copy) = default;
+    TokiEventBarked *clone() const override;
+    void print(std::ostream &os) const override;
+
+private:
+    Who mWho;
+    M37 mBark;
+};
+
+class TokiEventResult : public TokiEvent
+{
+public:
+    TokiEventResult(RoundResult result,
+                    const std::vector<Who> &openers,
+                    const std::vector<std::vector<T37>> &closeds);
+    TokiEventResult(RoundResult result,
+                    const std::vector<Who> &openers,
+                    const std::vector<std::vector<T37>> &closeds,
+                    const T37 &pick,
+                    const std::vector<T37> &urids);
+    explicit TokiEventResult(const TokiEventResult &copy) = default;
+    TokiEventResult *clone() const override;
+    void print(std::ostream &os) const override;
+
+private:
+    RoundResult mResult;
+    std::vector<Who> mOpeners;
+    std::vector<std::vector<T37>> mCloseds;
+    T37 mPick;
+    std::vector<T37> mUrids;
+};
+
 class TokiMountTracker : public TableObserver
 {
 public:
@@ -32,7 +128,7 @@ public:
                       const std::vector<Who> &openers, Who gunner,
                       const std::vector<Form> &fs) override;
 
-    const SkillExpr &getExpr() const;
+    const TokiEvents &getEvents() const;
 
 private:
     Mount &mReal;
@@ -40,7 +136,8 @@ private:
     size_t mWallPos = 0; // wall position counter
     size_t mDeadPos = 0; // dead wall position counter
     size_t mDoraPos = 0;
-    SkillExpr mExpr;
+    bool mToRiichi = false;
+    TokiEvents mEvents;
 };
 
 
