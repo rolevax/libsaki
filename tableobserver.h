@@ -4,7 +4,6 @@
 #include "action.h"
 #include "tile.h"
 #include "form.h"
-#include "skillpop.h"
 
 #include <cstdint>
 #include <vector>

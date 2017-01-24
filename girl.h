@@ -2,7 +2,6 @@
 #define GIRL_H
 
 #include "mount.h"
-#include "skillpop.h"
 #include "who.h"
 
 #include <bitset>
@@ -29,6 +28,7 @@ class Princess;
 class Hand;
 class Table;
 class TicketFolder;
+class Action;
 
 struct IrsCheckRow
 {

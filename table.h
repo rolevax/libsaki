@@ -9,7 +9,6 @@
 #include "tableoperator.h"
 #include "tableobserver.h"
 #include "tilecount.h"
-#include "skillpop.h"
 
 #include <memory>
 #include <iostream>
