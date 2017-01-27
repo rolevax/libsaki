@@ -449,7 +449,7 @@ void Table::nextRound()
     mDealer = Who(cheat::dealer);
     mAllLast = cheat::allLast;
     mDeposit = cheat::deposit;
-    mySetState(cheat::state);
+    mRand.set(cheat::state);
 #else
     if (mToChangeDealer) {
         mDealer = mDealer.right();

@@ -44,15 +44,18 @@ namespace cheat
 
 
 
+#ifdef LIBSAKI_CHEAT_ROUND
 const int round = 0;
 const int extra = 0;
-const int dealer = 0;
+const int dealer = 2;
 const bool allLast = false;
 const int deposit = 0;
-const uint32_t state = 233;
+const uint32_t state = 851877720;
+#endif
 
 
 
+#ifdef LIBSAKI_CHEAT_PRINCESS
 using namespace tiles37;
 
 const std::array<std::vector<T37>, 4> inits = {
@@ -68,6 +71,7 @@ const std::vector<T37> wall = {
 
 const std::vector<T37> dead = {
 };
+#endif
 
 
 

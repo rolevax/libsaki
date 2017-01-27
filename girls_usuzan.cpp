@@ -184,9 +184,11 @@ TicketFolder Sawaya::forwardAction(const Table &table, Mount &mount, const Actio
     }
 }
 
-void Sawaya::nonMonkey(TileCount &init, Mount &mount, std::bitset<Girl::NUM_NM_SKILL> &presence,
+void Sawaya::nonMonkey(Rand &rand, TileCount &init, Mount &mount,
+                       std::bitset<Girl::NUM_NM_SKILL> &presence,
                        const Princess &princess)
 {
+    (void) rand;
     (void) init;
     (void) princess;
 

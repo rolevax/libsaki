@@ -21,14 +21,15 @@ public:
     void onActivate(const Table &table, TicketFolder &tickets) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
 
-    const std::array<bool, 4> &irsRivalMask() const;
+    const std::array<bool, 4> &irsRivalMask() const override;
     const IrsCheckRow &irsCheckRow(int index) const override;
     int irsCheckCount() const override;
 
     TicketFolder forwardAction(const Table &table, Mount &mount, const Action &action) override;
 
-    void nonMonkey(TileCount &init, Mount &mount, std::bitset<NUM_NM_SKILL> &presence,
-                   const Princess &princess);
+    void nonMonkey(Rand &rand, TileCount &init, Mount &mount,
+                   std::bitset<NUM_NM_SKILL> &presence,
+                   const Princess &princess) override;
 
     bool canUseRedCloud(unsigned &mask) const;
     bool canUseWhiteCloud(unsigned &mask) const;
