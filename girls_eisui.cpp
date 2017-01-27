@@ -1,5 +1,4 @@
 #include "girls_eisui.h"
-#include "myrand.h"
 #include "table.h"
 #include "princess.h"
 #include "util.h"
@@ -65,9 +64,11 @@ void Hatsumi::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     }
 }
 
-void Hatsumi::nonMonkey(TileCount &init, Mount &mount, std::bitset<Girl::NUM_NM_SKILL> &presence,
+void Hatsumi::nonMonkey(Rand &rand, TileCount &init, Mount &mount,
+                        std::bitset<Girl::NUM_NM_SKILL> &presence,
                         const Princess &princess)
 {
+    (void) rand;
     (void) presence;
 
     if (princess.getTable().getSelfWind(mSelf) == 4) { // north seat
@@ -95,8 +96,9 @@ void Hatsumi::nonMonkey(TileCount &init, Mount &mount, std::bitset<Girl::NUM_NM_
 
 
 
-void Kasumi::onDice(const Table &table, TicketFolder &tickets)
+void Kasumi::onDice(Rand &rand, const Table &table, TicketFolder &tickets)
 {
+    (void) rand;
     (void) table;
 
     if (mZim.able) {
@@ -168,7 +170,8 @@ int Kasumi::irsCheckCount() const
     return 1;
 }
 
-void Kasumi::nonMonkey(TileCount &init, Mount &mount, std::bitset<Girl::NUM_NM_SKILL> &presence,
+void Kasumi::nonMonkey(Rand &rand, TileCount &init, Mount &mount,
+                       std::bitset<Girl::NUM_NM_SKILL> &presence,
                        const Princess &princess)
 {
     (void) init;
@@ -181,7 +184,7 @@ void Kasumi::nonMonkey(TileCount &init, Mount &mount, std::bitset<Girl::NUM_NM_S
     if (presence[WHITE_CLOUD])
         ofss.pop_back(); // exclude suit-S
 
-    int door = myRand() % ofss.size();
+    int door = rand.gen(ofss.size());
     mZimSuit = static_cast<Suit>(door); // ok since popped S is the last
     presence.set(ZIM_M + door); // assuming order of enum
     int begin = ofss[door];

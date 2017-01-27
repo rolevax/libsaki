@@ -3,6 +3,7 @@
 
 #include "tile.h"
 #include "tilecount.h"
+#include "rand.h"
 
 #include <memory>
 #include <array>
@@ -77,10 +78,10 @@ public:
     explicit Mount(const Mount &copy);
     Mount &operator=(const Mount &assign);
 
-    void initFill(TileCount &init, Exist &exist);
+    void initFill(Rand &rand, TileCount &init, Exist &exist);
     const T37 &initPopExact(const T37 &t);
-    T37 wallPop();
-    T37 deadPop();
+    T37 wallPop(Rand &rand);
+    T37 deadPop(Rand &rand);
 
     int wallRemain() const;
     int deadRemain() const;
@@ -100,8 +101,8 @@ public:
     void pin(Exit exit, std::size_t pos, const T37 &t);
     void loadB(const T37 &t, int count);
 
-    void flipIndic();
-    void digIndic();
+    void flipIndic(Rand &rand);
+    void digIndic(Rand &rand);
 
 private:
     struct Erwin
@@ -124,11 +125,11 @@ private:
     using ErwinQueue = std::list<std::unique_ptr<Erwin>>;
 
     const std::unique_ptr<Erwin> &prepareSuperpos(Exit exit, std::size_t pos);
-    T37 popFrom(Exit exit);
-    std::vector<T37> popExist(Exist &exist, int need);
-    T37 popExist(Exist &exA, Exist &exB);
-    std::vector<T37> popPolar(Exist::Polar &polar, TileCount &stoch, int need);
-    T37 popScientific();
+    T37 popFrom(Rand &rand, Exit exit);
+    std::vector<T37> popExist(Rand &rand, Exist &exist, int need);
+    T37 popExist(Rand &rand, Exist &exA, Exist &exB);
+    std::vector<T37> popPolar(Rand &rand, Exist::Polar &polar, TileCount &stoch, int need);
+    T37 popScientific(Rand &rand);
 
 private:
     // *** SYNC with copy constructor and assign operator ***

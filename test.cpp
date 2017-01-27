@@ -4,7 +4,6 @@
 #include "form.h"
 #include "table.h"
 #include "ai.h"
-#include "myrand.h"
 #include "util.h"
 
 #include <iostream>
@@ -22,7 +21,7 @@ TestScope::TestScope(const char *str, bool nl)
 {
     int len = 16 - strlen(str);
     len = len > 0 ? len : 1;
-    std::cout << str << std::string(len, ' ') << myState() << std::flush;
+    std::cout << str << std::string(len, ' ') << std::flush;
     if (nl)
         std::cout << std::endl;
     mStart = std::chrono::steady_clock::now();
@@ -40,8 +39,6 @@ TestScope::~TestScope()
 
 void testAll()
 {
-    mySrand();
-
     testUtil();
     testTileCount();
     testHand();
@@ -117,7 +114,7 @@ void testTable()
             ops[w] = ais[w].get();
         }
 
-        Table table(points, girlIds, ops, obs, rule, Who(myRand() % 4));
+        Table table(points, girlIds, ops, obs, rule, Who(0));
         table.start();
     }
 }

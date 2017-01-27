@@ -16,7 +16,7 @@ namespace saki
 class Princess
 {
 public:
-    explicit Princess(const Table &table, Mount &mount,
+    explicit Princess(const Table &table, Rand &rand, Mount &mount,
                       const std::array<std::unique_ptr<Girl>, 4> &girls);
 
     Princess(const Princess &copy) = delete;
@@ -47,6 +47,7 @@ private:
 
 private:
     const Table &mTable;
+    Rand &mRand;
     Mount &mMount;
     const std::array<std::unique_ptr<Girl>, 4> &mGirls; // const array but modifying pointer
 

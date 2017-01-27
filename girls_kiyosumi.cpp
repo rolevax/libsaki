@@ -1,6 +1,5 @@
 #include "girls_kiyosumi.h"
 #include "table.h"
-#include "myrand.h"
 #include "princess.h"
 
 
@@ -39,16 +38,16 @@ void Yuuki::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         accelerate(mount, hand, river, -10);
 }
 
-void Yuuki::onChooseFirstDealer(Who tempDealer, int &die1, int &die2)
+void Yuuki::onChooseFirstDealer(Rand &rand, Who tempDealer, int &die1, int &die2)
 {
     // 90% probablity to be dealer
-    if (myRand() % 10 < 9) {
+    if (rand.gen(10) < 9) {
         // value in 1 ~ 4
         int diceBase = mSelf.turnFrom(tempDealer) + 1;
         // monkey until satisfied
         while ((die1 + die2) % 4 != diceBase % 4) {
-            die1 = myRand() % 6 + 1;
-            die2 = myRand() % 6 + 1;
+            die1 = rand.gen(6) + 1;
+            die2 = rand.gen(6) + 1;
         }
     }
 }

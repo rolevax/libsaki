@@ -1,5 +1,5 @@
 #include "princess.h"
-#include "myrand.h"
+#include "rand.h"
 #include "util.h"
 #include "debug_cheat.h"
 
@@ -10,9 +10,10 @@ namespace saki
 
 
 
-Princess::Princess(const Table &table, Mount &mount,
+Princess::Princess(const Table &table, Rand &rand, Mount &mount,
                    const std::array<std::unique_ptr<Girl>, 4> &girls)
     : mTable(table)
+    , mRand(rand)
     , mMount(mount)
     , mGirls(girls)
 {
@@ -83,7 +84,7 @@ std::array<TileCount, 4> Princess::nonMonkey()
     for (Id id : CHECK_ORDER1) {
         Who who = mTable.findGirl(id);
         if (who.somebody())
-            mGirls[who.index()]->nonMonkey(res[who.index()], mMount, presence, *this);
+            mGirls[who.index()]->nonMonkey(mRand, res[who.index()], mMount, presence, *this);
     }
 
     doraMatters();
@@ -95,7 +96,7 @@ std::array<TileCount, 4> Princess::nonMonkey()
     for (Id id : CHECK_ORDER2) {
         Who who = mTable.findGirl(id);
         if (who.somebody())
-            mGirls[who.index()]->nonMonkey(res[who.index()], mMount, presence, *this);
+            mGirls[who.index()]->nonMonkey(mRand, res[who.index()], mMount, presence, *this);
     }
 #endif
 
@@ -120,7 +121,7 @@ std::array<Hand, 4> Princess::monkey(std::array<TileCount, 4> &inits)
             TileCount init(inits[w]); // copy
             Exist exist(exists[w]); // copy
 
-            mount.initFill(init, exist);
+            mount.initFill(mRand, init, exist);
             Hand hand(init);
 
             auto pass = [w, &hand, this, &mount, iter](int checker) {
@@ -256,7 +257,7 @@ T34 Princess::pickIndicator(const std::array<bool, 34> &ex34s, bool wall)
     }
 
     assert(!indicatable.empty());
-    return indicatable[myRand() % indicatable.size()];
+    return indicatable[mRand.gen(indicatable.size())];
 }
 
 

@@ -78,13 +78,13 @@ public:
 
     Id getId() const;
 
-    virtual void onDice(const Table &table, TicketFolder &tickets);
+    virtual void onDice(Rand &rand, const Table &table, TicketFolder &tickets);
     virtual void onMonkey(std::array<Exist, 4> &exists, const Princess &princess);
     virtual bool checkInit(Who who, const Hand &init, const Princess &princess, int iter);
     virtual void onActivate(const Table &table, TicketFolder &tickets);
     virtual void onInbox(Who who, const Action &action);
     virtual void onDraw(const Table &table, Mount &mount, Who who, bool rinshan);
-    virtual void onChooseFirstDealer(Who tempDealer, int &die1, int &die2);
+    virtual void onChooseFirstDealer(Rand &rand, Who tempDealer, int &die1, int &die2);
     virtual void onDiscarded(const Table &table, Who who);
     virtual void onRiichiEstablished(const Table &table, Who who);
 
@@ -94,7 +94,8 @@ public:
 
     virtual TicketFolder forwardAction(const Table &table, Mount &mount, const Action &action);
 
-    virtual void nonMonkey(TileCount &init, Mount &mount, std::bitset<NUM_NM_SKILL> &presence,
+    virtual void nonMonkey(Rand &rand, TileCount &init, Mount &mount,
+                           std::bitset<NUM_NM_SKILL> &presence,
                            const Princess &princess);
 
 

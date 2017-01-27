@@ -1,7 +1,6 @@
 #include "girls_himematsu.h"
 #include "table.h"
 #include "princess.h"
-#include "myrand.h"
 #include "util.h"
 
 #include <algorithm>
@@ -17,15 +16,14 @@ namespace saki
 
 const std::array<int, 4> Suzu::POWERS { 80, 130, 230, 330 };
 
-void Suzu::onDice(const Table &table, TicketFolder &tickets)
+void Suzu::onDice(Rand &rand, const Table &table, TicketFolder &tickets)
 {
     (void) tickets;
 
     if (!mExploded) {
-        int rand = myRand() % 100;
         int remainRound = table.getRuleInfo().roundLimit - table.getRound();
         int threshold = remainRound < 4 ? 20 : 10;
-        if (rand < threshold) {
+        if (rand.gen(100) < threshold) {
             mExploded = true;
             table.popUp(mSelf);
         }

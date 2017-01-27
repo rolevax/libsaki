@@ -1,7 +1,7 @@
 #include "form.h"
 #include "explain.h"
 #include "util.h"
-#include "myrand.h"
+#include "rand.h"
 
 #include <algorithm>
 #include <numeric>
@@ -228,22 +228,14 @@ std::string Form::spell() const
         int u = mUradora;
         int a = mAkadora;
 
-        if (!d && u && !a) {
-            if (u == 2 && myRand() % 2)
-                oss << "Uur";
-            else
-                oss << "Ura" << u;
-        } else if (!d && !u && a) {
+        if (d == 0 && u > 0 && a == 0)
+            oss << "Ura" << u;
+        else if (d == 0 && u == 0 && a > 0)
             oss << "Aka" << a;
-        } else if (d + u + a > 0) {
-            int sum = d + u + a;
-            if (sum == 2 && !(myRand() % 4))
-                oss << "Ddr";
-            else
-                oss << "Dra" << sum;
-        } else if (mYakus.count() == 1) {
+        else if (d + u + a > 0)
+            oss << "Dra" << (d + u + a);
+        else if (mYakus.count() == 1)
             oss << "Nmi";
-        }
     }
 
     return oss.str();

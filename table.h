@@ -9,6 +9,7 @@
 #include "tableoperator.h"
 #include "tableobserver.h"
 #include "tilecount.h"
+#include "rand.h"
 
 #include <memory>
 #include <iostream>
@@ -69,6 +70,7 @@ protected:
     ~TablePrivate() = default;
 
 protected:
+    Rand mRand;
     Mount mMount;
     const RuleInfo mRule;
     KanContext mKanContext;

@@ -69,9 +69,9 @@ Girl::Id Girl::getId() const
     return mId;
 }
 
-void Girl::onDice(const Table &table, TicketFolder &tickets)
+void Girl::onDice(Rand &rand, const Table &table, TicketFolder &tickets)
 {
-    (void) table; (void) tickets;
+    (void) rand; (void) table; (void) tickets;
 }
 
 void Girl::onMonkey(std::array<Exist, 4> &exists, const Princess &princess)
@@ -99,9 +99,9 @@ void Girl::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     (void) table; (void) mount; (void) who; (void) rinshan;
 }
 
-void Girl::onChooseFirstDealer(Who tempDealer, int &die1, int &die2)
+void Girl::onChooseFirstDealer(Rand &rand, Who tempDealer, int &die1, int &die2)
 {
-    (void) tempDealer; (void) die1; (void) die2;
+    (void) rand; (void) tempDealer; (void) die1; (void) die2;
 }
 
 void Girl::onDiscarded(const Table &table, Who who)
@@ -119,10 +119,11 @@ const std::array<bool, 4> &Girl::irsRivalMask() const
     unreached("unoverriden irsRivalMask()");
 }
 
-void Girl::nonMonkey(TileCount &init, Mount &mount, std::bitset<Girl::NUM_NM_SKILL> &presence,
+void Girl::nonMonkey(Rand &rand, TileCount &init, Mount &mount,
+                     std::bitset<Girl::NUM_NM_SKILL> &presence,
                      const Princess &princess)
 {
-    (void) init; (void) mount; (void) presence; (void) princess;
+    (void) rand; (void) init; (void) mount; (void) presence; (void) princess;
     unreached("unoverriden nonMonkey()");
 }
 

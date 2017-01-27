@@ -11,8 +11,9 @@ namespace saki
 
 
 
-void Toyone::onDice(const Table &table, TicketFolder &tickets)
+void Toyone::onDice(Rand &rand, const Table &table, TicketFolder &tickets)
 {
+    (void) rand;
     (void) table;
     (void) tickets;
 

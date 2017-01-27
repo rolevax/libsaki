@@ -18,7 +18,8 @@ public:
 
     bool checkInit(Who who, const Hand &init, const Princess &princess, int iter) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
-    void nonMonkey(TileCount &init, Mount &mount, std::bitset<NUM_NM_SKILL> &presence,
+    void nonMonkey(Rand &rand, TileCount &init, Mount &mount,
+                   std::bitset<NUM_NM_SKILL> &presence,
                    const Princess &princess) override;
 };
 
@@ -27,7 +28,7 @@ class Kasumi : public Girl
 public:
     GIRL_CTORS(Kasumi)
 
-    void onDice(const Table &table, TicketFolder &tickets) override;
+    void onDice(Rand &rand, const Table &table, TicketFolder &tickets) override;
     void onMonkey(std::array<Exist, 4> &exists, const Princess &princess) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
 
@@ -35,7 +36,8 @@ public:
     const IrsCheckRow &irsCheckRow(int index) const override;
     int irsCheckCount() const override;
 
-    void nonMonkey(TileCount &init, Mount &mount, std::bitset<NUM_NM_SKILL> &presence,
+    void nonMonkey(Rand &rand, TileCount &init, Mount &mount,
+                   std::bitset<NUM_NM_SKILL> &presence,
                    const Princess &princess) override;
 
 private:

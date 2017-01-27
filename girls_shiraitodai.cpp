@@ -2,7 +2,6 @@
 #include "princess.h"
 #include "table.h"
 #include "util.h"
-#include "myrand.h"
 
 #include <algorithm>
 
@@ -26,9 +25,11 @@ void Takami::onDiscarded(const Table &table, Who who)
     }
 }
 
-void Takami::nonMonkey(TileCount &init, Mount &mount, std::bitset<Girl::NUM_NM_SKILL> &presence,
+void Takami::nonMonkey(Rand &rand, TileCount &init, Mount &mount,
+                       std::bitset<Girl::NUM_NM_SKILL> &presence,
                        const Princess &princess)
 {
+    (void) rand;
     (void) presence;
     (void) princess;
 
@@ -117,8 +118,9 @@ void Seiko::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
 
 
 
-void Awai::onDice(const Table &table, TicketFolder &tickets)
+void Awai::onDice(Rand &rand, const Table &table, TicketFolder &tickets)
 {
+    (void) rand;
     (void) table;
     mTicketsBackup = tickets;
     tickets = TicketFolder(ActCode::IRS_CHECK);
@@ -224,7 +226,8 @@ void Awai::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     }
 }
 
-void Awai::nonMonkey(TileCount &init, Mount &mount, std::bitset<Girl::NUM_NM_SKILL> &presence,
+void Awai::nonMonkey(Rand &rand, TileCount &init, Mount &mount,
+                     std::bitset<Girl::NUM_NM_SKILL> &presence,
                      const Princess &princess)
 {
     if (!mDaburi.on)
@@ -262,12 +265,12 @@ void Awai::nonMonkey(TileCount &init, Mount &mount, std::bitset<Girl::NUM_NM_SKI
     int iter = 500;
     while (iter --> 0) {
         // (1)
-        int yaoSuitId = myRand() % avaiSuits.size();
+        int yaoSuitId = rand.gen(avaiSuits.size());
         Suit yaoS = avaiSuits[yaoSuitId];
-        int yaoV = myRand() % 2 == 0 ? 1 : 7;
+        int yaoV = rand.gen(2) == 0 ? 1 : 7;
         T37 yaoSeq(yaoS, yaoV);
         Suit midS = avaiSuits[(yaoSuitId + 1) % avaiSuits.size()];
-        int midV = 2 + myRand() % 5;
+        int midV = 2 + rand.gen(5);
         T37 midSeq(midS, midV);
         TileCount need;
         need.inc(yaoSeq, 1);
@@ -278,8 +281,8 @@ void Awai::nonMonkey(TileCount &init, Mount &mount, std::bitset<Girl::NUM_NM_SKI
         need.inc(T37(midSeq.nnext().id34()), 1);
 
         // (2)
-        if (myRand() % 3 > 0) { // 66% sequence
-            T37 lastSeq(avaiSuits[myRand() % avaiSuits.size()], myRand() % 7 + 1);
+        if (rand.gen(3) > 0) { // 66% sequence
+            T37 lastSeq(avaiSuits[rand.gen(avaiSuits.size())], rand.gen(7) + 1);
             // avoid 1pk by mapping 123567 to 765321, and 4 to 3
             if (lastSeq == yaoSeq || lastSeq == midSeq)
                 lastSeq = T37(lastSeq.suit(), lastSeq.val() == 4 ? 3 : 8 - lastSeq.val());
@@ -287,12 +290,12 @@ void Awai::nonMonkey(TileCount &init, Mount &mount, std::bitset<Girl::NUM_NM_SKI
             need.inc(T37(lastSeq.next().id34()), 1);
             need.inc(T37(lastSeq.nnext().id34()), 1);
         } else {
-            T37 lastTri(avaiSuits[myRand() % avaiSuits.size()], myRand() % 9 + 1);
+            T37 lastTri(avaiSuits[rand.gen(avaiSuits.size())], rand.gen(9) + 1);
             need.inc(lastTri, 3);
         }
 
         // (3)
-        T37 pair(avaiSuits[myRand() % avaiSuits.size()], myRand() % 9 + 1);
+        T37 pair(avaiSuits[rand.gen(avaiSuits.size())], rand.gen(9) + 1);
         need.inc(pair, 2);
 
         // (4)
@@ -318,14 +321,14 @@ void Awai::nonMonkey(TileCount &init, Mount &mount, std::bitset<Girl::NUM_NM_SKI
         if (kick3ables.empty())
             continue;
 
-        const T37 &kick3 = kick3ables[myRand() % kick3ables.size()];
+        const T37 &kick3 = kick3ables[rand.gen(kick3ables.size())];
         need.inc(kick3, -1);
         mount.loadB(kick3, 4); // as many as possible
         mLastWait = kick3;
 
         std::vector<T37> kick1ables = need.t37s();
         mNeedFirstDraw = true;
-        mFirstDraw = kick1ables[myRand() % kick1ables.size()];
+        mFirstDraw = kick1ables[rand.gen(kick1ables.size())];
         need.inc(mFirstDraw, -1);
 
         // done

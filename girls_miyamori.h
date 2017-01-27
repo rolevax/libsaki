@@ -15,7 +15,7 @@ class Toyone : public Girl
 public:
     GIRL_CTORS(Toyone)
 
-    void onDice(const Table &table, TicketFolder &tickets) override;
+    void onDice(Rand &rand, const Table &table, TicketFolder &tickets) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
     void onRiichiEstablished(const Table &table, Who who) override;
 

@@ -16,7 +16,7 @@ public:
     GIRL_CTORS(Yuuki)
     bool checkInit(Who who, const Hand &init, const Princess &princess, int iter) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
-    void onChooseFirstDealer(Who tempDealer, int &die1, int &die2) override;
+    void onChooseFirstDealer(Rand &rand, Who tempDealer, int &die1, int &die2) override;
 };
 
 class Nodoka : public Girl

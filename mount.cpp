@@ -1,5 +1,4 @@
 #include "mount.h"
-#include "myrand.h"
 #include "util.h"
 
 #include <numeric>
@@ -111,7 +110,7 @@ Mount &Mount::operator=(const Mount &copy)
     return *this;
 }
 
-void Mount::initFill(TileCount &init, Exist &exist)
+void Mount::initFill(Rand &rand, TileCount &init, Exist &exist)
 {
     int need = 13 - init.sum();
 
@@ -119,7 +118,7 @@ void Mount::initFill(TileCount &init, Exist &exist)
     assert(wallRemain() >= 70 + need);
     mRemain -= need;
 
-    std::vector<T37> pops = popExist(exist, need);
+    std::vector<T37> pops = popExist(rand, exist, need);
     for (const T37 &t : pops)
         init.inc(t, 1);
 }
@@ -131,20 +130,20 @@ const T37 &Mount::initPopExact(const T37 &t)
     return t;
 }
 
-T37 Mount::wallPop()
+T37 Mount::wallPop(Rand &rand)
 {
     assert(wallRemain() > 0);
     mRemain--;
-    return popFrom(Exit::WALL);
+    return popFrom(rand, Exit::WALL);
 }
 
-T37 Mount::deadPop()
+T37 Mount::deadPop(Rand &rand)
 {
     assert(wallRemain() > 0);
     assert(deadRemain() > 0);
     mRemain--;
     mKanCt++;
-    return popFrom(Exit::DEAD);
+    return popFrom(rand, Exit::DEAD);
 }
 
 int Mount::wallRemain() const
@@ -267,15 +266,15 @@ void Mount::loadB(const T37 &t, int count)
     mStochB.inc(t, count);
 }
 
-void Mount::flipIndic()
+void Mount::flipIndic(Rand &rand)
 {
-    mDrids.push_back(popFrom(Exit::DORA));
+    mDrids.push_back(popFrom(rand, Exit::DORA));
 }
 
-void Mount::digIndic()
+void Mount::digIndic(Rand &rand)
 {
     while (mUrids.size() < mDrids.size())
-        mUrids.push_back(popFrom(Exit::URADORA));
+        mUrids.push_back(popFrom(rand, Exit::URADORA));
 }
 
 const std::unique_ptr<Mount::Erwin> &Mount::prepareSuperpos(Exit exit, std::size_t pos)
@@ -295,21 +294,21 @@ const std::unique_ptr<Mount::Erwin> &Mount::prepareSuperpos(Exit exit, std::size
     return ptr;
 }
 
-T37 Mount::popFrom(Exit exit)
+T37 Mount::popFrom(Rand &rand, Exit exit)
 {
     ErwinQueue &eq = mErwinQueues[exit];
     if (eq.empty()) {
-        return popScientific();
+        return popScientific(rand);
     } else if (eq.front() == nullptr) {
         eq.pop_front();
-        return popScientific();
+        return popScientific(rand);
     } else {
         Erwin &e = *eq.front();
         T37 res;
 
         switch (e.state) {
         case Erwin::SUPERPOS:
-            res = popExist(*e.exA, *e.exB);
+            res = popExist(rand, *e.exA, *e.exB);
             break;
         case Erwin::DEFINITE:
             res = e.tile;
@@ -321,14 +320,14 @@ T37 Mount::popFrom(Exit exit)
     }
 }
 
-std::vector<T37> Mount::popExist(Exist &exist, int need)
+std::vector<T37> Mount::popExist(Rand &rand, Exist &exist, int need)
 {
     exist.addBaseMk(mStochA);
     Exist::Polar polar = exist.polarize(mStochA);
-    return popPolar(polar, mStochA, need);
+    return popPolar(rand, polar, mStochA, need);
 }
 
-T37 Mount::popExist(Exist &exA, Exist &exB)
+T37 Mount::popExist(Rand &rand, Exist &exA, Exist &exB)
 {
     exA.addBaseMk(mStochA);
     // no natrual existance for stoch-B
@@ -344,23 +343,23 @@ T37 Mount::popExist(Exist &exA, Exist &exB)
         auto iterB = std::max_element(polarB.npos.begin(), polarB.npos.end(), less);
         int maxA = iterA == polarA.npos.end() ? std::numeric_limits<int>::min() : iterA->e;
         int maxB = iterB == polarB.npos.end() ? std::numeric_limits<int>::min() : iterB->e;
-        return maxA > maxB ? popPolar(polarA, mStochA, 1).at(0)
-                           : popPolar(polarB, mStochB, 1).at(0);
+        return maxA > maxB ? popPolar(rand, polarA, mStochA, 1).at(0)
+                           : popPolar(rand, polarB, mStochB, 1).at(0);
     } else if (polarA.pos.empty()) {
-        return popPolar(polarB, mStochB, 1).at(0);
+        return popPolar(rand, polarB, mStochB, 1).at(0);
     } else if (polarB.pos.empty()) {
-        return popPolar(polarA, mStochA, 1).at(0);
+        return popPolar(rand, polarA, mStochA, 1).at(0);
     } else {
         auto plus = [](int s, Cy &p) { return s + p.e; };
         int sumA = std::accumulate(polarA.pos.begin(), polarA.pos.end(), 0, plus);
         int sumB = std::accumulate(polarB.pos.begin(), polarB.pos.end(), 0, plus);
-        bool inA = myRand() % (sumA + sumB) < sumA;
-        return inA ? popPolar(polarA, mStochA, 1).at(0)
-                   : popPolar(polarB, mStochB, 1).at(0);
+        bool inA = rand.gen(sumA + sumB) < sumA;
+        return inA ? popPolar(rand, polarA, mStochA, 1).at(0)
+                   : popPolar(rand, polarB, mStochB, 1).at(0);
     }
 }
 
-std::vector<T37> Mount::popPolar(Exist::Polar &polar, TileCount &stoch, int need)
+std::vector<T37> Mount::popPolar(Rand &rand, Exist::Polar &polar, TileCount &stoch, int need)
 {
     std::vector<T37> res;
     res.reserve(need);
@@ -382,7 +381,7 @@ std::vector<T37> Mount::popPolar(Exist::Polar &polar, TileCount &stoch, int need
             index = it - polar.npos.begin();
             pop = polar.npos[index].t;
         } else {
-            int r = myRand() % sum;
+            int r = rand.gen(sum);
             index = 0;
             while (!(r < polar.pos[index].e))
                 r -= polar.pos[index++].e;
@@ -411,22 +410,22 @@ std::vector<T37> Mount::popPolar(Exist::Polar &polar, TileCount &stoch, int need
     return res;
 }
 
-T37 Mount::popScientific()
+T37 Mount::popScientific(Rand &rand)
 {
     int sum = mStochA.sum();
     assert(sum > 0);
 
-    int rand = myRand() % sum;
+    int r = rand.gen(sum);
     int i34 = 0;
-    while (!(rand < mStochA.ct(T34(i34))))
-        rand -= mStochA.ct(T34(i34++));
+    while (!(r < mStochA.ct(T34(i34))))
+        r -= mStochA.ct(T34(i34++));
 
     T37 ret(i34);
 
     if (ret.val() == 5) {
         int black = mStochA.ct(ret);
         int red = mStochA.ct(ret.toAka5());
-        if (myRand() % (red + black) < red)
+        if (rand.gen(red + black) < red)
             ret = ret.toAka5();
     }
 

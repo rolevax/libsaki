@@ -9,8 +9,9 @@ namespace saki
 
 
 
-void Sawaya::onDice(const Table &table, TicketFolder &tickets)
+void Sawaya::onDice(Rand &rand, const Table &table, TicketFolder &tickets)
 {
+    (void) rand;
     (void) table;
 
     mPredice = true;

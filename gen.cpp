@@ -1,5 +1,5 @@
 #include "gen.h"
-#include "myrand.h"
+#include "rand.h"
 
 #include <algorithm>
 #include <iostream>

@@ -1,5 +1,4 @@
 #include "table.h"
-#include "myrand.h"
 #include "princess.h"
 #include "util.h"
 #include "debug_cheat.h"
@@ -121,7 +120,7 @@ Table::Table(const Table &orig,
 void Table::start()
 {
     for (auto ob : mObservers)
-        ob->onTableStarted(*this, myState());
+        ob->onTableStarted(*this, mRand.state());
 
     activate();
 }
@@ -466,13 +465,13 @@ void Table::nextRound()
 
     for (auto ob : mObservers)
         ob->onRoundStarted(mRound, mExtraRound, mDealer,
-                           mAllLast, mDeposit, myState());
+                           mAllLast, mDeposit, mRand.state());
 
     mMount = Mount(mRule.akadora);
 
     mTicketFolders[mDealer.index()].enable(ActCode::DICE);
     for (int i = 0; i < 4; i++)
-        mGirls[i]->onDice(*this, mTicketFolders[i]);
+        mGirls[i]->onDice(mRand, *this, mTicketFolders[i]);
 }
 
 void Table::clean()
@@ -501,12 +500,12 @@ void Table::clean()
 
 void Table::rollDice()
 {
-    int die1 = myRand() % 6 + 1;
-    int die2 = myRand() % 6 + 1;
+    int die1 = mRand.gen(6) + 1;
+    int die2 = mRand.gen(6) + 1;
 
     if (beforeEast1()) {
         for (auto &g : mGirls)
-            g->onChooseFirstDealer(mInitDealer, die1, die2);
+            g->onChooseFirstDealer(mRand, mInitDealer, die1, die2);
     }
 
     mDice = die1 + die2;
@@ -529,18 +528,7 @@ void Table::rollDice()
 
 void Table::deal()
 {
-    /*
-    Princess princess(*this, girls);
-    std::array<std::vector<Tile>, 4> dealRes = princess.deal();
-
-    for (int i = 0; i < 4; i++)
-        players[i].initHand(dealRes[i]);
-
-    for (auto ob : observers)
-        ob->observeDeal(dealRes);
-        */
-
-    mHands = Princess(*this, mMount, mGirls).deal();
+    mHands = Princess(*this, mRand, mMount, mGirls).deal();
 
     for (auto ob : mObservers)
         ob->onDealt(*this);
@@ -552,7 +540,7 @@ void Table::deal()
 
 void Table::flip()
 {
-    mMount.flipIndic();
+    mMount.flipIndic(mRand);
 
     for (auto ob : mObservers)
         ob->onFlipped(*this);
@@ -571,7 +559,7 @@ void Table::tryDraw(Who who)
         for (auto &g : mGirls)
             g->onDraw(*this, mMount, who, dead);
 
-        T37 tile = dead ? mMount.deadPop() : mMount.wallPop();
+        T37 tile = dead ? mMount.deadPop(mRand) : mMount.wallPop(mRand);
 
         mHands[w].draw(tile);
 
@@ -1083,7 +1071,7 @@ void Table::finishRound(const std::vector<Who> &openers_, Who gunner)
     // dig uradora-indicator if some winner established riichi
     auto est = [this](Who who) { return riichiEstablished(who); };
     if (mRule.uradora && util::any(openers.begin(), openers.begin() + ticket, est))
-        mMount.digIndic();
+        mMount.digIndic(mRand);
 
     std::vector<Form> forms;
     for (int i = 0; i < ticket; i++) {
