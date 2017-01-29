@@ -69,7 +69,7 @@ TokiEventDrawn *TokiEventDrawn::clone() const
 
 void TokiEventDrawn::print(std::ostream &os) const
 {
-    os << "\nDRAW" << mTile.str();
+    os << "\nDRAW " << mTile.str();
 }
 
 TokiEventFlipped::TokiEventFlipped(const T37 &t)
