@@ -929,12 +929,15 @@ void Table::checkRon(bool only13)
             continue;
 
         PointInfo info = getPointInfo(Who(w));
+        bool passiveDoujun = false;
 
         if (mFuritens[w].none()
                 && (!only13 || mHands[w].step13() == 0)
-                && mHands[w].canRon(getFocusTile(), info, mRule)) {
+                && mHands[w].canRon(getFocusTile(), info, mRule, passiveDoujun)) {
             mTicketFolders[w].enable(ActCode::RON);
             mTicketFolders[w].enable(ActCode::PASS);
+        } else if (passiveDoujun) {
+            mFuritens[w].doujun = true;
         }
     }
 }

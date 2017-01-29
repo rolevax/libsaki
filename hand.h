@@ -110,7 +110,7 @@ public:
     bool canDaiminkan(T34 t) const;
     bool canAnkan(std::vector<T34> &choices, bool riichi) const;
     bool canKakan(std::vector<int> &barkIds) const;
-    bool canRon(T34 t, const PointInfo &info, const RuleInfo &rule) const;
+    bool canRon(T34 t, const PointInfo &info, const RuleInfo &rule, bool &doujun) const;
     bool canTsumo(const PointInfo &info, const RuleInfo &rule) const;
     bool canRiichi() const;
 

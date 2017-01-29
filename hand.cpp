@@ -501,11 +501,17 @@ bool Hand::canKakan(std::vector<int> &barkIds) const
     return !barkIds.empty();
 }
 
-bool Hand::canRon(T34 t, const PointInfo &info, const RuleInfo &rule) const
+bool Hand::canRon(T34 t, const PointInfo &info, const RuleInfo &rule, bool &doujun) const
 {
     assert(!mHasDrawn);
+
     T37 pick(t.id34()); // whether aka5 does not affect ronablity
-    return withPick(pick).step() == -1 && Form(*this, pick, info, rule).hasYaku();
+    if (withPick(pick).step() != -1)
+        return false;
+
+    bool yaku = Form(*this, pick, info, rule).hasYaku();
+    doujun = !yaku;
+    return yaku;
 }
 
 bool Hand::canTsumo(const PointInfo &info, const RuleInfo &rule) const
