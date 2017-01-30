@@ -60,7 +60,7 @@ public:
     TicketFolder forwardAction(const Table &table, Mount &mount, const Action &action) override;
 
 private:
-    static int lastCorner(int dice);
+    static int lastCorner(int dice, int kanCt);
 
 private:
     static const int DRAG_MK = 100;

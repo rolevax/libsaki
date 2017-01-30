@@ -194,7 +194,7 @@ void Awai::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         int barkCt = barks.size();
         if (barkCt > 0
                 && util::any(barks, [](const M37 &m) { return m.type() == M37::Type::ANKAN; })
-                && mount.wallRemain() <= lastCorner(table.getDice())) {
+                && mount.wallRemain() <= lastCorner(table.getDice(), 4 - mount.deadRemain())) {
             // after kan and corner, for every player,
             // make wait-tile appear in mount continuously
             for (int ti = 0; ti < 34; ti++) {
@@ -204,7 +204,7 @@ void Awai::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
             }
         } else if (who == mSelf) {
             // before kan
-            int tail = lastCorner(table.getDice());
+            int tail = lastCorner(table.getDice(), 4 - mount.deadRemain());
             int rem = mount.wallRemain();
             if (tail < rem && rem <= tail + 4) {
                 // before last corner, extract kan-material
@@ -361,10 +361,11 @@ TicketFolder Awai::forwardAction(const Table &table, Mount &mount, const Action 
     return mTicketsBackup;
 }
 
-int Awai::lastCorner(int dice)
+int Awai::lastCorner(int dice, int kanCt)
 {
     int tailRemain = 2 * dice;
     tailRemain -= 14;
+    tailRemain -= kanCt;
     if (tailRemain <= 0)
         tailRemain += 34;
     return tailRemain;
