@@ -24,13 +24,14 @@ struct PointInfo
 
 struct RuleInfo
 {
-    // *** SYNC with json converting and gui-rule-config functions
+    // *** SYNC with json converting (create + read) ***
     bool fly = true;
     bool headJump = false;
     bool nagashimangan = true;
     bool ippatsu = true;
     bool uradora = true;
     bool kandora = true;
+    bool daiminkanPao = true;
     TileCount::AkadoraCount akadora = TileCount::AKADORA4;
     int hill = 20000;
     int returnLevel = 30000;

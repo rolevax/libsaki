@@ -1104,6 +1104,12 @@ void Table::finishRound(const std::vector<Who> &openers_, Who gunner)
             mPoints[gunner.index()] -= forms[i].loss(false); // 'false' unused
             mPoints[openers[i].index()] += forms[i].gain();
         }
+    } else if (mRule.daiminkanPao
+               && mKanContext.during()
+               && mKanContext.pao().somebody()) {
+        int loss = 2 * forms[0].loss(false) + forms[0].loss(true);
+        mPoints[mKanContext.pao().index()] -= loss;
+        mPoints[openers[0].index()] += forms[0].gain();
     } else { // tsumo
         for (int i = 0; i < 4; ++i) {
             Who who(i);
