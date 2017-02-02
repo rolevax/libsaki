@@ -74,6 +74,33 @@ std::vector<Action> TicketFolder::choices() const
     return res;
 }
 
+Action TicketFolder::sweep() const
+{
+    if (mForwardAll && can(ActCode::IRS_CLICK))
+        return Action(IRS_CLICK); // toki: exit future
+
+    std::vector<ActCode> just {
+        ActCode::NEXT_ROUND, ActCode::END_TABLE, ActCode::DICE,
+        ActCode::SPIN_OUT, ActCode::PASS
+    };
+
+    for (ActCode act : just)
+        if (can(act))
+            return Action(act);
+
+    if (can(ActCode::SWAP_OUT) && !mSwappables.empty())
+        return Action(ActCode::SWAP_OUT, mSwappables.back());
+
+    if (can(ActCode::IRS_CHECK)) // assume 0u is always legal
+        return Action(ActCode::IRS_CHECK, 0u);
+
+    if (can(ActCode::IRS_RIVAL)) {
+        // TODO
+    }
+
+    return Action(ActCode::NOTHING);
+}
+
 bool TicketFolder::forwardAll() const
 {
     return mForwardAll;
