@@ -26,7 +26,7 @@ struct RuleInfo
 {
     // *** SYNC with json converting (create + read) ***
     bool fly = true;
-    bool headJump = false;
+    bool headJump = true;
     bool nagashimangan = true;
     bool ippatsu = true;
     bool uradora = true;

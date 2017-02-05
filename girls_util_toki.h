@@ -23,7 +23,7 @@ public:
     virtual TokiEvent *clone() const = 0;
     virtual ~TokiEvent() = default;
     virtual bool isDiscard() const;
-    virtual void print(std::ostream &os) const = 0;
+    virtual void print(std::ostream &os, Who toki) const = 0;
 };
 
 struct TokiEvents
@@ -32,7 +32,7 @@ struct TokiEvents
     TokiEvents(const TokiEvents &copy);
     TokiEvents &operator=(TokiEvents assign);
     void emplace_back(TokiEvent *event);
-    std::string str() const;
+    std::string str(Who toki) const;
     std::vector<std::unique_ptr<TokiEvent>> events;
 };
 
@@ -42,7 +42,7 @@ public:
     explicit TokiEventDrawn(const T37 &t);
     explicit TokiEventDrawn(const TokiEventDrawn &copy) = default;
     TokiEventDrawn *clone() const override;
-    void print(std::ostream &os) const override;
+    void print(std::ostream &os, Who toki) const override;
 
 private:
     T37 mTile;
@@ -54,7 +54,7 @@ public:
     explicit TokiEventFlipped(const T37 &t);
     explicit TokiEventFlipped(const TokiEventFlipped &copy) = default;
     TokiEventFlipped *clone() const override;
-    void print(std::ostream &os) const override;
+    void print(std::ostream &os, Who toki) const override;
 
 private:
     T37 mTile;
@@ -67,7 +67,7 @@ public:
     explicit TokiEventDiscarded(const TokiEventDiscarded &copy) = default;
     TokiEventDiscarded *clone() const override;
     bool isDiscard() const override;
-    void print(std::ostream &os) const override;
+    void print(std::ostream &os, Who toki) const override;
 
 private:
     T37 mTile;
@@ -81,7 +81,7 @@ public:
     explicit TokiEventBarked(Who who, const M37 &m);
     explicit TokiEventBarked(const TokiEventBarked &copy) = default;
     TokiEventBarked *clone() const override;
-    void print(std::ostream &os) const override;
+    void print(std::ostream &os, Who toki) const override;
 
 private:
     Who mWho;
@@ -101,7 +101,7 @@ public:
                     const std::vector<T37> &urids);
     explicit TokiEventResult(const TokiEventResult &copy) = default;
     TokiEventResult *clone() const override;
-    void print(std::ostream &os) const override;
+    void print(std::ostream &os, Who toki) const override;
 
 private:
     RoundResult mResult;

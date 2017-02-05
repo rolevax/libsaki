@@ -31,7 +31,7 @@ public:
     std::string popUpStr() const override;
 
 private:
-    enum class PopUpMode { GREEN, OO, FV };
+    enum class PopUpMode { OO, FV };
 
     void popUpBy(const Table &table, PopUpMode mode);
 

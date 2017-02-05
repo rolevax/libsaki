@@ -29,7 +29,7 @@ void TokiEvents::emplace_back(TokiEvent *event)
     events.emplace_back(event);
 }
 
-std::string TokiEvents::str() const
+std::string TokiEvents::str(Who toki) const
 {
     bool inDiscardStream = false;
 
@@ -46,7 +46,7 @@ std::string TokiEvents::str() const
             inDiscardStream = false;
         }
 
-        e.print(oss);
+        e.print(oss, toki);
     }
 
     return oss.str().substr(1); // eliminate first '\n'
@@ -67,8 +67,9 @@ TokiEventDrawn *TokiEventDrawn::clone() const
     return new TokiEventDrawn(*this);
 }
 
-void TokiEventDrawn::print(std::ostream &os) const
+void TokiEventDrawn::print(std::ostream &os, Who toki) const
 {
+    (void) toki;
     os << "\nDRAW " << mTile.str();
 }
 
@@ -82,8 +83,9 @@ TokiEventFlipped *TokiEventFlipped::clone() const
     return new TokiEventFlipped(*this);
 }
 
-void TokiEventFlipped::print(std::ostream &os) const
+void TokiEventFlipped::print(std::ostream &os, Who toki) const
 {
+    (void) toki;
     os << "\nKANDORAINDIC " << mTile;
 }
 
@@ -104,8 +106,9 @@ bool TokiEventDiscarded::isDiscard() const
     return true;
 }
 
-void TokiEventDiscarded::print(std::ostream &os) const
+void TokiEventDiscarded::print(std::ostream &os, Who toki) const
 {
+    (void) toki;
     os << (mSpin ? " *" : " ") << mTile.str() << (mRiichi ? "RII" : "");
 }
 
@@ -126,9 +129,9 @@ TokiEventBarked *TokiEventBarked::clone() const
     return new TokiEventBarked(*this);
 }
 
-void TokiEventBarked::print(std::ostream &os) const
+void TokiEventBarked::print(std::ostream &os, Who toki) const
 {
-    os << '\n' << mWho.index() << "J " << saki::stringOf(mBark.type()) << ' ';
+    os << '\n' << mWho.turnFrom(toki) << "J " << saki::stringOf(mBark.type()) << ' ';
     if (mBark.isKan())
         os << T34(mBark[0]);
     else
@@ -292,18 +295,18 @@ Action TokiAutoOp::think(const TableView &view)
     return Action(); // halt the future table
 }
 
-void TokiEventResult::print(std::ostream &os) const
+void TokiEventResult::print(std::ostream &os, Who toki) const
 {
     if (mResult == RoundResult::TSUMO || mResult == RoundResult::RON) {
         for (size_t w = 0; w < mOpeners.size(); w++) {
-            os << '\n' << mOpeners[w].index() << "J " << saki::stringOf(mResult)
+            os << '\n' << mOpeners[w].turnFrom(toki) << "J " << saki::stringOf(mResult)
                << '\n' << mCloseds[w];
         }
         if (!mUrids.empty())
             os << "\nURADORAINDIC " << mUrids;
     } else if (mResult == RoundResult::HP) {
         for (size_t w = 0; w < mOpeners.size(); w++) {
-            os << '\n' << mOpeners[w].index() << "J TENPAI "
+            os << '\n' << mOpeners[w].turnFrom(toki) << "J TENPAI "
                << '\n' << mCloseds[w];
         }
     } else {

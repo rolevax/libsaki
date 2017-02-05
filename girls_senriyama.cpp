@@ -83,7 +83,6 @@ void Toki::onInbox(Who who, const Action &action)
 TicketFolder Toki::forwardAction(const Table &table, Mount &mount, const Action &action)
 {
     if (action.act() == ActCode::IRS_CLICK) {
-        popUpBy(table, PopUpMode::GREEN);
         if (mInFuture) { // to exit future
             mInFuture = false;
             mCheckNextAction = true;
@@ -147,12 +146,10 @@ TicketFolder Toki::forwardAction(const Table &table, Mount &mount, const Action 
 std::string Toki::popUpStr() const
 {
     switch (mPopUpMode) {
-    case PopUpMode::GREEN:
-        return std::string("GREEN");
     case PopUpMode::OO:
         return std::string("----  O.O  ----");
     case PopUpMode::FV:
-        return mEvents.str();
+        return mEvents.str(mSelf);
     default:
         unreached("Toki::popUpStr");
     }

@@ -71,6 +71,11 @@ public:
         return Who((mWho + dice - 1) % 4);
     }
 
+    Who byTurn(int turn) const
+    {
+        return Who((mWho + turn) % 4);
+    }
+
     ///
     /// \brief Relative position of anohter player
     /// \param tar The other player
