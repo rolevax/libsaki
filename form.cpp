@@ -454,7 +454,7 @@ void Form::checkAge4(Form::Yakus &ys, const Explain4 &exp, bool menzen) const
         ys.set(Yaku::TYC);
     } else if (all) {
         if (exp.numX34() == 4) {
-            assert(!hasZ); // yakuman already checked
+            assert(hasZ); // yakuman already checked
             ys.set(Yaku::HRT); // implies toitoi but does not care
         } else if (menzen) {
             ys.set(hasZ ? Yaku::HCTYC : Yaku::JCTYC);
