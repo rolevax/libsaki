@@ -29,6 +29,7 @@ public:
     GIRL_CTORS(Kasumi)
 
     void onDice(Rand &rand, const Table &table, TicketFolder &tickets) override;
+    bool checkInit(Who who, const Hand &init, const Princess &princess, int iter) override;
     void onMonkey(std::array<Exist, 4> &exists, const Princess &princess) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
 

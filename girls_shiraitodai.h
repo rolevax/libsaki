@@ -60,7 +60,17 @@ public:
     TicketFolder forwardAction(const Table &table, Mount &mount, const Action &action) override;
 
 private:
+    struct InitSketch
+    {
+        std::array<T34, 3> heads;
+        T34 pair;
+        bool thridIsTri;
+        TileCount need;
+    };
+
     static int lastCorner(int dice, int kanCt);
+    InitSketch sketch(Rand &rand, const std::vector<Suit> &avaiSuits) const;
+    bool pickWait(Rand &rand, InitSketch &ske, Mount &mount);
 
 private:
     static const int DRAG_MK = 100;

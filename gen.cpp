@@ -55,9 +55,6 @@ Gen Gen::genForm4Point(int point, int selfWind, int roundWind,
             assert(std::find(valNT.begin(), valNT.end(), point) != valNT.end());
     }
 
-    // TODO
-    // 2. receive more param
-    // - dora vector (Hand::count(tile))
     //
     bool f90 = (selfWind == 1
             && (point == 4500 || point == 4400 || point == 8700))
@@ -343,7 +340,7 @@ void Gen::genInfo(PointInfo &info, Tile &pick, const Hand &h, bool ron, bool f11
             const Meld &m = h.getBarks().at(i);
             if (m.isQuad()) {
                 if (info.riichi) { // check kannability for kan-after-riichi
-                // FUCK this part originally commented-out, forgot why
+                // this part originally commented-out, forgot why
 //                    assert(m.isAnkan());
 //                    // revert the rinshan-kaihou process
 //                    Hand tmp(h);

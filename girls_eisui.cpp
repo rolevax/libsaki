@@ -107,6 +107,16 @@ void Kasumi::onDice(Rand &rand, const Table &table, TicketFolder &tickets)
     }
 }
 
+bool Kasumi::checkInit(Who who, const Hand &init, const Princess &princess, int iter)
+{
+    (void) princess;
+
+    if (who != mSelf || iter > 100)
+        return true;
+
+    return init.step() >= (iter > 50 ? 4 : 5);
+}
+
 void Kasumi::onMonkey(std::array<Exist, 4> &exists, const Princess &princess)
 {
     (void) princess;

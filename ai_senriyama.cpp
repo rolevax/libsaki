@@ -77,8 +77,6 @@ bool AiToki::toRiichi(const AiView &view)
 AiResult AiToki::thinkAttack(const AiView &view)
 {
     const Action &act = view.myAction();
-    (void) act; // FUCK
-    // OLD-FUCK just foolish AI
 //    if (act.can(ActCode::IRS_CLICK)) {
 //        return AiResult(ActCode::IRS_CLICK, -1);
 //    } else if (act.can(ActCode::IRS_DISCARD)) {

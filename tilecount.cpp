@@ -359,8 +359,7 @@ std::vector<TileCount::Explain4Closed> TileCount::explain4(T34 pick) const
 
 bool TileCount::onlyInTriplet(T34 pick, int barkCt) const
 {
-    // allow -1 case for ease of awai non-monkeye check
-    assert(step(barkCt) <= 0);
+    assert(step(barkCt) == 0); // this algo does not work when step is -1
     assert(c[pick.id34()] == 3);
 
     if (pick.isZ())

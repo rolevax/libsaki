@@ -249,91 +249,26 @@ void Awai::nonMonkey(Rand &rand, TileCount &init, Mount &mount,
         avaiSuits.erase(avaiSuits.begin() + 2);
 
     // a significant but not necessary random generation
-    // (1) generate a yao sequence and a non-yao sequence,
-    //     whose both suits and values are different.
-    // (2) generate either a sequence or a number-triplet.
-    //     while generating the sequence, intentionally avoid 1pk.
-    // (3) generate a number-pair
-    // (4) check if the mount affords this generated hand, and none of
-    //     the generated tiles may be a dora. return to (1) until satisfied.
-    // (5) check if the kanura is ankanable after riichi
-    // (6) kick out 2 tiles in the generation to make it a 1-step hand.
-    //     one of the 2 kicked out tile must have 3 in stoch A such that
-    //     it will appear after the corner continously.
     // by this generation, the generated complete hand has no yaku, but
     // after 2 swap-out's it may have. we simply ignore such a case.
     int iter = 500;
     while (iter --> 0) {
-        // (1)
-        int yaoSuitId = rand.gen(avaiSuits.size());
-        Suit yaoS = avaiSuits[yaoSuitId];
-        int yaoV = rand.gen(2) == 0 ? 1 : 7;
-        T37 yaoSeq(yaoS, yaoV);
-        Suit midS = avaiSuits[(yaoSuitId + 1) % avaiSuits.size()];
-        int midV = 2 + rand.gen(5);
-        T37 midSeq(midS, midV);
-        TileCount need;
-        need.inc(yaoSeq, 1);
-        need.inc(T37(yaoSeq.next().id34()), 1);
-        need.inc(T37(yaoSeq.nnext().id34()), 1);
-        need.inc(midSeq, 1);
-        need.inc(T37(midSeq.next().id34()), 1);
-        need.inc(T37(midSeq.nnext().id34()), 1);
+        // generate a sketch of winning hand
+        InitSketch ske = sketch(rand, avaiSuits);
 
-        // (2)
-        if (rand.gen(3) > 0) { // 66% sequence
-            T37 lastSeq(avaiSuits[rand.gen(avaiSuits.size())], rand.gen(7) + 1);
-            // avoid 1pk by mapping 123567 to 765321, and 4 to 3
-            if (lastSeq == yaoSeq || lastSeq == midSeq)
-                lastSeq = T37(lastSeq.suit(), lastSeq.val() == 4 ? 3 : 8 - lastSeq.val());
-            need.inc(lastSeq, 1);
-            need.inc(T37(lastSeq.next().id34()), 1);
-            need.inc(T37(lastSeq.nnext().id34()), 1);
-        } else {
-            T37 lastTri(avaiSuits[rand.gen(avaiSuits.size())], rand.gen(9) + 1);
-            need.inc(lastTri, 3);
-        }
-
-        // (3)
-        T37 pair(avaiSuits[rand.gen(avaiSuits.size())], rand.gen(9) + 1);
-        need.inc(pair, 2);
-
-        // (4)
-        if (!mount.affordA(need))
+        // check if mount affords and hand doraless
+        if (!mount.affordA(ske.need))
             continue;
-
         auto mayHaveDora = [&princess](T34 t) { return princess.mayHaveDora(t); };
-        if (iter > 100 && util::any(need.t34s(), mayHaveDora))
+        if (iter > 100 && util::any(ske.need.t34s(), mayHaveDora))
             continue;
 
-        // (5)
-        need.inc(T37(mKanura.id34()), 3);
-        if (!need.onlyInTriplet(mKanura, 1))
+        // pick the last wait tile
+        if (!pickWait(rand, ske, mount))
             continue;
-        need.inc(T37(mKanura.id34()), -3);
-
-        // (6)
-        std::vector<T37> kick3ables;
-        for (const T37 &kick : need.t37s())
-            if (need.ct(kick) == 1 && mount.remainA(kick) >= 3)
-                kick3ables.push_back(kick);
-
-        if (kick3ables.empty())
-            continue;
-
-        const T37 &kick3 = kick3ables[rand.gen(kick3ables.size())];
-        need.inc(kick3, -1);
-        mount.loadB(kick3, 4); // as many as possible
-        mLastWait = kick3;
-
-        std::vector<T37> kick1ables = need.t37s();
-        mNeedFirstDraw = true;
-        mFirstDraw = kick1ables[rand.gen(kick1ables.size())];
-        need.inc(mFirstDraw, -1);
 
         // done
-        mount.loadB(mFirstDraw, 1);
-        for (const T37 &t : need.t37s(true))
+        for (const T37 &t : ske.need.t37s(true))
             init.inc(mount.initPopExact(t), 1);
         break;
     }
@@ -369,6 +304,120 @@ int Awai::lastCorner(int dice, int kanCt)
     if (tailRemain <= 0)
         tailRemain += 34;
     return tailRemain;
+}
+
+Awai::InitSketch Awai::sketch(Rand &rand, const std::vector<Suit> &avaiSuits) const
+{
+    // (1) generate a yao sequence and a non-yao sequence,
+    //     whose both suits and values are different.
+    // (2) generate either a sequence or a number-triplet.
+    //     while generating the sequence, intentionally avoid 1pk.
+    // (3) generate a number-pair
+    InitSketch res;
+
+    // (1)
+    int yaoSuitId = rand.gen(avaiSuits.size());
+    Suit yaoS = avaiSuits[yaoSuitId];
+    int yaoV = rand.gen(2) == 0 ? 1 : 7;
+    T37 yaoSeq(yaoS, yaoV);
+    Suit midS = avaiSuits[(yaoSuitId + 1) % avaiSuits.size()];
+    int midV = 2 + rand.gen(5);
+    T37 midSeq(midS, midV);
+    res.heads[0] = yaoSeq;
+    res.heads[1] = midSeq;
+    res.need.inc(yaoSeq, 1);
+    res.need.inc(T37(yaoSeq.next().id34()), 1);
+    res.need.inc(T37(yaoSeq.nnext().id34()), 1);
+    res.need.inc(midSeq, 1);
+    res.need.inc(T37(midSeq.next().id34()), 1);
+    res.need.inc(T37(midSeq.nnext().id34()), 1);
+
+    // (2)
+    if (rand.gen(4) > 0) { // 75% sequence
+        T37 lastSeq(avaiSuits[rand.gen(avaiSuits.size())], rand.gen(7) + 1);
+        // avoid 1pk by mapping 123567 to 765321, and 4 to 3
+        if (lastSeq == yaoSeq || lastSeq == midSeq)
+            lastSeq = T37(lastSeq.suit(), lastSeq.val() == 4 ? 3 : 8 - lastSeq.val());
+        res.thridIsTri = false;
+        res.heads[2] = lastSeq;
+        res.need.inc(lastSeq, 1);
+        res.need.inc(T37(lastSeq.next().id34()), 1);
+        res.need.inc(T37(lastSeq.nnext().id34()), 1);
+    } else {
+        T37 lastTri(avaiSuits[rand.gen(avaiSuits.size())], rand.gen(9) + 1);
+        res.thridIsTri = true;
+        res.heads[2] = lastTri;
+        res.need.inc(lastTri, 3);
+    }
+
+    // (3)
+    T37 pair(avaiSuits[rand.gen(avaiSuits.size())], rand.gen(9) + 1);
+    res.pair = pair;
+    res.need.inc(pair, 2);
+
+    return res;
+}
+
+bool Awai::pickWait(Rand &rand, Awai::InitSketch &ske, Mount &mount)
+{
+    std::vector<T37> kickables;
+
+    if (ske.thridIsTri) {
+        // horizontally spread, avoid wait-almost-in-hand
+        if (ske.need.ct(ske.heads[2]) == 3
+                && ske.need.ct(ske.pair) == 2
+                && mount.remainA(ske.heads[2]) == 4
+                && mount.remainA(ske.pair) == 4) {
+            // init has at most one closed tri, looks comfortable
+            kickables.push_back(T37(ske.heads[2].id34()));
+        }
+    } else {
+        for (T34 head : ske.heads) {
+            auto waity = [&](T34 t) {
+                // horizontally spread, avoid wait-almost-in-hand
+                return ske.need.ct(t) == 1 && mount.remainA(t) >= 3;
+            };
+            if (waity(head.next())) // clamp
+                kickables.push_back(T37(head.next().id34()));
+            if (head.val() == 1 && waity(head.nnext())) // 12+3
+                kickables.push_back(T37(head.nnext().id34()));
+            if (head.val() == 7 && waity(head)) // 7+89
+                kickables.push_back(T37(head.id34()));
+        }
+    }
+
+    if (kickables.empty())
+        return false;
+
+    const T37 &kick3 = kickables[rand.gen(kickables.size())];
+    ske.need.inc(kick3, -1);
+
+    // check if the kanura is ankanable after riichi
+    ske.need.inc(T37(mKanura.id34()), 3);
+    bool ankanable = ske.need.onlyInTriplet(mKanura, 0);
+    ske.need.inc(T37(mKanura.id34()), -3);
+    if (!ankanable) {
+        ske.need.inc(kick3, 1); // recover, useless if see caller, though
+        return false;
+    }
+
+    if (ske.thridIsTri) { // bibump wait
+        T37 p37(ske.pair.id34());
+        mount.loadB(kick3, 2); // reserve other 2 for initPopExact
+        mount.loadB(p37, 2);
+    } else {
+        mount.loadB(kick3, 4); // the more, the better
+    }
+    mLastWait = kick3;
+
+    // make step-1 (or step-0 if lucky)
+    std::vector<T37> kick1ables = ske.need.t37s();
+    mNeedFirstDraw = true;
+    mFirstDraw = kick1ables[rand.gen(kick1ables.size())];
+    ske.need.inc(mFirstDraw, -1);
+    mount.loadB(mFirstDraw, 1);
+
+    return true;
 }
 
 
