@@ -95,7 +95,7 @@ Action TicketFolder::sweep() const
         return Action(ActCode::IRS_CHECK, 0u);
 
     if (can(ActCode::IRS_RIVAL)) {
-        return Action(ActCode::IRS_RIVAL, Who::NOBODY);
+        return Action(ActCode::IRS_RIVAL, Who());
     }
 
     return Action(ActCode::NOTHING);

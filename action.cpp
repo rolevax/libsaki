@@ -33,8 +33,14 @@ Action::Action(ActCode act, int arg)
 {
     assert(argIsShowAka5()
            || mAct == ActCode::KAKAN
-           || mAct == ActCode::IRS_CHECK
-           || mAct == ActCode::IRS_RIVAL);
+           || mAct == ActCode::IRS_CHECK);
+}
+
+Action::Action(ActCode act, Who who)
+    : mAct(act)
+    , mWho(who)
+{
+    assert(mAct == ActCode::IRS_RIVAL);
 }
 
 Action::Action(ActCode act, const T37 &t)
@@ -89,7 +95,7 @@ unsigned Action::mask() const
 Who Action::rival() const
 {
     assert(mAct == ActCode::IRS_RIVAL);
-    return Who(mArg);
+    return mWho;
 }
 
 int Action::encodeArg() const

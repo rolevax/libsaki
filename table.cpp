@@ -430,10 +430,6 @@ void Table::singleAction(Who who, const Action &act)
     case ActCode::DICE:
         rollDice();
         break;
-    case ActCode::IRS_RIVAL:
-//        assert(0 <= index && index < 4);
-//        girls[who]->irsRival(*this, index);
-        break;
     default:
         unreached("singleAction: unhandled act");
     }

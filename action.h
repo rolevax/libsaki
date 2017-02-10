@@ -35,6 +35,7 @@ public:
     Action();
     explicit Action(ActCode act);
     Action(ActCode act, int arg);
+    Action(ActCode act, Who who);
     Action(ActCode act, const T37 &t);
 
     Action(const Action &copy) = default;
@@ -62,6 +63,7 @@ private:
     {
         T37 mTile;
         int mArg;
+        Who mWho;
     };
 };
 

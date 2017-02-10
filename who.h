@@ -17,7 +17,6 @@ namespace saki
 class Who
 {
 public:
-    static const int NOBODY = 4;
     static const int HUMAN = 0;
 
     Who() : mWho(NOBODY) { }
@@ -134,6 +133,8 @@ public:
     Who &operator=(const Who &assign) = default;
 
 private:
+    static const int NOBODY = 4;
+
     int mWho;
 };
 
