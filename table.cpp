@@ -130,11 +130,11 @@ void Table::action(Who who, const Action &act)
     assert(mTicketFolders[who.index()].can(act.act()));
 
     int w = who.index();
+    bool reactivate = false;
     // action forwarding (see note 16-10-02)
     if (act.isIrs() || mTicketFolders[w].forwardAll()) {
         mTicketFolders[w] = mGirls[w]->forwardAction(*this, mMount, act);
-        if (mTicketFolders[w].any())
-            mOperators[w]->onActivated(*this);
+        reactivate = mTicketFolders[w].any();
     } else {
         for (auto &g : mGirls)
             g->onInbox(who, act);
@@ -150,7 +150,9 @@ void Table::action(Who who, const Action &act)
         mTicketFolders[w].disableAll();
     }
 
-    if (!anyActivated()) {
+    if (reactivate) {
+        mOperators[w]->onActivated(*this);
+    } else if (!anyActivated()) {
         process();
         activate();
     }
