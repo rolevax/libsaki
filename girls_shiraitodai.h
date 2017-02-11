@@ -82,7 +82,7 @@ private:
     T37 mFirstDraw;
     bool mNeedFirstDraw = false;
     T34 mKanura;
-    T34 mLastWait;
+    std::vector<T34> mLastWaits;
 };
 
 

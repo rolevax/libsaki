@@ -200,7 +200,7 @@ void Awai::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
             for (int ti = 0; ti < 34; ti++) {
                 T34 t(ti);
                 mount.lightA(t, -EJECT_MK);
-                mount.lightB(t, t == mLastWait ? ACCEL_MK : -EJECT_MK);
+                mount.lightB(t, util::has(mLastWaits, t) ? ACCEL_MK : -EJECT_MK);
             }
         } else if (who == mSelf) {
             // before kan
@@ -333,7 +333,7 @@ Awai::InitSketch Awai::sketch(Rand &rand, const std::vector<Suit> &avaiSuits) co
     res.need.inc(T37(midSeq.nnext().id34()), 1);
 
     // (2)
-    if (rand.gen(4) > 0) { // 75% sequence
+    if (rand.gen(3) > 0) { // 2/3 sequence
         T37 lastSeq(avaiSuits[rand.gen(avaiSuits.size())], rand.gen(7) + 1);
         // avoid 1pk by mapping 123567 to 765321, and 4 to 3
         if (lastSeq == yaoSeq || lastSeq == midSeq)
@@ -366,8 +366,8 @@ bool Awai::pickWait(Rand &rand, Awai::InitSketch &ske, Mount &mount)
         // horizontally spread, avoid wait-almost-in-hand
         if (ske.need.ct(ske.heads[2]) == 3
                 && ske.need.ct(ske.pair) == 2
-                && mount.remainA(ske.heads[2]) == 4
-                && mount.remainA(ske.pair) == 4) {
+                && mount.remainA(T37(ske.heads[2].id34())) == 4
+                && mount.remainA(T37(ske.pair.id34())) == 4) {
             // init has at most one closed tri, looks comfortable
             kickables.push_back(T37(ske.heads[2].id34()));
         }
@@ -375,7 +375,7 @@ bool Awai::pickWait(Rand &rand, Awai::InitSketch &ske, Mount &mount)
         for (T34 head : ske.heads) {
             auto waity = [&](T34 t) {
                 // horizontally spread, avoid wait-almost-in-hand
-                return ske.need.ct(t) == 1 && mount.remainA(t) >= 3;
+                return ske.need.ct(t) == 1 && mount.remainA(T37(t.id34())) >= 3;
             };
             if (waity(head.next())) // clamp
                 kickables.push_back(T37(head.next().id34()));
@@ -401,14 +401,17 @@ bool Awai::pickWait(Rand &rand, Awai::InitSketch &ske, Mount &mount)
         return false;
     }
 
+    mLastWaits.clear();
     if (ske.thridIsTri) { // bibump wait
         T37 p37(ske.pair.id34());
         mount.loadB(kick3, 2); // reserve other 2 for initPopExact
         mount.loadB(p37, 2);
+        mLastWaits.push_back(kick3);
+        mLastWaits.push_back(p37);
     } else {
         mount.loadB(kick3, 4); // the more, the better
+        mLastWaits.push_back(kick3);
     }
-    mLastWait = kick3;
 
     // make step-1 (or step-0 if lucky)
     std::vector<T37> kick1ables = ske.need.t37s();
