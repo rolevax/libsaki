@@ -28,6 +28,7 @@ void testUtil();
 void testTileCount();
 void testHand();
 void testForm();
+void testFormGb();
 void testTable();
 
 

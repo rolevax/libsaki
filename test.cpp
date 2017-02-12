@@ -2,6 +2,7 @@
 #include "tilecount.h"
 #include "hand.h"
 #include "form.h"
+#include "form_gb.h"
 #include "table.h"
 #include "ai.h"
 #include "util.h"
@@ -39,11 +40,12 @@ TestScope::~TestScope()
 
 void testAll()
 {
-    testUtil();
-    testTileCount();
-    testHand();
-    testForm();
-    testTable();
+//    testUtil();
+//    testTileCount();
+//    testHand();
+//    testForm();
+    testFormGb();
+//    testTable();
 }
 
 void testUtil()
@@ -117,6 +119,24 @@ void testTable()
         Table table(points, girlIds, ops, obs, rule, Who(0));
         table.start();
     }
+}
+
+void testFormGb()
+{
+    TestScope test("form-gb");
+
+    using namespace tiles37;
+    TileCount close {1_m,9_m,1_p,9_p,1_s,9_s,1_f,2_f,3_f,4_f,1_y,2_y,3_y};
+    Hand hand(close);
+    hand.draw(1_m);
+
+    PointInfo info;
+    info.selfWind = 2;
+    info.roundWind = 1;
+
+    FormGb form(hand, info);
+    assert(form.fan() == 88);
+//    assert(form.spell() == "PnfNmi");
 }
 
 
