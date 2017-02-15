@@ -31,8 +31,10 @@ public:
 
     bool ready() const;
     int step() const;
+    int stepGb() const;
     int step4() const;
     int step7() const;
+    int step7Gb() const;
     int step13() const;
 
     bool hasEffA(T34 t) const;
@@ -100,6 +102,7 @@ public:
     bool over4() const;
     bool nine9() const;
 
+    int ct(T34 t) const;
     int ctAka5() const;
 
     bool canChii(T34 t) const;
@@ -116,8 +119,10 @@ public:
 
     bool ready() const;
     int step() const;
+    int stepGb() const;
     int step4() const;
     int step7() const;
+    int step7Gb() const;
     int step13() const;
 
     bool hasEffA(T34 t) const;

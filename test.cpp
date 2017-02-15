@@ -123,20 +123,29 @@ void testTable()
 
 void testFormGb()
 {
-    TestScope test("form-gb");
-
-    using namespace tiles37;
-    TileCount close {1_m,9_m,1_p,9_p,1_s,9_s,1_f,2_f,3_f,4_f,1_y,2_y,3_y};
-    Hand hand(close);
-    hand.draw(1_m);
+    TestScope test("form-gb", true);
 
     PointInfo info;
     info.selfWind = 2;
     info.roundWind = 1;
 
-    FormGb form(hand, info);
-    assert(form.fan() == 88);
-//    assert(form.spell() == "PnfNmi");
+    using namespace tiles37;
+
+    {
+        TileCount close1 {1_m,9_m,1_p,9_p,1_s,9_s,1_f,2_f,3_f,4_f,1_y,2_y,3_y};
+        Hand hand1(close1);
+        hand1.draw(1_m);
+        FormGb form1(hand1, info, false);
+        assert(form1.fan() == 88);
+    }
+
+    {
+        TileCount close2 {1_m,2_m,3_m,1_m,2_m,3_m,4_s,5_s,6_s,7_p,8_p,9_p,1_f};
+        Hand hand2(close2);
+        hand2.draw(1_f);
+        FormGb form2(hand2, info, false);
+        util::p("form2.fan", form2.fan());
+    }
 }
 
 

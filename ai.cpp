@@ -274,7 +274,7 @@ bool Ai::riichi(const TableView &view)
         temp.enableSwapOut(swappables);
     if (spinnable)
         temp.enable(ActCode::SPIN_OUT);
-    // FUCK dangerous code:
+    // TODO dangerous code:
     //      1. assuming calling happy3 does not smashes states
     //         sol: use list-ordered picture-update
     //      2. should make it more reduced and reused and safe

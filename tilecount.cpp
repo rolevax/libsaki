@@ -156,6 +156,14 @@ int TileCount::step(int barkCt) const
     return std::min(s4, std::min(s7, s13));
 }
 
+int TileCount::stepGb(int barkCt) const
+{
+    int s4 = step4(barkCt);
+    int s7 = step7Gb();
+    int s13 = step13();
+    return std::min(s4, std::min(s7, s13));
+}
+
 int TileCount::step4(int barkCt) const
 {
     int maxCut = 4 - barkCt;
@@ -195,6 +203,15 @@ int TileCount::step7() const
         return 6 - pair;
     else
         return (6 - pair) + needKind;
+}
+
+int TileCount::step7Gb() const
+{
+    int pair = 0;
+    for (int ti = 0; ti < 34; ti++)
+        pair += (c[ti] / 2);
+
+    return 6 - pair;
 }
 
 int TileCount::step13() const

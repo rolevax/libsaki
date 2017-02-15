@@ -156,6 +156,16 @@ inline bool has(Iter begin, Iter end, T e)
 }
 
 ///
+/// \brief insersection not empty
+///
+template<typename V>
+inline bool common(V v1, V v2)
+{
+    auto f = [&v2](typename V::value_type a) { return has(v2, a); };
+    return any(v1, f);
+}
+
+///
 /// @brief alias for 'std::cout << arg << std::endl;', just save typing
 ///
 template <typename T>

@@ -2,8 +2,9 @@
 #define FORM_GB_H
 
 #include "hand.h"
+#include "explain.h"
 
-#include <bitset>
+#include <functional>
 
 
 
@@ -15,8 +16,9 @@ namespace saki
 enum Fan
 {
     // *** SYNC with FormGb::fan() ***
-    DSY88, DSS88, JLBD88, LQD88, SG88, LYS88, SSY88,
-    QYJ64, XSY64, XSS64, ZYS64, SAK64, YSSLH64,
+    // *** SYNC with spell.js:fantr() ***
+    DSY88, DSX88, JLBD88, LQD88, SG88, LYS88, SSY88,
+    QYJ64, XSY64, XSX64, ZYS64, SAK64, YSSLH64,
     YSSTS48, YSSJG48,
     YSSBG32, SG32, HYJ32,
     Q7D24, QSK24, QYS24, YSSTS24, YSSJG24, QDA24, QZ24, QX24,
@@ -36,25 +38,47 @@ class FormGb
 public:
     enum class Type { F4, F7, F13 };
 
-    using Fans = std::bitset<Fan::NUM_FANS>;
+    using Fans = std::vector<Fan>;
 
-    FormGb(const Hand &ready, const T37 &pick, const PointInfo &info);
-    FormGb(const Hand &full, const PointInfo &info);
+    FormGb(const Hand &ready, const T37 &pick, const PointInfo &info, bool juezhang);
+    FormGb(const Hand &full, const PointInfo &info, bool juezhang);
     ~FormGb() = default;
 
     int fan() const;
+    const Fans &fans() const;
 
 private:
     void init13(const PointInfo &info);
-    void init4(const PointInfo &info, const Hand &hand, const T37 &last);
-    void init7(const PointInfo &info, const TileCount &ready);
+
+    static int calcFan(const Fans &fs);
+
+    Fans calcFansF7(const PointInfo &info, const Hand &hand) const;
+    Fans calcFansF4(const PointInfo &info, const Hand &hand, const T37 &last,
+                    const Explain4 &exp, bool juezhang) const;
+
+    void checkV8864F4(Fans &res, const Hand &hand, const Explain4 &exp,
+                      bool pure) const;
+    void checkV4832F4(Fans &res, const Explain4 &exp, bool pureNumMelds) const;
+    void checkV24F4(Fans &res, const Explain4 &exp, bool pure) const;
+    void checkV16F4(Fans &res, const Explain4 &exp) const;
+    void checkV12F4(Fans &res, const Explain4 &exp) const;
+    void checkV8F4(Fans &res, const Explain4 &exp, const PointInfo &info) const;
+    void checkV6F4(Fans &res, const Explain4 &exp, const Hand &hand) const;
+    void checkV5F4(Fans &res, const Explain4 &exp) const;
+    void checkV4F4(Fans &res, const Explain4 &exp, bool mqq, bool hjz) const;
+    void checkV2F4(Fans &res, const Explain4 &exp, const PointInfo &info,
+                   const Hand &hand, const T37 &pick) const;
+    void checkV1F4(Fans &res, const Explain4 &exp, const PointInfo &info, const Hand &hand) const;
 
     void checkPick(Fans &fans, const PointInfo &info) const;
+
+    bool seq3In3Or4(const Explain4 &exp, std::function<bool(T34, T34, T34)> p) const;
 
 private:
     Type mType;
     bool mDianpao;
     Fans mFans;
+    int mFan = 0;
 };
 
 

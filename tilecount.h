@@ -51,8 +51,10 @@ public:
     TileCount &operator-=(const TileCount &rhs);
 
     int step(int barkCt) const;
+    int stepGb(int barkCt) const;
     int step4(int barkCt) const;
     int step7() const;
+    int step7Gb() const;
     int step13() const;
 
     std::vector<T34> t34s() const;

@@ -71,6 +71,14 @@ int HandDream::step() const
     return res;
 }
 
+int HandDream::stepGb() const
+{
+    TileCount &count = enter();
+    int res = count.stepGb(mHand.barks().size());
+    leave();
+    return res;
+}
+
 int HandDream::step4() const
 {
     TileCount &count = enter();
@@ -86,6 +94,17 @@ int HandDream::step7() const
 
     TileCount &count = enter();
     int res = count.step7();
+    leave();
+    return res;
+}
+
+int HandDream::step7Gb() const
+{
+    if (!mHand.isMenzen())
+        return STEP_INF;
+
+    TileCount &count = enter();
+    int res = count.step7Gb();
     leave();
     return res;
 }
@@ -395,6 +414,18 @@ bool Hand::nine9() const
     return kind >= 9;
 }
 
+int Hand::ct(T34 t) const
+{
+    int res = 0;
+
+    res += mHasDrawn && mDrawn == t;
+    res += mCount.ct(t);
+    for (const M37 &m : mBarks)
+        res += std::count(m.tiles().begin(), m.tiles().end(), t);
+
+    return res;
+}
+
 int Hand::ctAka5() const
 {
     int inClosed = mCount.ctAka5();
@@ -536,6 +567,11 @@ int Hand::step() const
     return HandDream::stay(*this).step();
 }
 
+int Hand::stepGb() const
+{
+    return HandDream::stay(*this).stepGb();
+}
+
 int Hand::step4() const
 {
     return HandDream::stay(*this).step4();
@@ -544,6 +580,11 @@ int Hand::step4() const
 int Hand::step7() const
 {
     return HandDream::stay(*this).step7();
+}
+
+int Hand::step7Gb() const
+{
+    return HandDream::stay(*this).step7Gb();
 }
 
 int Hand::step13() const
