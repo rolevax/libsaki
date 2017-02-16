@@ -20,26 +20,28 @@ class Girl;
 
 ///
 /// \brief A proxy accesser to prevent human or AI from knowing too
-///        much information
+///        much information, and also to impl tickets filters
 ///
 class TableView
 {
 public:
-    // TODO no need to use more complex things
-    //      one enum to solve all, setViewMode(NORMAL/MOMO/MAKO/MEGAN...)
-    enum class Mode { NORMAL };
+    // not using inheritance in Girl since modes may be unions of skills
+    // using enum type is temporal, should use bitset, set by Girl's virtual method
+    enum class Mode { NORMAL, HUIYU_LIMITED };
 
     explicit TableView(const Table &table, Who viewer, Mode mode);
     TableView(const TableView &copy) = default;
 
     bool iCan(ActCode act) const;
     bool iCanOnlySpin() const;
-    const Girl &me() const;
-    const TicketFolder &myTickets() const;
+    bool iForwardAny() const;
+    bool iForwardAll() const;
     std::vector<Action> myChoices() const;
+    Action mySweep() const;
     const std::vector<T37> &mySwappables() const;
     const std::vector<T34> &myAnkanables() const;
     const std::vector<int> &myKakanables() const;
+    const Girl &me() const;
     const Hand &myHand() const;
     int myRank() const;
 

@@ -170,7 +170,10 @@ const std::vector<T37> &Table::getRiver(Who who) const
 
 TableView Table::getView(Who who) const
 {
-    return TableView(*this, who, TableView::Mode::NORMAL);
+    TableView::Mode mode = TableView::Mode::NORMAL;
+    if (mGirls[who.index()]->getId() == Girl::Id::HAO_HUIYU)
+        mode = TableView::Mode::HUIYU_LIMITED;
+    return TableView(*this, who, mode);
 }
 
 const Furiten &Table::getFuriten(Who who) const
@@ -222,6 +225,28 @@ TileCount Table::visibleRemain(Who who) const
     for (const T37 &t : mMount.getDrids())
         res.inc(t, -1);
 
+    return res;
+}
+
+int Table::riverRemain(T34 t) const
+{
+    int res = 4;
+    for (int w = 0; w < 4; w++) {
+        for (const T37 &t : mRivers[w])
+            res -= std::count(mRivers[w].begin(), mRivers[w].end(), t);
+
+        for (const M37 &m : mHands[w].barks()) {
+            const std::vector<T37> &ts = m.tiles();
+            for (int i = 0; i < static_cast<int>(ts.size()); i++)
+                if (i != m.layIndex() && ts[i] == t)
+                    res--;
+        }
+    }
+
+    const auto &drids = mMount.getDrids();
+    res -= std::count(drids.begin(), drids.end(), t);
+
+    assert(0 <= res && res <= 4);
     return res;
 }
 
@@ -327,6 +352,26 @@ int Table::getRoundWind() const
 const RuleInfo &Table::getRuleInfo() const
 {
     return mRule;
+}
+
+PointInfo Table::getPointInfo(Who who) const
+{
+    PointInfo info;
+
+    if (riichiEstablished(who)) {
+        info.riichi = mRiichiHans[who.index()];
+        info.ippatsu = mIppatsuFlags.test(who.index());
+    }
+
+    info.bless = noBarkYet() && mRivers[who.index()].empty();
+    info.duringKan = mKanContext.during();
+    info.emptyMount = mMount.wallRemain() == 0;
+
+    info.roundWind = getRoundWind();
+    info.selfWind = getSelfWind(who);
+    info.extraRound = mExtraRound;
+
+    return info;
 }
 
 const TicketFolder &Table::getTicketFolder(Who who) const
@@ -1162,26 +1207,6 @@ void Table::endTable()
 
     for (auto ob : mObservers)
         ob->onTableEnded(rank, scores);
-}
-
-PointInfo Table::getPointInfo(Who who)
-{
-    PointInfo info;
-
-    if (riichiEstablished(who)) {
-        info.riichi = mRiichiHans[who.index()];
-        info.ippatsu = mIppatsuFlags.test(who.index());
-    }
-
-    info.bless = noBarkYet() && mRivers[who.index()].empty();
-    info.duringKan = mKanContext.during();
-    info.emptyMount = mMount.wallRemain() == 0;
-
-    info.roundWind = getRoundWind();
-    info.selfWind = getSelfWind(who);
-    info.extraRound = mExtraRound;
-
-    return info;
 }
 
 

@@ -37,7 +37,7 @@ void Ai::onActivated(Table &table)
 #ifdef LIBSAKI_CHEAT_AI
     decision = placeHolder(view);
 #else
-    if (view.myTickets().forwardAny())
+    if (view.iForwardAny())
         decision = forward(view);
 
     if (decision.act() == ActCode::NOTHING)
@@ -104,7 +104,7 @@ int Ai::happy(const TableView &view, int iter, const Action &action)
 
 Action Ai::placeHolder(const TableView &view)
 {
-    return view.myTickets().sweep();
+    return view.mySweep();
 }
 
 int Ai::happy0(const TableView &view, const Action &action)
@@ -269,17 +269,16 @@ bool Ai::riichi(const TableView &view)
     bool spinnable;
     std::vector<T37> swappables;
     hand.declareRiichi(swappables, spinnable);
-    TicketFolder temp;
-    if (!swappables.empty())
-        temp.enableSwapOut(swappables);
+    std::vector<Action> acts;
+    for (const T37 &t : swappables)
+        acts.emplace_back(ActCode::SWAP_OUT, t);
     if (spinnable)
-        temp.enable(ActCode::SPIN_OUT);
+        acts.emplace_back(ActCode::SPIN_OUT);
     // TODO dangerous code:
     //      1. assuming calling happy3 does not smashes states
     //         sol: use list-ordered picture-update
     //      2. should make it more reduced and reused and safe
     //         such as maxHappy(TableView(view, temp)),
-    std::vector<Action> acts = temp.choices();
     std::vector<int> happys;
     happys.resize(acts.size());
     std::transform(acts.begin(), acts.end(), happys.begin(),

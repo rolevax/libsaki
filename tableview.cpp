@@ -1,5 +1,6 @@
 #include "tableview.h"
 #include "table.h"
+#include "form_gb.h"
 
 
 
@@ -18,7 +19,34 @@ TableView::TableView(const Table &table, Who viewer, TableView::Mode mode)
 
 bool TableView::iCan(ActCode act) const
 {
-    return mTable.getTicketFolder(mViewer).can(act);
+    bool res = mTable.getTicketFolder(mViewer).can(act);
+
+    if (res) {
+        switch (mMode) { // should use bitset::test in the future
+        case Mode::HUIYU_LIMITED:
+            if (mMode == Mode::HUIYU_LIMITED) {
+                if (act == ActCode::RON) {
+                    const T37 &pick = getFocusTile();
+                    bool juezhang = mTable.riverRemain(pick) == 0;
+                    FormGb f(myHand(), pick, mTable.getPointInfo(mViewer), juezhang);
+                    if (f.fan() < 8)
+                        res = false;
+                } else if (act == ActCode::TSUMO) {
+                    bool juezhang = mTable.riverRemain(myHand().drawn()) == 0;
+                    FormGb f(myHand(), mTable.getPointInfo(mViewer), juezhang);
+                    if (f.fan() < 8)
+                        res = false;
+                } else if (act == ActCode::RIICHI) {
+                    res = false;
+                }
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
+    return res;
 }
 
 bool TableView::iCanOnlySpin() const
@@ -26,19 +54,72 @@ bool TableView::iCanOnlySpin() const
     return mTable.getTicketFolder(mViewer).spinOnly();
 }
 
-const Girl &TableView::me() const
+bool TableView::iForwardAny() const
 {
-    return mTable.getGirl(mViewer);
+    return mTable.getTicketFolder(mViewer).forwardAny();
 }
 
-const TicketFolder &TableView::myTickets() const
+bool TableView::iForwardAll() const
 {
-    return mTable.getTicketFolder(mViewer);
+    return mTable.getTicketFolder(mViewer).forwardAll();
 }
 
 std::vector<Action> TableView::myChoices() const
 {
-    return mTable.getTicketFolder(mViewer).choices();
+    std::vector<Action> res;
+
+    for (int a = 0; a < ActCode::NUM_ACTCODE; a++) {
+        ActCode act = static_cast<ActCode>(a);
+        if (act != ActCode::NOTHING && !iCan(act))
+            continue;
+
+        switch (act) {
+        case PASS:
+        case SPIN_OUT:
+        case DAIMINKAN:
+        case RIICHI:
+        case TSUMO:
+        case RON:
+        case RYUUKYOKU:
+        case END_TABLE:
+        case NEXT_ROUND:
+        case DICE:
+            res.emplace_back(act);
+            break;
+        case SWAP_OUT:
+            for (const T37 &out : mySwappables())
+                res.emplace_back(act, out);
+            break;
+        case ANKAN:
+            for (T34 k : myAnkanables())
+                res.emplace_back(act, T37(k.id34()));
+            break;
+        case KAKAN:
+            for (int barkId : myKakanables())
+                res.emplace_back(act, barkId);
+            break;
+        case CHII_AS_LEFT:
+        case CHII_AS_MIDDLE:
+        case CHII_AS_RIGHT:
+        case PON: // currently does not consider showAka5 < 2 cases
+            res.emplace_back(act, 2);
+            break;
+        case IRS_CHECK:
+        case IRS_CLICK:
+        case IRS_RIVAL: // skip forwarded actions
+        case NOTHING: // skip nothing
+            break;
+        default:
+            unreached("TicketFolder::choices");
+        }
+    }
+
+    return res;
+}
+
+Action TableView::mySweep() const
+{
+    return mTable.getTicketFolder(mViewer).sweep();
 }
 
 const std::vector<T37> &TableView::mySwappables() const
@@ -54,6 +135,11 @@ const std::vector<T34> &TableView::myAnkanables() const
 const std::vector<int> &TableView::myKakanables() const
 {
     return mTable.getTicketFolder(mViewer).kakanables();
+}
+
+const Girl &TableView::me() const
+{
+    return mTable.getGirl(mViewer);
 }
 
 const Hand &TableView::myHand() const

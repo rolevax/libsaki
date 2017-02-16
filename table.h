@@ -135,6 +135,7 @@ public:
     int getRound() const;
     int getExtraRound() const;
     TileCount visibleRemain(Who who) const;
+    int riverRemain(T34 t) const;
     int getRank(Who who) const;
     const TableFocus &getFocus() const;
     const T37 &getFocusTile() const;
@@ -152,6 +153,7 @@ public:
     int getSelfWind(Who who) const;
     int getRoundWind() const;
     const RuleInfo &getRuleInfo() const;
+    PointInfo getPointInfo(Who who) const;
     const TicketFolder &getTicketFolder(Who who) const;
     const Mount &getMount() const;
 
@@ -192,8 +194,6 @@ private:
     void finishRound(const std::vector<Who> &openers, Who gunner);
     void endOrNext();
     void endTable();
-
-    PointInfo getPointInfo(Who who);
 
 private:
     std::array<std::unique_ptr<Girl>, 4> mGirls;

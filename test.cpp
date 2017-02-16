@@ -136,14 +136,16 @@ void testFormGb()
         Hand hand1(close1);
         hand1.draw(1_m);
         FormGb form1(hand1, info, false);
-        assert(form1.fan() == 88);
+        assert(form1.fan() == 89);
     }
 
     {
-        TileCount close2 {1_m,2_m,3_m,1_m,2_m,3_m,4_s,5_s,6_s,7_p,8_p,9_p,1_f};
+        TileCount close2 {7_p,8_p,9_p,1_p,1_p,2_p,2_p,3_p,3_p, 2_s,3_s,5_m,5_m};
         Hand hand2(close2);
-        hand2.draw(1_f);
+        hand2.draw(1_s);
         FormGb form2(hand2, info, false);
+        for (Fan f : form2.fans())
+            util::p("f", f);
         util::p("form2.fan", form2.fan());
     }
 }

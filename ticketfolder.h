@@ -19,7 +19,6 @@ public:
     TicketFolder(const TicketFolder &copy) = default;
     TicketFolder &operator=(const TicketFolder& assign) = default;
 
-    std::vector<Action> choices() const;
     Action sweep() const;
 
     bool forwardAll() const;

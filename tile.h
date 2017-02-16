@@ -342,6 +342,21 @@ inline std::ostream &operator<<(std::ostream &os, const std::vector<T34> &ts)
     return os;
 }
 
+template<size_t N>
+inline std::ostream &operator<<(std::ostream &os, const std::array<T34, N> &ts)
+{
+    for (size_t i = 0; i < ts.size(); i++) {
+        os << ts[i].val();
+        if (i < ts.size() - 1
+                && ts[i].suit() != ts[i + 1].suit())
+            os << T34::charOf(ts[i].suit());
+    }
+
+    os << T34::charOf(ts.back().suit());
+
+    return os;
+}
+
 
 
 class T37 : public T34

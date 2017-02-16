@@ -118,7 +118,7 @@ int FormGb::calcFan(const FormGb::Fans &fs)
         else if (Fan::HL8 <= f && f <= Fan::QGH8)
             res += 8;
         else if (Fan::PPH6 <= f && f <= Fan::SJK6)
-            res += 12;
+            res += 6;
         else if (f == Fan::MAG5)
             res += 5;
         else if (Fan::QDY4 <= f && f <= Fan::HJZ4)
@@ -510,24 +510,21 @@ void FormGb::checkV12F4(FormGb::Fans &res, const Explain4 &exp) const
 
 void FormGb::checkV8F4(FormGb::Fans &res, const Explain4 &exp, const PointInfo &info) const
 {
-    const std::array<T34, 4> &h = exp.heads();
-
     // Hualong
     std::vector<T34> vals(exp.sb(), exp.se()); // copy
     std::sort(vals.begin(), vals.end(), [](T34 a, T34 b) { return a.val() < b.val(); });
     auto jerk = [](T34 a, T34 b, T34 c) {
-        // ineqaulity is transitive if ordered
-        return a.suit() != b.suit() && b.suit() != c.suit()
+        return a.suit() != b.suit() && b.suit() != c.suit() && c.suit() != a.suit()
                 && a.val() + 3 == b.val() && b.val() + 3 == c.val();
     };
     if (exp.numS() == 3) {
-        if (jerk(h[0], h[1], h[2]))
+        if (jerk(vals[0], vals[1], vals[2]))
             res.push_back(Fan::HL8);
     } else if (exp.numS() == 4) {
-        if (jerk(h[0], h[1], h[2])
-                || jerk(h[0], h[1], h[3])
-                || jerk(h[0], h[2], h[3])
-                || jerk(h[1], h[2], h[3]))
+        if (jerk(vals[0], vals[1], vals[2])
+                || jerk(vals[0], vals[1], vals[3])
+                || jerk(vals[0], vals[2], vals[3])
+                || jerk(vals[1], vals[2], vals[3]))
             res.push_back(Fan::HL8);
     }
 
@@ -561,17 +558,17 @@ void FormGb::checkV8F4(FormGb::Fans &res, const Explain4 &exp, const PointInfo &
     std::vector<T34> xs(exp.x34b(), exp.x34e()); // copy
     std::sort(xs.begin(), xs.end(), [](T34 a, T34 b) { return a.val() < b.val(); });
     auto kick = [](T34 a, T34 b, T34 c) {
-        return a.suit() != b.suit() && b.suit() != c.suit()
+        return a.suit() != b.suit() && b.suit() != c.suit() && c.suit() != a.suit()
                 && a.val() + 1 == b.val() && b.val() + 1 == c.val();
     };
     if (exp.numX34() == 3) {
-        if (kick(h[1], h[2], h[3])) // X34s lay from the back
+        if (kick(xs[1], xs[2], xs[3])) // X34s lay from the back
             res.push_back(Fan::SSSJG8);
     } else if (exp.numX34() == 4) {
-        if (kick(h[0], h[1], h[2])
-                || kick(h[0], h[1], h[3])
-                || kick(h[0], h[2], h[3])
-                || kick(h[1], h[2], h[3]))
+        if (kick(xs[0], xs[1], xs[2])
+                || kick(xs[0], xs[1], xs[3])
+                || kick(xs[0], xs[2], xs[3])
+                || kick(xs[1], xs[2], xs[3]))
             res.push_back(Fan::SSSJG8);
     }
 
@@ -601,21 +598,21 @@ void FormGb::checkV6F4(FormGb::Fans &res, const Explain4 &exp, const Hand &hand)
         res.push_back(Fan::HYS6);
     }
 
-    // Sansesanbubao
+    // Sansesanbugao
     std::vector<T34> seqs(exp.sb(), exp.se()); // copy
     std::sort(seqs.begin(), seqs.end(), [](T34 a, T34 b) { return a.val() < b.val(); });
     auto raise = [](T34 a, T34 b, T34 c) {
-        return a.suit() != b.suit() && b.suit() != c.suit()
+        return a.suit() != b.suit() && b.suit() != c.suit() && c.suit() != a.suit()
                 && a.val() + 1 == b.val() && b.val() + 1 == c.val();
     };
     if (exp.numS() == 3) {
-        if (raise(h[0], h[1], h[2]))
+        if (raise(seqs[0], seqs[1], seqs[2]))
             res.push_back(Fan::SSSBG6);
     } else if (exp.numS() == 4) {
-        if (raise(h[0], h[1], h[2])
-                || raise(h[0], h[1], h[3])
-                || raise(h[0], h[2], h[3])
-                || raise(h[1], h[2], h[3]))
+        if (raise(seqs[0], seqs[1], seqs[2])
+                || raise(seqs[0], seqs[1], seqs[3])
+                || raise(seqs[0], seqs[2], seqs[3])
+                || raise(seqs[1], seqs[2], seqs[3]))
             res.push_back(Fan::SSSBG6);
     }
 
@@ -742,6 +739,8 @@ void FormGb::checkV2F4(FormGb::Fans &res, const Explain4 &exp,
 void FormGb::checkV1F4(FormGb::Fans &res, const Explain4 &exp,
                        const PointInfo &info, const Hand &hand) const
 {
+    const std::array<T34, 4> &h = exp.heads();
+
     // Yibangao
     // Xixiangfeng
     // Lianliu
@@ -764,21 +763,38 @@ void FormGb::checkV1F4(FormGb::Fans &res, const Explain4 &exp,
         return a.suit() == b.suit() && a.val() == 1 && b.val() == 7;
     };
     if (exp.numS() >= 2) {
-        int limit = exp.numS() - 1;
-        for (auto it = exp.sb(); limit > 0 && it + 1 < exp.se(); it++) {
-            for (auto jt = it + 1; limit > 0 && jt < exp.se(); jt++) {
-                if (ban(*it, *jt)) {
+        // wasting triangle of spaces, that's ok
+        std::array<std::array<bool, 4>, 4> edges;
+        for (auto &arr : edges)
+            arr.fill(false);
+
+        for (int i = 0; i + 1 < exp.numS(); i++) {
+            for (int j = i + 1; j < exp.numS(); j++) {
+                // prevent loop
+                if (i == 1) {
+                    if (edges[0][i] && edges[0][j])
+                        continue;
+                } else if (i == 2) {
+                    if (edges[0][i] && edges[0][j])
+                        continue;
+                    if (edges[0][1] && edges[1][i] && edges[0][j])
+                        continue;
+                    if (edges[1][i] && edges[1][j])
+                        continue;
+                }
+
+                if (ban(h[i], h[j])) {
                     res.push_back(Fan::YBG1);
-                    limit--;
-                } else if (feng(*it, *jt)) {
+                    edges[i][j] = true;
+                } else if (feng(h[i], h[j])) {
                     res.push_back(Fan::XXF1);
-                    limit--;
-                } else if (lian(*it, *jt)) {
+                    edges[i][j] = true;
+                } else if (lian(h[i], h[j])) {
                     res.push_back(Fan::LL1);
-                    limit--;
-                } else if (lao(*it, *jt)) {
+                    edges[i][j] = true;
+                } else if (lao(h[i], h[j])) {
                     res.push_back(Fan::LSF1);
-                    limit--;
+                    edges[i][j] = true;
                 }
             }
         }
@@ -822,7 +838,7 @@ void FormGb::checkV1F4(FormGb::Fans &res, const Explain4 &exp,
     std::vector<Fan> implyWz {
         Fan::QYJ64, Fan::YSSLH64, Fan::QSK24, Fan::QYS24,
         Fan::QDA24, Fan::QZ24, Fan::QX24, Fan::SSSLH16, Fan::QDW16,
-        Fan::DYW12, Fan::XYW12, Fan::DY2
+        Fan::DYW12, Fan::XYW12, Fan::DY2, Fan::PH2
     };
     if (!util::common(res, implyWz)
             && !exp.pair().isZ()
