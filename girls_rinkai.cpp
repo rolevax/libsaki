@@ -16,9 +16,9 @@ void Huiyu::skill(Mount &mount, const Hand &hand)
         for (const T37 &t : m.tiles())
             total.inc(t, 1);
 
-//    twist(mount, total);
-//    tbd(mount, total);
-//    qdqzqx(mount, total);
+    twist(mount, total);
+    tbd(mount, total);
+    qdqzqx(mount, total);
     yssbg(mount, total);
 }
 
@@ -109,12 +109,10 @@ void Huiyu::yssbg(Mount &mount, const TileCount &total)
         }
     }
 
-util::p("ha?");
     if (BOUND < maxMatch && maxMatch < 9) {
         Suit s = maxHead.suit();
         int v = maxHead.val();
         if (maxStep == 2) {
-util::p("triggered 2-step", maxHead);
             std::array<T34, 5> need1s {
                 T34(s, v), T34(s, v + 1), T34(s, v + 3), T34(s, v + 5), T34(s, v + 6)
             };
@@ -126,7 +124,6 @@ util::p("triggered 2-step", maxHead);
                 if (total.ct(t) < 2)
                     mount.lightA(t, 500);
         } else if (maxStep == 1) {
-util::p("triggered 1-step", maxHead);
             T34 t1(s, v);
             T34 t2(s, v + 1);
             T34 t3(s, v + 2);

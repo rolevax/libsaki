@@ -232,8 +232,7 @@ int Table::riverRemain(T34 t) const
 {
     int res = 4;
     for (int w = 0; w < 4; w++) {
-        for (const T37 &t : mRivers[w])
-            res -= std::count(mRivers[w].begin(), mRivers[w].end(), t);
+        res -= std::count(mRivers[w].begin(), mRivers[w].end(), t);
 
         for (const M37 &m : mHands[w].barks()) {
             const std::vector<T37> &ts = m.tiles();
