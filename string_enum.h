@@ -4,6 +4,7 @@
 #include "action.h"
 #include "meld.h"
 #include "tableobserver.h"
+#include "form_gb.h"
 
 
 
@@ -19,6 +20,8 @@ const char *stringOf(M37::Type type);
 
 const char *stringOf(RoundResult result);
 RoundResult roundResultOf(const char *str);
+
+const char *stringOf(Fan f);
 
 
 

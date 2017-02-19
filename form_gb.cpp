@@ -822,11 +822,11 @@ void FormGb::checkV1F4(FormGb::Fans &res, const Explain4 &exp,
         res.push_back(Fan::MG1);
 
     // Queyimen
-    std::array<bool, 3> hasSuits;
+    std::array<bool, 3> hasSuits { false, false, false };
     hasSuits[static_cast<int>(exp.pair().suit())] = true;
     for (T34 t : exp.heads())
         hasSuits[static_cast<int>(t.suit())] = true;
-    int hasSuitCt = hasSuits[0] = hasSuits[1] + hasSuits[2];
+    int hasSuitCt = hasSuits[0] + hasSuits[1] + hasSuits[2];
     std::vector<Fan> implyQym {
         Fan::XSY64, Fan::XSX64, Fan::YSSTS48, Fan::YSSJG48, Fan::YSSBG32,
         Fan::SFK12, Fan::TBD8
