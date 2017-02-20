@@ -561,10 +561,10 @@ void FormGb::checkV8F4(FormGb::Fans &res, const Explain4 &exp, const PointInfo &
         return a.suit() != b.suit() && b.suit() != c.suit() && c.suit() != a.suit()
                 && a.val() + 1 == b.val() && b.val() + 1 == c.val();
     };
-    if (exp.numX34() == 3) {
-        if (kick(xs[1], xs[2], xs[3])) // X34s lay from the back
+    if (xs.size() == 3) {
+        if (kick(xs[0], xs[1], xs[2]))
             res.push_back(Fan::SSSJG8);
-    } else if (exp.numX34() == 4) {
+    } else if (xs.size() == 4) {
         if (kick(xs[0], xs[1], xs[2])
                 || kick(xs[0], xs[1], xs[3])
                 || kick(xs[0], xs[2], xs[3])
@@ -605,10 +605,10 @@ void FormGb::checkV6F4(FormGb::Fans &res, const Explain4 &exp, const Hand &hand)
         return a.suit() != b.suit() && b.suit() != c.suit() && c.suit() != a.suit()
                 && a.val() + 1 == b.val() && b.val() + 1 == c.val();
     };
-    if (exp.numS() == 3) {
+    if (seqs.size() == 3) {
         if (raise(seqs[0], seqs[1], seqs[2]))
             res.push_back(Fan::SSSBG6);
-    } else if (exp.numS() == 4) {
+    } else if (seqs.size() == 4) {
         if (raise(seqs[0], seqs[1], seqs[2])
                 || raise(seqs[0], seqs[1], seqs[3])
                 || raise(seqs[0], seqs[2], seqs[3])
