@@ -130,13 +130,8 @@ bool Awai::checkInit(Who who, const Hand &init, const Princess &princess, int it
 {
     (void) princess;
 
-    if (who == mSelf)
+    if (who == mSelf || iter > 500)
         return true;
-
-    if (iter > 500) {
-        util::p("awai-rival iter over 500");
-        return true;
-    }
 
     return init.step() >= (iter > 300 ? 4 : 5);
 }
@@ -272,9 +267,6 @@ void Awai::nonMonkey(Rand &rand, TileCount &init, Mount &mount,
             init.inc(mount.initPopExact(t), 1);
         break;
     }
-
-    if (iter == -1)
-        util::p("awai-daburi iter over");
 }
 
 const IrsCheckRow &Awai::irsCheckRow(int index) const

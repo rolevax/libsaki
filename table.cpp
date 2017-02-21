@@ -338,6 +338,11 @@ int Table::getDice() const
     return mDice;
 }
 
+int Table::getDeposit() const
+{
+    return mDeposit;
+}
+
 int Table::getSelfWind(Who who) const
 {
     return who.turnFrom(mDealer) + 1;

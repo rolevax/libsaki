@@ -94,7 +94,6 @@ bool Kyouko::checkInit(Who who, const Hand &init, const Princess &princess, int 
         return true;
 
     if (iter > 30) {
-        util::p("Kyouko iter over 30");
         mCourse = NONE;
         return true;
     }

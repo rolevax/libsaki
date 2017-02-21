@@ -150,6 +150,7 @@ public:
     Who findGirl(Girl::Id id) const;
     Who getDealer() const;
     int getDice() const;
+    int getDeposit() const;
     int getSelfWind(Who who) const;
     int getRoundWind() const;
     const RuleInfo &getRuleInfo() const;
