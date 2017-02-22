@@ -47,6 +47,13 @@ private:
     TokiEvents mEvents;
 };
 
+class Sera : public Girl
+{
+public:
+    GIRL_CTORS(Sera)
+    void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
+};
+
 
 
 } // namespace saki

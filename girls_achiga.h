@@ -42,6 +42,19 @@ private:
     static const std::vector<T34> LV3_TARS;
 };
 
+class Ako : public Girl
+{
+public:
+    GIRL_CTORS(Ako)
+    void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
+
+private:
+    static int sskDist(const TileCount &closed, T34 head);
+    static int ittDist(const TileCount &closed, T34 head);
+    static void oneDragTwo(Mount &mount, const TileCount &closed, T34 head);
+    static void thinFill(Mount &mount, const TileCount &closed, T34 heads);
+};
+
 
 
 } // namespace saki

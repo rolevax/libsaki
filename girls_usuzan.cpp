@@ -51,7 +51,7 @@ void Sawaya::onMonkey(std::array<Exist, 4> &exists, const Princess &princess)
     if (mClouds[Cloud::RED].on && mClouds[Cloud::RED_RIVALS].on) {
         for (T34 t : tiles34::Z7)
             for (int w = 0; w < 4; w++)
-                exists[w].inc(t, w == mSelf.index() ? 50 : -1000);
+                exists[w].inc(t, w == mSelf.index() ? 100 : -1000);
     } else if (mClouds[Cloud::RED].on && mClouds[Cloud::RED_SELF].on) {
         for (T34 t : tiles34::Z7)
             exists[mSelf.index()].inc(t, -1000);
@@ -124,9 +124,10 @@ void Sawaya::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
 
     if (mClouds[Cloud::RED].on && mClouds[Cloud::RED_RIVALS].on) {
         if (who == mSelf) {
+            int mk = table.getHand(mSelf).ready() ? 40 : 60;
             for (T34 t : tiles34::Z7) {
-                mount.lightB(t, 10, rinshan); // mild probablity
-                mount.lightA(t, 20, rinshan);
+                mount.lightB(t, mk / 2, rinshan);
+                mount.lightA(t, mk, rinshan);
             }
         } else {
             for (T34 t : tiles34::Z7)

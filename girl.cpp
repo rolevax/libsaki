@@ -31,7 +31,9 @@ Girl *Girl::create(Who who, int id_)
     case Id::OOHOSHI_AWAI:      return new Awai(who, id);
     case Id::MATSUMI_KURO:      return new Kuro(who, id);
     case Id::MATSUMI_YUU:       return new Yuu(who, id);
+    case Id::ATARASHI_AKO:      return new Ako(who, id);
     case Id::ONJOUJI_TOKI:      return new Toki(who, id);
+    case Id::EGUCHI_SERA:       return new Sera(who, id);
     case Id::USUZUMI_HATSUMI:   return new Hatsumi(who, id);
     case Id::IWATO_KASUMI:      return new Kasumi(who, id);
     case Id::ANETAI_TOYONE:     return new Toyone(who, id);

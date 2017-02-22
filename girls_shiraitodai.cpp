@@ -98,21 +98,15 @@ void Seiko::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         int needPair = 4 - fishCt;
         for (int ti = 0; ti < 34; ti++) {
             T34 t(ti);
-            if (closed.ct(t)) {
+            if (closed.ct(t) == 2) {
                 needPair--;
                 mount.lightA(t, -PAIR_MK);
             }
         }
-        if (needPair > 0) {
-            for (T34 t : tiles34::YAO13) {
-                if (closed.ct(t) != 1)
-                    continue;
-                bool noPrec = t.isZ() || t.val() == 1 || closed.ct(t.prev()) == 0;
-                bool noSucc = t.isZ() || t.val() == 9 || closed.ct(t.next()) == 0;
-                if (noPrec && noSucc)
+        if (needPair > 0)
+            for (T34 t : tiles34::YAO13)
+                if (closed.ct(t) == 1)
                     mount.lightA(t, PAIR_MK);
-            }
-        }
     }
 }
 

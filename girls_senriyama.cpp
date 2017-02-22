@@ -1,6 +1,7 @@
 #include "girls_senriyama.h"
 #include "table.h"
 #include "ai.h"
+#include "form.h"
 #include "string_enum.h"
 #include "util.h"
 
@@ -159,6 +160,37 @@ void Toki::popUpBy(const Table &table, Toki::PopUpMode mode)
 {
     mPopUpMode = mode;
     table.popUp(mSelf);
+}
+
+
+
+void Sera::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
+{
+    if (who != mSelf || rinshan)
+        return;
+
+    const Hand &hand = table.getHand(mSelf);
+    const PointInfo &info = table.getPointInfo(mSelf);
+    const RuleInfo &rule = table.getRuleInfo();
+    const std::vector<T37> &drids = mount.getDrids();
+    if (hand.ready()) {
+        for (T34 t : hand.effA()) {
+            Form f(hand, T37(t.id34()), info, rule, drids);
+            int ronHan = f.han();
+            int tsumoHan = hand.isMenzen() ? ronHan + 1 : ronHan;
+            bool pinfu = f.yakus().test(Yaku::PF);
+            mount.lightA(t, tsumoHan >= (4 + pinfu) ? 500 : -50);
+        }
+    } else {
+        accelerate(mount, hand, table.getRiver(mSelf), 50);
+        if (hand.ctAka5() + drids % hand < 2) {
+            for (const T37 &t : drids)
+                mount.lightA(t.dora(), 100);
+            mount.lightA(T37(Suit::M, 0), 100);
+            mount.lightA(T37(Suit::P, 0), 100);
+            mount.lightA(T37(Suit::S, 0), 100);
+        }
+    }
 }
 
 

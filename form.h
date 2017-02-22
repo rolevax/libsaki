@@ -60,6 +60,7 @@ public:
     int fu() const;
     int han() const;
     int base() const;
+    const Yakus &yakus() const;
     ManganType manganType() const;
     bool hasYaku() const;
 

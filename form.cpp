@@ -95,6 +95,11 @@ int Form::base() const
     return mBase;
 }
 
+const Form::Yakus &Form::yakus() const
+{
+    return mYakus;
+}
+
 ManganType Form::manganType() const
 {
     if (mBase == 2000)

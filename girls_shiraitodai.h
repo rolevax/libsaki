@@ -36,7 +36,7 @@ public:
 
 private:
     static const int ACCEL_MK = 500;
-    static const int PAIR_MK = 200;
+    static const int PAIR_MK = 400;
 };
 
 
