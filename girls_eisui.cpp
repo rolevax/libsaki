@@ -144,7 +144,7 @@ void Kasumi::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         return;
 
     int turn = table.getRiver(mSelf).size();
-    int mk = turn < 9 ? -1000 : (turn < 12 ? -30 : 0);
+    int mk = turn < 6 ? -1000 : (turn < 12 ? -30 + 10 * (turn - 6) : 0);
 
     for (int ti = 0; ti < 34; ti++) {
         T34 t(ti);

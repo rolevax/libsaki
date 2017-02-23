@@ -413,23 +413,26 @@ std::vector<T37> Mount::popPolar(Rand &rand, Exist::Polar &polar, TileCount &sto
 T37 Mount::popScientific(Rand &rand)
 {
     int sum = mStochA.sum();
+    TileCount &stoch = sum > 0 ? mStochA : mStochB;
+    if (sum == 0)
+        sum = mStochB.sum();
     assert(sum > 0);
 
     int r = rand.gen(sum);
     int i34 = 0;
-    while (!(r < mStochA.ct(T34(i34))))
-        r -= mStochA.ct(T34(i34++));
+    while (!(r < stoch.ct(T34(i34))))
+        r -= stoch.ct(T34(i34++));
 
     T37 ret(i34);
 
     if (ret.val() == 5) {
-        int black = mStochA.ct(ret);
-        int red = mStochA.ct(ret.toAka5());
+        int black = stoch.ct(ret);
+        int red = stoch.ct(ret.toAka5());
         if (rand.gen(red + black) < red)
             ret = ret.toAka5();
     }
 
-    mStochA.inc(ret, -1);
+    stoch.inc(ret, -1);
 
     return ret;
 }

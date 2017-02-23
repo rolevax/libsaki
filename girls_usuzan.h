@@ -66,8 +66,8 @@ private:
         IrsCheckRow{ false, false, "SAWAYA_C_BLUE", false, false },
         IrsCheckRow{ false, false, "SAWAYA_C_YELLOW", false, false },
         IrsCheckRow{ false, false, "SAWAYA_C_RED", true, false },
-        IrsCheckRow{ true, true, "SAWAYA_C_RED_SELF", false, false },
-        IrsCheckRow{ true, true, "SAWAYA_C_RED_RIVALS", false, true },
+        IrsCheckRow{ true, true, "SAWAYA_C_RED_SELF", false, true },
+        IrsCheckRow{ true, true, "SAWAYA_C_RED_RIVALS", false, false },
         IrsCheckRow{ false, false, "SAWAYA_C_WHITE", true, false },
         IrsCheckRow{ false, false, "SAWAYA_C_BLACK", false, false },
     };

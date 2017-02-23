@@ -106,12 +106,13 @@ void testTable()
     TestScope test("table", true);
 
     std::array<int, 4> points { 25000, 25000, 25000, 25000 };
-    std::array<int, 4> girlIds { 715212, 0, 0, 0 };
+//    std::array<int, 4> girlIds {713314,710115,712715,714915};
+    std::array<int, 4> girlIds {0,710115,712715,714915};
     std::array<std::unique_ptr<Ai>, 4> ais;
     std::array<TableOperator*, 4> ops;
     std::vector<TableObserver*> obs;
     RuleInfo rule;
-    for (int iter = 0; iter < 5; iter++) {
+    for (int iter = 0; iter < 20; iter++) {
         util::p(iter);
         for (int w = 0; w < 4; w++) {
             ais[w].reset(Ai::create(Who(w), Girl::Id(girlIds[w])));
