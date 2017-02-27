@@ -45,8 +45,8 @@ void testAll()
 //    testTileCount();
 //    testHand();
 //    testForm();
-//    testFormGb();
-    testTable();
+    testFormGb();
+//    testTable();
 }
 
 void testUtil()
@@ -143,7 +143,7 @@ void testFormGb()
     }
 
     {
-        TileCount close2 {3_p,4_p,5_p,2_s,3_s,4_s,4_s,5_s,6_s,6_s,6_s,1_y,1_y};
+        TileCount close2 {3_p,3_p,3_p,3_s,3_s,3_s,3_m,3_m,3_m,6_s,6_s,1_y,1_y};
         Hand hand2(close2);
         hand2.draw(1_y);
         FormGb form2(hand2, info, false);

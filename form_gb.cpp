@@ -711,15 +711,16 @@ void FormGb::checkV2F4(FormGb::Fans &res, const Explain4 &exp,
             res.push_back(Fan::SGY2);
 
     // Shuangtongke
-    if (!util::has(res, Fan::QYJ64))
+    if (!util::has(res, Fan::QYJ64) && !util::has(res, Fan::STK16))
         for (auto it = exp.x34b(); it + 1 < exp.x34e(); it++)
             for (auto jt = it + 1; jt < exp.x34e(); jt++)
                 if (it->isNum() && jt->isNum() && it->val() == jt->val())
                     res.push_back(Fan::STK2);
 
     // Shuanganke
-    if (exp.numC3() + exp.numC4() == 2)
-        res.push_back(Fan::SAK2);
+    if (!util::has(res, Fan::SAG6))
+        if (exp.numC3() + exp.numC4() == 2)
+            res.push_back(Fan::SAK2);
 
     // An'gang
     const std::vector<Fan> implyAg { Fan::SG88, Fan::SG32 };
