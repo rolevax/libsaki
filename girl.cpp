@@ -161,6 +161,12 @@ void Girl::eraseRivered(std::vector<T34> &ts, const std::vector<T37> &river)
     std::remove_if(ts.begin(), ts.end(), has);
 }
 
+void Girl::eraseRivered(std::bitset<34> &ts, const std::vector<T37> &river)
+{
+    for (const T37 &t: river)
+        ts.reset(t.id34());
+}
+
 void Girl::accelerate(Mount &mount, const Hand &hand, const std::vector<T37> &river, int delta)
 {
     std::vector<T34> effs = hand.effA4();

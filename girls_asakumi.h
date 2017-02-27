@@ -22,8 +22,9 @@ public:
     std::string popUpStr() const override;
 
 private:
-    void powerPinfuIipei(const Hand &hand, const std::vector<T37> &r, Mount &m, int mk);
-    void power3sk(const Hand &hand, Mount &mount, int mk);
+    void powerPinfu(const Hand &hand, const std::vector<T37> &r, Mount &m, int posMk);
+    void powerIipei(const Hand &hand, const std::vector<T37> &r, Mount &m, int posMk, int negMk);
+    bool power3sk(const Hand &hand, Mount &mount, int posMk, int negMk);
     void powerChanta(const Hand &hand, Mount &m, int mk);
 
 private:

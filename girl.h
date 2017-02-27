@@ -110,6 +110,7 @@ protected:
     Girl(const Girl &copy);
 
     static void eraseRivered(std::vector<T34> &ts, const std::vector<T37> &river);
+    static void eraseRivered(std::bitset<34> &ts, const std::vector<T37> &river);
     void accelerate(Mount &mount, const Hand &hand, const std::vector<T37> &river, int delta);
 
 protected:

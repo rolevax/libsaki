@@ -3,6 +3,7 @@
 #include "hand.h"
 #include "util.h"
 
+#include <bitset>
 #include <numeric>
 #include <sstream>
 
@@ -41,18 +42,22 @@ void Shino::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
 
     bool south3 = table.getRuleInfo().roundLimit - table.getRound() <= 2
             && table.getRank(mSelf) != 1;
-    int mk = south3 ? 1000 : 100;
+    int posMk = south3 ? 1000 : 100;
+    int negMk = south3 ? -40 : 0;
+    int accelMk = south3 ? 400 : 10;
 
     if (hand.ready()) {
         using namespace tiles34;
         if (hand.hasEffA(1_s))
-            mount.lightA(1_s, 10 * mk);
+            mount.lightA(1_s, 10 * posMk);
         if (table.getFuriten(mSelf).any())
-            accelerate(mount, hand, table.getRiver(mSelf), 4 * mk);
+            accelMk += 4 * posMk;
+        accelerate(mount, hand, table.getRiver(mSelf), accelMk);
     } else {
-        powerPinfuIipei(hand, table.getRiver(mSelf), mount, mk);
-        power3sk(hand, mount, mk);
-        powerChanta(hand, mount, mk);
+        powerPinfu(hand, table.getRiver(mSelf), mount, posMk);
+        power3sk(hand, mount, posMk, negMk);
+        powerIipei(hand, table.getRiver(mSelf), mount, posMk, negMk);
+        powerChanta(hand, mount, posMk);
     }
 }
 
@@ -80,66 +85,84 @@ std::string Shino::popUpStr() const
     return oss.str();
 }
 
-void Shino::powerPinfuIipei(const Hand &hand, const std::vector<T37> &river,
-                            Mount &mount, int mk)
+void Shino::powerPinfu(const Hand &hand, const std::vector<T37> &r,
+                       Mount &mount, int posMk)
+{
+    std::vector<T34> cores;
+    const TileCount &closed = hand.closed();
+    for (T34 t : hand.effA()) {
+        if (t.isZ())
+            continue;
+
+        // side
+        if (t.val() == 3) {
+            if (closed.ct(t) == 0 && closed.ct(t.prev()) > 0 && closed.ct(t.pprev()) > 0)
+                cores.push_back(t);
+        } else if (t.val() == 7) {
+            if (closed.ct(t) == 0 && closed.ct(t.next()) > 0 && closed.ct(t.nnext()) > 0)
+                cores.push_back(t);
+        }
+
+        // clamp
+        if (2 <= t.val() && t.val() <= 8) {
+            if (closed.ct(t) == 0 && closed.ct(t.prev()) > 0 && closed.ct(t.next()) > 0)
+                cores.push_back(t);
+        }
+    }
+
+    eraseRivered(cores, r);
+    for (T34 t : cores)
+        mount.lightA(t, posMk);
+}
+
+void Shino::powerIipei(const Hand &hand, const std::vector<T37> &river,
+                            Mount &mount, int posMk, int negMk)
 {
     if (!hand.isMenzen())
         return;
 
     const TileCount &closed = hand.closed();
     int maxIpkSum = 0;
-    std::vector<T34> drags;
+    std::bitset<34> drags;
+
     for (Suit s : { Suit::M, Suit::P, Suit::S }) {
         for (int v = 1; v <= 7; v++) {
             T34 lt(s, v);
             T34 mt(s, v + 1);
             T34 rt(s, v + 2);
-            int l = closed.ct(lt);
-            int m = closed.ct(mt);
-            int r = closed.ct(rt);
-
-            // fill bad-wait to make higher pinfu rate
-            if (v == 1 && r < l && r < m) // left 12 sider
-                drags.push_back(rt);
-            if (v == 7 && l < m && l < r) // right 89 sider
-                drags.push_back(lt);
-            if (m < l && m < r) // clamper
-                drags.push_back(mt);
-
-            // power-up iipeikou, ignore part more than 2
-            l = std::min(l, 2);
-            m = std::min(m, 2);
-            r = std::min(r, 2);
+            int l = std::min(closed.ct(lt), 2);
+            int m = std::min(closed.ct(mt), 2);
+            int r = std::min(closed.ct(rt), 2);
             int sum = l + m + r;
             if (sum == 6) { // already got a 1pk.
                 maxIpkSum = 6;
-                drags.clear();
+                drags.reset();
             } else if (sum >= 4 && sum > maxIpkSum) {
                 maxIpkSum = sum;
-                drags.clear();
+                drags.reset();
                 if (l < 2)
-                    drags.push_back(lt);
+                    drags.set(lt.id34());
                 if (m < 2)
-                    drags.push_back(mt);
+                    drags.set(mt.id34());
                 if (r < 2)
-                    drags.push_back(rt);
+                    drags.set(rt.id34());
             }
         }
     }
 
     eraseRivered(drags, river);
-    for (T34 t : drags)
-        mount.lightA(t, mk);
+    for (int ti = 0; ti < 34; ti++)
+        mount.lightA(T34(ti), drags.test(ti) ? posMk : negMk);
 }
 
-void Shino::power3sk(const Hand &hand, Mount &mount, int mk)
+bool Shino::power3sk(const Hand &hand, Mount &mount, int posMk, int negMk)
 {
     if (!hand.isMenzen())
-        return;
+        return false;
 
     const TileCount &closed = hand.closed();
     int maxSum = 0;
-    std::vector<T34> powerSsk;
+    std::bitset<34> powerSsk;
     for (int v = 1; v <= 7; v++) {
         std::array<T34, 9> ts { // a set of sanshoku
             T34(Suit::M, v), T34(Suit::M, v + 1), T34(Suit::M, v + 2),
@@ -152,19 +175,21 @@ void Shino::power3sk(const Hand &hand, Mount &mount, int mk)
         int sum = std::accumulate(having.begin(), having.end(), 0);
         if (sum == 9) { // had sanshoku already
             maxSum = 9;
-            powerSsk.clear(); // no need to drag any tile
+            powerSsk.reset(); // no need to drag any tile
             break;
-        } else if (6 <= sum && sum > maxSum) {
+        } else if (5 <= sum && sum > maxSum) {
             maxSum = sum;
-            powerSsk.clear();
+            powerSsk.reset();
             for (int i = 0; i < 9; i++)
                 if (!having[i])
-                    powerSsk.push_back(ts[i]);
+                    powerSsk.set(ts[i].id34());
         }
     }
 
-    for (T34 t : powerSsk)
-        mount.lightA(t, mk);
+    for (int ti = 0; ti < 34; ti++)
+        mount.lightA(T34(ti), powerSsk.test(ti) ? posMk : negMk);
+
+    return maxSum == 9;
 }
 
 void Shino::powerChanta(const Hand &hand, Mount &mount, int mk)
@@ -173,7 +198,6 @@ void Shino::powerChanta(const Hand &hand, Mount &mount, int mk)
         return;
 
     const TileCount &closed = hand.closed();
-    // id37 of 1m, 7m, 1p, 7p, 1s, 7s
     using namespace tiles34;
     const std::array<T34, 6> heads { 1_m, 7_m, 1_p, 7_p, 1_s, 7_s };
     std::array<int, 6> totalHaving;
@@ -185,7 +209,7 @@ void Shino::powerChanta(const Hand &hand, Mount &mount, int mk)
         if (having2[0] + having2[1] + having2[2] >= 2) {
             totalHaving[i] = 2;
         } else {
-            std::array<bool, 3> having1 { cts[0] >= 0, cts[1] >= 0, cts[2] >= 0 };
+            std::array<bool, 3> having1 { cts[0] >= 1, cts[1] >= 1, cts[2] >= 1 };
             if (having1[0] + having1[1] + having1[2] >= 2)
                 totalHaving[i] = 1;
         }
