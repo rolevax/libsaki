@@ -1095,6 +1095,8 @@ void Table::exhaustRound(RoundResult result, const std::vector<Who> &openers)
     }
 
     std::vector<Form> forms; // empty
+    for (auto &g : mGirls)
+        g->onRoundEnded(*this, result, openers, Who(), forms);
     for (auto ob : mObservers)
         ob->onRoundEnded(*this, result, openers, Who(), forms);
 
@@ -1138,6 +1140,11 @@ void Table::finishRound(const std::vector<Who> &openers_, Who gunner)
             forms.emplace_back(mHands[w], getPointInfo(who), mRule,
                                mMount.getDrids(), mMount.getUrids());
         }
+    }
+
+    for (auto &g : mGirls) {
+        g->onRoundEnded(*this, isRon ? RoundResult::RON : RoundResult::TSUMO,
+                        openers, gunner, forms);
     }
 
     for (auto ob : mObservers) {

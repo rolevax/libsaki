@@ -1,21 +1,24 @@
 #include "gen.h"
 #include "rand.h"
+#include "util.h"
 
-#include <algorithm>
-#include <iostream>
-#include <array>
 #include <cassert>
 
 
-/*
-Gen::Gen(std::unique_ptr<const Form> &form, const Hand &hand, Tile pick)
-    : form(std::move(form))
+
+namespace saki
+{
+
+
+
+Gen::Gen(const Form &form, const Hand &hand, const T37 &pick)
+    : form(form)
     , hand(hand)
     , pick(pick)
 {
-
 }
 
+/*
 Gen Gen::genForm4Point(int point, int selfWind, int roundWind,
                        const RuleInfo &rule, bool ron)
 {
@@ -81,8 +84,9 @@ Gen Gen::genForm4Point(int point, int selfWind, int roundWind,
         }
     }
 }
+*/
 
-Gen Gen::genForm4FuHan(int fu, int han, int selfWind, int roundWind,
+Gen Gen::genForm4FuHan(Rand &rand, int fu, int han, int selfWind, int roundWind,
                        const RuleInfo &rule, bool ron)
 {
     assert(1 <= selfWind && selfWind <= 4);
@@ -95,17 +99,17 @@ Gen Gen::genForm4FuHan(int fu, int han, int selfWind, int roundWind,
 
     if (fu == 110) {
         assert(selfWind == roundWind);
-        return genForm4F110Han(han, selfWind, rule, ron);
+        return genForm4F110Han(rand, han, selfWind, rule, ron);
     } else { // common cases
         while (true) {
-            Gen res = genForm4(tri, quad, open, selfWind, roundWind, rule, ron);
-            if (res.form->as4().getFu() == fu && res.form->as4().getHan() == han)
+            Gen res = genForm4(rand, tri, quad, open, selfWind, roundWind, rule, ron);
+            if (res.form.fu() == fu && res.form.han() == han)
                 return res;
         }
     }
 }
 
-Gen Gen::genForm4Mangan(int han, int selfWind, int roundWind,
+Gen Gen::genForm4Mangan(Rand &rand, int han, int selfWind, int roundWind,
                         const RuleInfo &rule, bool ron)
 {
     assert(1 <= selfWind && selfWind <= 4);
@@ -117,15 +121,16 @@ Gen Gen::genForm4Mangan(int han, int selfWind, int roundWind,
     open = 5;
 
     while (true) {
-        Gen res = genForm4(tri, quad, open, selfWind, roundWind, rule, ron);
-        if (res.form->as4().getHan() == han
-                && res.form->getGain() >= 8000
-                && !res.form->isClassicalYakuman())
+        Gen res = genForm4(rand, tri, quad, open, selfWind, roundWind, rule, ron);
+        if (res.form.han() == han
+                && res.form.gain() >= 8000
+                && !res.form.isPrototypalYakuman()) {
             return res;
+        }
     }
 }
 
-Gen Gen::genForm4(int triCent, int quadCent, int openCent,
+Gen Gen::genForm4(Rand &rand, int triCent, int quadCent, int openCent,
                   int selfWind, int roundWind, const RuleInfo &rule, bool ron)
 {
     PointInfo info;
@@ -133,188 +138,186 @@ Gen Gen::genForm4(int triCent, int quadCent, int openCent,
     info.roundWind = roundWind;
     info.selfWind = selfWind;
     info.extraRound = 0;
-    info.doraCt = 0;
-    info.uraCt = 0;
-    info.akaCt = 0;
 
     // monkey algorithm, terminates within a few (less than 5) loops
     while (true) {
-        Hand h = genFormal4(triCent, quadCent, openCent);
+        Hand h = genFormal4(rand, triCent, quadCent, openCent);
 
-        int pi = myRand() % h.getHand().size();
-        Tile pick = h.getHand().at(pi);
-
-        genInfo(info, pick, h, ron, false);
-        h.getHand().erase(h.getHand().begin() + pi);
-        std::unique_ptr<const Form> f = Form::make(h, pick, ron, info, rule);
-        if (f->hasYaku())
-            return Gen(f, h, pick);
+        if (ron) {
+            T37 pick = h.drawn();
+            genInfo(rand, info, pick, h, ron, false);
+            h.spinOut();
+            Form f(h, pick, info, rule);
+            if (f.hasYaku())
+                return Gen(f, h, pick);
+        } else {
+            genInfo(rand, info, h.drawn(), h, ron, false);
+            Form f(h, info, rule);
+            if (f.hasYaku())
+                return Gen(f, h, h.drawn());
+        }
     }
 }
 
-Gen Gen::genForm4F110(int point, int selfWind, const RuleInfo &rule, bool ron)
+Gen Gen::genForm4F110(Rand &rand, int point, int selfWind, const RuleInfo &rule, bool ron)
 {
     // there is no 110-1 tsumo
     assert(ron || (point == 10800 || point == 7200));
+
     while (true) {
-        Gen res = genForm4F110Horse(selfWind, rule, ron);
-        if (res.form->getGain() == point)
+        Gen res = genForm4F110Horse(rand, selfWind, rule, ron);
+        if (res.form.gain() == point)
             return res;
     }
 }
 
-Gen Gen::genForm4F110Han(int han, int selfWind, const RuleInfo &rule, bool ron)
+Gen Gen::genForm4F110Han(Rand &rand, int han, int selfWind, const RuleInfo &rule, bool ron)
 {
     while (true) {
-        Gen res = genForm4F110Horse(selfWind, rule, ron);
-        if (res.form->as4().getFu() == 110 && res.form->as4().getHan() == han)
+        Gen res = genForm4F110Horse(rand, selfWind, rule, ron);
+        if (res.form.fu() == 110 && res.form.han() == han)
             return res;
     }
 }
 
-Gen Gen::genForm4F110Horse(int selfWind, const RuleInfo &rule, bool ron)
+Gen Gen::genForm4F110Horse(Rand &rand, int selfWind, const RuleInfo &rule, bool ron)
 {
     PointInfo info;
     info.bless = false;
     info.roundWind = selfWind;
     info.selfWind = selfWind;
     info.extraRound = 0;
-    info.doraCt = 0;
-    info.uraCt = 0;
-    info.akaCt = 0;
 
     while (true) {
-        std::vector<Tile> hand;
-        std::vector<Meld> barks;
+        TileCount closed;
+        std::vector<M37> barks;
 
         // must be this pair
-        hand.emplace_back(Suit::F, selfWind);
-        hand.emplace_back(Suit::F, selfWind);
+        closed.inc(T37(Suit::F, selfWind), 2);
 
         // extactly two ankans
-        int i = myRand() % 13;
-        barks.emplace_back(Tiles::YAO13[i], Tiles::YAO13[i],
-                           Tiles::YAO13[i], Tiles::YAO13[i], Meld::NO_OPEN);
-        i = myRand() % 13;
-        barks.emplace_back(Tiles::YAO13[i], Tiles::YAO13[i],
-                           Tiles::YAO13[i], Tiles::YAO13[i], Meld::NO_OPEN);
+        T37 t(tiles34::YAO13[rand.gen(13)].id34());
+        barks.push_back(M37::ankan(t, t, t, t));
+        t = T37(tiles34::YAO13[rand.gen(13)].id34());
+        barks.push_back(M37::ankan(t, t, t, t));
 
         // monkeyly gen the rest things
         for (int i = 0; i < 2; i++) {
-            bool open = myRand() % 100 < 20; // 20% open
+            bool open = rand.gen(100) < 20; // 20% open
 
-            if (myRand() % 100 < 50) { // 50% tri
-                Tile t(myRand() % 34);
+            if (rand.gen(100) < 50) { // 50% tri
+                T37 t(rand.gen(34));
 
-                if (myRand() % 100 < 5) { // gen quad (must open)
-                    barks.emplace_back(t, t, t, t, 0);
+                if (rand.gen(100) < 5) { // gen quad (must open)
+                    barks.push_back(M37::daiminkan(t, t, t, t, 0));
                 } else { // gen tri
-                    if (open) {
-                        barks.emplace_back(t, t, t, 1);
-                    } else {
-                        hand.push_back(t);
-                        hand.push_back(t);
-                        hand.push_back(t);
-                    }
+                    if (open)
+                        barks.push_back(M37::pon(t, t, t, 0));
+                    else
+                        closed.inc(t, 3);
                 }
             } else { // gen seq
-                int suitId = myRand() % 3;
-                Suit s = suitId == 0 ? Suit::M
-                                     : suitId == 1 ? Suit::P : Suit::S;
-                int l = myRand() % 7 + 1; // range 1 ~ 7
-                int m = l + 1;
-                int r = m + 1;
+                Suit s = static_cast<Suit>(rand.gen(3));
+                T37 l(s, rand.gen(7) + 1); // range 1 ~ 7
+                T37 m(l.next().id34());
+                T37 r(m.next().id34());
                 if (open) {
-                    barks.emplace_back(Tile(s, l), Tile(s, m), Tile(s, r), 1);
+                    barks.push_back(M37::chii(l, m, r, 1));
                 } else {
-                    hand.emplace_back(s, l);
-                    hand.emplace_back(s, m);
-                    hand.emplace_back(s, r);
+                    closed.inc(l, 1);
+                    closed.inc(m, 1);
+                    closed.inc(r, 1);
                 }
             }
         }
 
-        std::sort(hand.begin(), hand.end());
-        Hand h(hand, barks);
+        // drop one as pick, store as drawn
+        std::vector<T37> ts = closed.t37s();
+        int drop = rand.gen(ts.size());
+        closed.inc(ts[drop], -1);
+        Hand h(closed, barks);
+        h.draw(ts[drop]);
 
-        if (!h.verticalOverflow()) {
-            int pi = myRand() % h.getHand().size();
-            Tile pick = h.getHand().at(pi);
-
-            genInfo(info, pick, h, ron, true);
-
-            h.getHand().erase(h.getHand().begin() + pi);
-            std::unique_ptr<const Form> f = Form::make(h, pick, ron, info, rule);
-            if (f->hasYaku())
-                return Gen(f, h, pick);
+        if (!h.over4()) {
+            if (ron) {
+                T37 pick = h.drawn();
+                genInfo(rand, info, pick, h, ron, false);
+                h.spinOut();
+                Form f(h, pick, info, rule);
+                if (f.hasYaku())
+                    return Gen(f, h, pick);
+            } else {
+                genInfo(rand, info, h.drawn(), h, ron, false);
+                Form f(h, info, rule);
+                if (f.hasYaku())
+                    return Gen(f, h, h.drawn());
+            }
         }
     }
 }
 
-Hand Gen::genFormal4(int triCent, int quadCent, int openCent)
+Hand Gen::genFormal4(Rand &rand, int triCent, int quadCent, int openCent)
 {
-    // monkey algorithm, terminates within a few (less than 3) loops
+    // monkey algorithm, usually ends within a few (less than 3) loops
     while (true) {
-        Hand h = genWild4(triCent, quadCent, openCent);
-        if (!h.verticalOverflow())
+        Hand h = genWild4(rand, triCent, quadCent, openCent);
+        if (!h.over4())
             return h;
     }
 }
 
-Hand Gen::genWild4(int triCent, int quadCent, int openCent)
+Hand Gen::genWild4(Rand &rand, int triCent, int quadCent, int openCent)
 {
-    std::vector<Tile> hand;
-    std::vector<Meld> barks;
+    TileCount closed;
+    std::vector<M37> barks;
 
     for (int i = 0; i < 4; i++) {
-        bool open = myRand() % 100 < openCent;
+        bool open = rand.gen(100) < openCent;
 
-        if (myRand() % 100 < triCent) {
-            Tile t(myRand() % 34);
+        if (rand.gen(100) < triCent) {
+            T37 t(rand.gen(34));
 
-            if (myRand() % 100 < quadCent) { // gen quad
-                if (open) {
-                    barks.emplace_back(t, t, t, t, 0);
-                } else {
-                    barks.emplace_back(t, t, t, t, Meld::NO_OPEN);
-                }
+            if (rand.gen(100) < quadCent) { // gen quad
+                if (open)
+                    barks.push_back(M37::daiminkan(t, t, t, t, 0));
+                else
+                    barks.push_back(M37::ankan(t, t, t, t));
             } else { // gen tri
-                if (open) {
-                    barks.emplace_back(t, t, t, 1);
-                } else {
-                    hand.push_back(t);
-                    hand.push_back(t);
-                    hand.push_back(t);
-                }
+                if (open)
+                    barks.push_back(M37::pon(t, t, t, 1));
+                else
+                    closed.inc(t, 3);
             }
         } else {
-            int suitId = myRand() % 3;
-            Suit s = suitId == 0 ? Suit::M
-                                 : suitId == 1 ? Suit::P : Suit::S;
-            int l = myRand() % 7 + 1; // range 1 ~ 7
-            int m = l + 1;
-            int r = m + 1;
+            Suit s = static_cast<Suit>(rand.gen(3));
+            T37 l(s, rand.gen(7) + 1); // range 1 ~ 7
+            T37 m(l.next().id34());
+            T37 r(m.next().id34());
             if (open) {
-                barks.emplace_back(Tile(s, l), Tile(s, m), Tile(s, r), 1);
+                barks.push_back(M37::chii(l, m, r, 1));
             } else {
-                hand.emplace_back(s, l);
-                hand.emplace_back(s, m);
-                hand.emplace_back(s, r);
+                closed.inc(l, 1);
+                closed.inc(m, 1);
+                closed.inc(r, 1);
             }
         }
     }
 
     // make pair
-    Tile t(myRand() % 34);
-    hand.push_back(t);
-    hand.push_back(t);
+    T37 t(rand.gen(34));
+    closed.inc(t, 2);
 
-    std::sort(hand.begin(), hand.end());
+    // drop one as pick, store as drawn
+    std::vector<T37> ts = closed.t37s();
+    int drop = rand.gen(ts.size());
+    closed.inc(ts[drop], -1);
+    Hand res(closed, barks);
+    res.draw(ts[drop]);
 
-    return Hand(hand, barks);
+    return res;
 }
 
-void Gen::genInfo(PointInfo &info, Tile &pick, const Hand &h, bool ron, bool f110)
+void Gen::genInfo(Rand &rand, PointInfo &info, T34 pick, const Hand &h, bool ron, bool f110)
 {
     const int RIICHI_CENT = 40;
     const int DABURU_CENT = f110 ? 50 : 10;
@@ -326,51 +329,30 @@ void Gen::genInfo(PointInfo &info, Tile &pick, const Hand &h, bool ron, bool f11
 
     info.riichi = 0;
     info.ippatsu = false;
-    if (h.isMenzen() && myRand() % 100 < RIICHI_CENT) {
+    if (h.isMenzen() && rand.gen(100) < RIICHI_CENT) {
         info.riichi = 1;
-        if (myRand() % 100 < DABURU_CENT)
+        if (rand.gen(100) < DABURU_CENT)
             info.riichi = 2;
-        if (myRand() % 100 < IPPATSU_CENT)
+        if (rand.gen(100) < IPPATSU_CENT)
             info.ippatsu = true;
     }
 
     if (!info.ippatsu) {
-        bool hasKan = false;
-        for (size_t i = 0; i < h.getBarks().size(); i++) {
-            const Meld &m = h.getBarks().at(i);
-            if (m.isQuad()) {
-                if (info.riichi) { // check kannability for kan-after-riichi
-                // this part originally commented-out, forgot why
-//                    assert(m.isAnkan());
-//                    // revert the rinshan-kaihou process
-//                    Hand tmp(h);
-//                    tmp.getBarks().erase(tmp.getBarks().begin() + i);
-//                    tmp.getHand().erase(tmp.getHand().begin() + pi);
-//                    Hand::insert(tmp.getHand(), m[0]);
-//                    Hand::insert(tmp.getHand(), m[1]);
-//                    Hand::insert(tmp.getHand(), m[2]);
-//                    if (Form::notInSeq(tmp, m[3])) {
-//                        hasKan = true;
-//                        break;
-//                    }
-                } else {
-                    hasKan = true;
-                    break;
-                }
-            }
-        }
+        bool hasKan = util::any(h.barks(), [](const M37 &m) { return m.isKan(); });
 
-        if (!ron && hasKan && myRand() % 100 < RINSHAN_CENT)
+        if (!ron && hasKan && rand.gen(100) < RINSHAN_CENT)
             info.duringKan = true;
-        else if (!ron && info.riichi != 2 && myRand() % 100 < HAITEI_CENT)
+        else if (!ron && info.riichi != 2 && rand.gen(100) < HAITEI_CENT)
             info.emptyMount = true;
-        else if (ron && myRand() % 100 < HOUTEI_CENT)
+        else if (ron && rand.gen(100) < HOUTEI_CENT)
             info.emptyMount = true;
-        else if (ron && h.count(pick) == 1 && myRand() % 100 < CHANKAN_CENT)
-            info.duringKan = true; // count == 1 since haven't erased
+        else if (ron && h.ct(pick) == 1 && rand.gen(100) < CHANKAN_CENT)
+            info.duringKan = true; // '== 1' since haven't spin-out
     }
 }
-                    */
 
+
+
+} // namespace saki
 
 

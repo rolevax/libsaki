@@ -3,6 +3,7 @@
 
 #include "mount.h"
 #include "who.h"
+#include "tableobserver.h"
 
 #include <bitset>
 
@@ -91,6 +92,9 @@ public:
     virtual void onChooseFirstDealer(Rand &rand, Who tempDealer, int &die1, int &die2);
     virtual void onDiscarded(const Table &table, Who who);
     virtual void onRiichiEstablished(const Table &table, Who who);
+    virtual void onRoundEnded(const Table &table, RoundResult result,
+                              const std::vector<Who> &openers, Who gunner,
+                              const std::vector<Form> &fs);
 
     virtual const std::array<bool, 4> &irsRivalMask() const;
     virtual const IrsCheckRow &irsCheckRow(int index) const;

@@ -11,6 +11,27 @@ namespace saki
 
 
 
+class Teru : public Girl
+{
+public:
+    GIRL_CTORS(Teru)
+    void onMonkey(std::array<Exist, 4> &exists, const Princess &princess);
+    void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
+    void onRoundEnded(const Table &table, RoundResult result,
+                      const std::vector<Who> &openers, Who gunner,
+                      const std::vector<Form> &fs) override;
+
+    void nonMonkey(Rand &rand, TileCount &init, Mount &mount,
+                   std::bitset<NUM_NM_SKILL> &presence,
+                   const Princess &princess) override;
+
+private:
+    TileCount mPlan;
+    int mPrevGain = 0;
+};
+
+
+
 class Takami : public Girl
 {
 public:

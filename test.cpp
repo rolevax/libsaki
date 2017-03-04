@@ -143,9 +143,9 @@ void testFormGb()
     }
 
     {
-        TileCount close2 {3_p,3_p,3_p,3_s,3_s,3_s,3_m,3_m,3_m,6_s,6_s,1_y,1_y};
+        TileCount close2 {1_s,2_s,3_s,3_s,4_s,5_s,5_s,6_s,7_s,7_s,8_s,9_s,9_s};
         Hand hand2(close2);
-        hand2.draw(1_y);
+        hand2.draw(9_s);
         FormGb form2(hand2, info, false);
         for (Fan f : form2.fans())
             util::p("f", stringOf(f));

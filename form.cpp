@@ -120,7 +120,7 @@ bool Form::hasYaku() const
     return mYakus.any();
 }
 
-int Form::loss(bool explode) const
+int Form::netLoss(bool explode) const
 {
     int res;
     int b = base();
@@ -128,12 +128,25 @@ int Form::loss(bool explode) const
     res = mDealerWin ? (mRon ? b * 6 : b * 2)
                      : (mRon ? b * 4 : (explode ? b * 2 : b));
 
-    res += mExtraRound * (mRon ? 300 : 100);
-
-    if (res % 100)
+    if (res % 100 != 0)
         res = res - res % 100 + 100;
 
     return res;
+}
+
+int Form::netGain() const
+{
+    if (mRon) // ron: gain == loss
+        return netLoss(false); // param 'explode' unused
+    else if (mDealerWin) // dealer tsumo
+        return 3 * netLoss(false);
+    else // non-dealer tsumo
+        return netLoss(true) + 2 * netLoss(false);
+}
+
+int Form::loss(bool explode) const
+{
+    return netLoss(explode) + (mExtraRound * (mRon ? 300 : 100));
 }
 
 int Form::gain() const

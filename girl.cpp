@@ -26,6 +26,7 @@ Girl *Girl::create(Who who, int id_)
     Id id = Id(id_);
     switch (id) {
     case Id::DOGE:              return new Girl(who, id);
+    case Id::MIYANAGA_TERU:     return new Teru(who, id);
     case Id::SHIBUYA_TAKAMI:    return new Takami(who, id);
     case Id::MATANO_SEIKO:      return new Seiko(who, id);
     case Id::OOHOSHI_AWAI:      return new Awai(who, id);
@@ -116,6 +117,13 @@ void Girl::onDiscarded(const Table &table, Who who)
 void Girl::onRiichiEstablished(const Table &table, Who who)
 {
     (void) table; (void) who;
+}
+
+void Girl::onRoundEnded(const Table &table, RoundResult result,
+                        const std::vector<Who> &openers, Who gunner,
+                        const std::vector<Form> &fs)
+{
+    (void) table; (void) result; (void) openers; (void) gunner; (void) fs;
 }
 
 const std::array<bool, 4> &Girl::irsRivalMask() const

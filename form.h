@@ -64,6 +64,8 @@ public:
     ManganType manganType() const;
     bool hasYaku() const;
 
+    int netLoss(bool isDealer) const;
+    int netGain() const;
     int loss(bool isDealer) const;
     int gain() const;
     std::string spell() const;

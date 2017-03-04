@@ -12,6 +12,95 @@ namespace saki
 
 
 
+void Teru::onMonkey(std::array<Exist, 4> &exists, const Princess &princess)
+{
+    auto &exist = exists[mSelf.index()];
+    for (int ti = 0; ti < 34; ti++) {
+        T34 t(ti);
+        exist.inc(t, -30);
+        if (t.isNum()) {
+            if (t.val() >= 2)
+                exist.inc(t.prev(), -30);
+            if (t.val() >= 3)
+                exist.inc(t.pprev(), -30);
+            if (t.val() <= 8)
+                exist.inc(t.next(), -30);
+            if (t.val() <= 7)
+                exist.inc(t.nnext(), -30);
+        }
+    }
+    // CONTINUE
+    // things do not work.
+    // init-hand totally lose direction after drpped 5 tiles
+    // even if dis-dragged neighbors (as above), rest useless tiles become pairs
+    // subtask: gen a hand satifying: 1. rough point 2. step
+}
+
+void Teru::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
+{
+    (void) rinshan;
+
+    if (who != mSelf)
+        return;
+    // CONTINUE
+    const Hand &hand = table.getHand(mSelf);
+    for (int ti = 0; ti < 34; ti++)
+        mount.lightA(T34(ti), hand.hasEffA(T34(ti)) ? 100 : -40);
+}
+
+void Teru::onRoundEnded(const Table &table, RoundResult result,
+                        const std::vector<Who> &openers, Who gunner,
+                        const std::vector<Form> &fs)
+{
+    (void) table;
+    (void) gunner;
+
+    if (result == RoundResult::TSUMO && openers[0] == mSelf) {
+        mPrevGain = fs[0].netGain();
+    } else if (result == RoundResult::RON) {
+        if (openers[0] == mSelf)
+            mPrevGain = fs[0].netGain();
+        else if (fs.size() == 2 && openers[1] == mSelf)
+            mPrevGain = fs[1].netGain();
+    } else {
+        mPrevGain = 0;
+    }
+
+    util::p("prev gain recorded as", mPrevGain);
+}
+
+void Teru::nonMonkey(Rand &rand, TileCount &init, Mount &mount,
+                     std::bitset<Girl::NUM_NM_SKILL> &presence,
+                     const Princess &princess)
+{
+    // FUCK about zim and kuro
+    while (true) {
+        mPlan = TileCount();
+        for (int i = 0; i < 4; i++) {
+            T34 t(static_cast<Suit>(rand.gen(2)), 1 + rand.gen(7));
+            mPlan.inc(T37(t.id34()), 1);
+            mPlan.inc(T37(t.next().id34()), 1);
+            mPlan.inc(T37(t.nnext().id34()), 1);
+        }
+        T37 pair(rand.gen(34));
+        mPlan.inc(pair, 2);
+        std::vector<T37> ts = mPlan.t37s(true);
+        for (int i = 0; i < 5; i++) {
+            int r = rand.gen(ts.size());
+            mPlan.inc(ts[r], -1);
+            ts[r] = ts.back();
+            ts.pop_back();
+        }
+        if (mount.affordA(mPlan)) {
+            init = mPlan;
+            break;
+        }
+    }
+}
+
+
+
+
 void Takami::onDiscarded(const Table &table, Who who)
 {
     if (who != mSelf)

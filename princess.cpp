@@ -90,7 +90,8 @@ std::array<TileCount, 4> Princess::nonMonkey()
     doraMatters();
 
     static const std::vector<Id> CHECK_ORDER2 {
-        Id::OOHOSHI_AWAI
+        Id::OOHOSHI_AWAI,
+        Id::MIYANAGA_TERU
     };
 
     for (Id id : CHECK_ORDER2) {
