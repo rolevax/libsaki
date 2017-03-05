@@ -21,7 +21,7 @@ void Huiyu::skill(Mount &mount, const Hand &hand, const PointInfo &info)
             FormGb f(copy, info, false);
             if (f.fan() >= 8) {
                 has = true;
-                mount.lightA(t, 500);
+                mount.lightA(t, 300);
             }
             copy.spinOut();
         }
@@ -37,7 +37,7 @@ void Huiyu::skill(Mount &mount, const Hand &hand, const PointInfo &info)
 
     if (expand(mount, total)) // expand done, drag eff
         for (T34 t : hand.effA())
-            mount.lightA(t, 300);
+            mount.lightA(t, 200);
 }
 
 void Huiyu::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
@@ -71,7 +71,7 @@ bool Huiyu::expand(Mount &mount, const TileCount &total)
     assert(minDist >= 0);
     if (0 < minDist && minDist < 14)
         for (int ti = 0; ti < 34; ti++)
-            mount.lightA(T34(ti), minReqs.test(ti) ? 300 : -10);
+            mount.lightA(T34(ti), minReqs.test(ti) ? 100 : -10);
 
     return minDist == 0;
 }

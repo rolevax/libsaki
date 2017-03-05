@@ -166,7 +166,7 @@ void Toki::popUpBy(const Table &table, Toki::PopUpMode mode)
 
 void Sera::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
 {
-    if (who != mSelf || rinshan)
+    if (who != mSelf || rinshan || table.inIppatsuCycle())
         return;
 
     const Hand &hand = table.getHand(mSelf);
@@ -179,7 +179,7 @@ void Sera::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
             int ronHan = f.han();
             int tsumoHan = hand.isMenzen() ? ronHan + 1 : ronHan;
             bool pinfu = f.yakus().test(Yaku::PF);
-            mount.lightA(t, tsumoHan >= (4 + pinfu) ? 500 : -200);
+            mount.lightA(t, tsumoHan >= (4 + pinfu) ? 400 : -200);
         }
     } else {
         accelerate(mount, hand, table.getRiver(mSelf), 30);

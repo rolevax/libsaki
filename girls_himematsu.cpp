@@ -22,7 +22,7 @@ void Suzu::onDice(Rand &rand, const Table &table, TicketFolder &tickets)
 
     if (!mExploded) {
         int remainRound = table.getRuleInfo().roundLimit - table.getRound();
-        int threshold = remainRound < 4 ? 20 : 10;
+        int threshold = remainRound < 4 ? 25 : 10;
         if (rand.gen(100) < threshold) {
             mExploded = true;
             table.popUp(mSelf);

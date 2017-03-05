@@ -114,7 +114,8 @@ bool Kasumi::checkInit(Who who, const Hand &init, const Princess &princess, int 
     if (who != mSelf || iter > 100)
         return true;
 
-    return init.step() >= (iter > 50 ? 4 : 5);
+    // prevent both too low step and too many Z
+    return init.step() >= 2 && (iter > 50 || init.closed().ctZ() <= 5);
 }
 
 void Kasumi::onMonkey(std::array<Exist, 4> &exists, const Princess &princess)
@@ -144,15 +145,28 @@ void Kasumi::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         return;
 
     int turn = table.getRiver(mSelf).size();
-    int mk = turn < 6 ? -1000 : (turn < 12 ? -30 + 10 * (turn - 6) : 0);
+    if (turn > 9)
+        return;
 
-    for (int ti = 0; ti < 34; ti++) {
-        T34 t(ti);
-        // isNum && (rivals' 1-lack || self's 2-lack)
-        if (t.isNum()
-                && ((t.suit() == mZimSuit && who != mSelf)
-                    || (t.suit() != mZimSuit && who == mSelf)))
-            mount.lightA(t, mk);
+    if (who == mSelf) {
+        Suit s1 = static_cast<Suit>((static_cast<int>(mZimSuit) + 1) % 3);
+        Suit s2 = static_cast<Suit>((static_cast<int>(mZimSuit) + 2) % 3);
+        const Hand &hand = table.getHand(mSelf);
+        int currStep = hand.step();
+
+        for (int v = 1; v <= 9; v++) {
+            mount.lightA(T34(s1, v), -700);
+            mount.lightA(T34(s2, v), -700);
+
+            if (currStep <= 2) {
+                T34 t(mZimSuit, v);
+                if (!hand.hasEffA(t))
+                    mount.lightA(t, 300);
+            }
+        }
+    } else { // rival's draw
+        for (int v = 1; v <= 9; v++)
+            mount.lightA(T34(mZimSuit, v), -700);
     }
 }
 
