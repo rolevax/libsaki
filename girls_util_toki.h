@@ -1,5 +1,5 @@
-#ifndef GIRLS_UTIL_TOKI_H
-#define GIRLS_UTIL_TOKI_H
+#ifndef SAKI_GIRLS_UTIL_TOKI_H
+#define SAKI_GIRLS_UTIL_TOKI_H
 
 #include "tableobserver.h"
 #include "tableoperator.h"
@@ -167,6 +167,6 @@ private:
 
 
 
-#endif // GIRLS_UTIL_TOKI_H
+#endif // SAKI_GIRLS_UTIL_TOKI_H
 
 

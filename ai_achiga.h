@@ -1,5 +1,5 @@
-#ifndef AI_ACHIGA_H
-#define AI_ACHIGA_H
+#ifndef SAKI_AI_ACHIGA_H
+#define SAKI_AI_ACHIGA_H
 
 #include "ai.h"
 
@@ -23,6 +23,6 @@ public:
 
 
 
-#endif // AI_ACHIGA_H
+#endif // SAKI_AI_ACHIGA_H
 
 

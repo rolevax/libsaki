@@ -1,5 +1,5 @@
-#ifndef AI_H
-#define AI_H
+#ifndef SAKI_AI_H
+#define SAKI_AI_H
 
 #include "table.h"
 
@@ -70,4 +70,6 @@ private:
 
 
 
-#endif // AI_H
+#endif // SAKI_AI_H
+
+

@@ -1,5 +1,5 @@
-#ifndef GIRLS_HIMEMATSU_H
-#define GIRLS_HIMEMATSU_H
+#ifndef SAKI_GIRLS_HIMEMATSU_H
+#define SAKI_GIRLS_HIMEMATSU_H
 
 #include "girl.h"
 
@@ -48,6 +48,6 @@ private:
 
 
 
-#endif // GIRLS_HIMEMATSU_H
+#endif // SAKI_GIRLS_HIMEMATSU_H
 
 

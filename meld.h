@@ -1,5 +1,5 @@
-#ifndef MELD_H
-#define MELD_H
+#ifndef SAKI_MELD_H
+#define SAKI_MELD_H
 
 #include "tile.h"
 
@@ -141,4 +141,4 @@ inline std::ostream &operator<<(std::ostream &os, const M37 &m)
 
 
 
-#endif // MELD_H
+#endif // SAKI_MELD_H

@@ -1,5 +1,5 @@
-#ifndef WHO_H
-#define WHO_H
+#ifndef SAKI_WHO_H
+#define SAKI_WHO_H
 
 #include "assume.h"
 
@@ -144,6 +144,6 @@ private:
 
 
 
-#endif // WHO_H
+#endif // SAKI_WHO_H
 
 

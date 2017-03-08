@@ -1,5 +1,5 @@
-#ifndef TEST_H
-#define TEST_H
+#ifndef SAKI_TEST_H
+#define SAKI_TEST_H
 
 #include <chrono>
 
@@ -37,6 +37,6 @@ void testTable();
 
 
 
-#endif // TEST_H
+#endif // SAKI_TEST_H
 
 

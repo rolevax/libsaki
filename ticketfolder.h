@@ -1,5 +1,5 @@
-#ifndef TICKETFOLDER_H
-#define TICKETFOLDER_H
+#ifndef SAKI_TICKETFOLDER_H
+#define SAKI_TICKETFOLDER_H
 
 #include "action.h"
 
@@ -54,6 +54,6 @@ private:
 
 
 
-#endif // TICKETFOLDER_H
+#endif // SAKI_TICKETFOLDER_H
 
 

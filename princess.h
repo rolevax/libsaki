@@ -1,5 +1,5 @@
-#ifndef PRINCESS_H
-#define PRINCESS_H
+#ifndef SAKI_PRINCESS_H
+#define SAKI_PRINCESS_H
 
 #include "table.h"
 
@@ -61,6 +61,6 @@ private:
 
 
 
-#endif // PRINCESS_H
+#endif // SAKI_PRINCESS_H
 
 

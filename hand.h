@@ -1,5 +1,5 @@
-#ifndef HAND_H
-#define HAND_H
+#ifndef SAKI_HAND_H
+#define SAKI_HAND_H
 
 #include "tile.h"
 #include "meld.h"
@@ -176,6 +176,6 @@ int operator%(const std::vector<T37> &inds, const HandDream &dream);
 
 
 
-#endif // HAND_H
+#endif // SAKI_HAND_H
 
 

@@ -1,5 +1,5 @@
-#ifndef FORM_GB_H
-#define FORM_GB_H
+#ifndef SAKI_FORM_GB_H
+#define SAKI_FORM_GB_H
 
 #include "hand.h"
 #include "explain.h"
@@ -87,6 +87,6 @@ private:
 
 
 
-#endif // FORM_GB_H
+#endif // SAKI_FORM_GB_H
 
 

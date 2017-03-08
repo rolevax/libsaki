@@ -1,5 +1,5 @@
-#ifndef GIRLS_SHIRAITODAI_H
-#define GIRLS_SHIRAITODAI_H
+#ifndef SAKI_GIRLS_SHIRAITODAI_H
+#define SAKI_GIRLS_SHIRAITODAI_H
 
 #include "girl.h"
 #include "ticketfolder.h"
@@ -112,6 +112,6 @@ private:
 
 
 
-#endif // GIRLS_SHIRAITODAI_H
+#endif // SAKI_GIRLS_SHIRAITODAI_H
 
 

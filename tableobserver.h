@@ -1,5 +1,5 @@
-#ifndef TABLEOBSERVER_H
-#define TABLEOBSERVER_H
+#ifndef SAKI_TABLEOBSERVER_H
+#define SAKI_TABLEOBSERVER_H
 
 #include "action.h"
 #include "tile.h"
@@ -126,6 +126,6 @@ public:
 
 
 
-#endif // TABLEOBSERVER_H
+#endif // SAKI_TABLEOBSERVER_H
 
 

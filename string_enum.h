@@ -1,5 +1,5 @@
-#ifndef STRING_ENUM_H
-#define STRING_ENUM_H
+#ifndef SAKI_STRING_ENUM_H
+#define SAKI_STRING_ENUM_H
 
 #include "action.h"
 #include "meld.h"
@@ -29,6 +29,6 @@ const char *stringOf(Fan f);
 
 
 
-#endif // STRING_ENUM_H
+#endif // SAKI_STRING_ENUM_H
 
 

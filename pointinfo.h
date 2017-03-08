@@ -1,5 +1,5 @@
-#ifndef POINTINFO_H
-#define POINTINFO_H
+#ifndef SAKI_POINTINFO_H
+#define SAKI_POINTINFO_H
 
 #include "tilecount.h"
 
@@ -44,4 +44,4 @@ struct RuleInfo
 
 
 
-#endif // POINTINFO_H
+#endif // SAKI_POINTINFO_H

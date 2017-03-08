@@ -1,5 +1,5 @@
-#ifndef AI_USUZAN_H
-#define AI_USUZAN_H
+#ifndef SAKI_AI_USUZAN_H
+#define SAKI_AI_USUZAN_H
 
 #include "ai.h"
 
@@ -24,6 +24,6 @@ public:
 
 
 
-#endif // AI_USUZAN_H
+#endif // SAKI_AI_USUZAN_H
 
 

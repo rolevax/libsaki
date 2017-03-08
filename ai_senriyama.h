@@ -1,5 +1,5 @@
-#ifndef AI_SENRIYAMA_H
-#define AI_SENRIYAMA_H
+#ifndef SAKI_AI_SENRIYAMA_H
+#define SAKI_AI_SENRIYAMA_H
 
 #include "ai.h"
 
@@ -49,6 +49,6 @@ private:
 
 
 
-#endif // AI_SENRIYAMA_H
+#endif // SAKI_AI_SENRIYAMA_H
 
 

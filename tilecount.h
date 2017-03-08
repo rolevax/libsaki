@@ -1,10 +1,8 @@
-#ifndef TILECOUNT_H
-#define TILECOUNT_H
+#ifndef SAKI_TILECOUNT_H
+#define SAKI_TILECOUNT_H
 
 #include "tile.h"
 
-#include <vector>
-#include <array>
 #include <initializer_list>
 
 
@@ -59,7 +57,6 @@ public:
 
     std::vector<T34> t34s() const;
     std::vector<T37> t37s(bool allowDup = false) const;
-//    std::vector<T34> effB(int barkCt, const TileCount &remain) const;
 
     bool dislike4(T34 t) const;
 
@@ -102,4 +99,6 @@ private:
 
 
 
-#endif // TILECOUNT_H
+#endif // SAKI_TILECOUNT_H
+
+

@@ -1,5 +1,5 @@
-#ifndef UTIL_H
-#define UTIL_H
+#ifndef SAKI_UTIL_H
+#define SAKI_UTIL_H
 
 #include <vector>
 #include <functional>
@@ -195,4 +195,6 @@ inline void p(T t, Args... args)
 
 
 
-#endif // UTIL_H
+#endif // SAKI_UTIL_H
+
+

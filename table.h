@@ -1,5 +1,5 @@
-#ifndef TABLE_H
-#define TABLE_H
+#ifndef SAKI_TABLE_H
+#define SAKI_TABLE_H
 
 #include "who.h"
 #include "ticketfolder.h"
@@ -208,6 +208,6 @@ private:
 
 
 
-#endif // TABLE_H
+#endif // SAKI_TABLE_H
 
 

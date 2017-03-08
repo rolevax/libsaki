@@ -1,5 +1,5 @@
-#ifndef REPLAY_H
-#define REPLAY_H
+#ifndef SAKI_REPLAY_H
+#define SAKI_REPLAY_H
 
 #include "tableobserver.h"
 #include "girl.h"
@@ -160,6 +160,6 @@ private:
 
 
 
-#endif // REPLAY_H
+#endif // SAKI_REPLAY_H
 
 

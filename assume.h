@@ -1,5 +1,5 @@
-#ifndef ASSUME_H
-#define ASSUME_H
+#ifndef SAKI_ASSUME_H
+#define SAKI_ASSUME_H
 
 #include <cassert>
 
@@ -11,5 +11,6 @@
 
 #define unreached(str) do { assert(false && str); __builtin_unreachable(); } while (false)
 
-#endif // ASSUME_H
+#endif // SAKI_ASSUME_H
+
 

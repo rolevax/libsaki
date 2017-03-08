@@ -1,5 +1,5 @@
-#ifndef AI_EISUI_H
-#define AI_EISUI_H
+#ifndef SAKI_AI_EISUI_H
+#define SAKI_AI_EISUI_H
 
 #include "ai.h"
 
@@ -23,6 +23,6 @@ public:
 
 
 
-#endif // AI_EISUI_H
+#endif // SAKI_AI_EISUI_H
 
 

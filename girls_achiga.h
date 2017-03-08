@@ -1,5 +1,5 @@
-#ifndef GIRLS_ACHIGA_H
-#define GIRLS_ACHIGA_H
+#ifndef SAKI_GIRLS_ACHIGA_H
+#define SAKI_GIRLS_ACHIGA_H
 
 #include "girl.h"
 
@@ -61,6 +61,6 @@ private:
 
 
 
-#endif // GIRLS_ACHIGA_H
+#endif // SAKI_GIRLS_ACHIGA_H
 
 

@@ -1,5 +1,5 @@
-#ifndef ACTION_H
-#define ACTION_H
+#ifndef SAKI_ACTION_H
+#define SAKI_ACTION_H
 
 #include "tile.h"
 #include "who.h"
@@ -73,4 +73,6 @@ private:
 
 
 
-#endif // ACTION_H
+#endif // SAKI_ACTION_H
+
+

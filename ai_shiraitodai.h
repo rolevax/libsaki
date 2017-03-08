@@ -1,5 +1,5 @@
-#ifndef AI_SHIRAITODAI_H
-#define AI_SHIRAITODAI_H
+#ifndef SAKI_AI_SHIRAITODAI_H
+#define SAKI_AI_SHIRAITODAI_H
 
 #include "ai.h"
 
@@ -32,6 +32,6 @@ public:
 
 
 
-#endif // AI_SHIRAITODAI_H
+#endif // SAKI_AI_SHIRAITODAI_H
 
 

@@ -1,5 +1,5 @@
-#ifndef TABLEOPERATOR_H
-#define TABLEOPERATOR_H
+#ifndef SAKI_TABLEOPERATOR_H
+#define SAKI_TABLEOPERATOR_H
 
 #include "who.h"
 
@@ -32,4 +32,4 @@ protected:
 
 
 
-#endif // TABLEOPERATOR_H
+#endif // SAKI_TABLEOPERATOR_H

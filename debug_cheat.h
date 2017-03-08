@@ -1,5 +1,5 @@
-#ifndef DEBUG_CHEAT_H
-#define DEBUG_CHEAT_H
+#ifndef SAKI_DEBUG_CHEAT_H
+#define SAKI_DEBUG_CHEAT_H
 
 #include "tile.h"
 
@@ -83,6 +83,6 @@ const std::vector<T37> dead = {
 
 
 
-#endif // DEBUG_CHEAT_H
+#endif // SAKI_DEBUG_CHEAT_H
 
 

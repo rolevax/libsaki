@@ -1,5 +1,5 @@
-#ifndef GIRLS_OTHER_H
-#define GIRLS_OTHER_H
+#ifndef SAKI_GIRLS_OTHER_H
+#define SAKI_GIRLS_OTHER_H
 
 #include "girl.h"
 
@@ -23,6 +23,6 @@ public:
 
 
 
-#endif // GIRLS_OTHER_H
+#endif // SAKI_GIRLS_OTHER_H
 
 

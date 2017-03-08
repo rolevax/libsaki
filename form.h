@@ -1,5 +1,5 @@
-#ifndef FORM_H
-#define FORM_H
+#ifndef SAKI_FORM_H
+#define SAKI_FORM_H
 
 #include "hand.h"
 #include "pointinfo.h"
@@ -126,6 +126,6 @@ private:
 
 
 
-#endif // FORM_H
+#endif // SAKI_FORM_H
 
 

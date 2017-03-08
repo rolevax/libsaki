@@ -1,5 +1,5 @@
-#ifndef MOUNT_H
-#define MOUNT_H
+#ifndef SAKI_MOUNT_H
+#define SAKI_MOUNT_H
 
 #include "tile.h"
 #include "tilecount.h"
@@ -142,4 +142,4 @@ private:
 
 
 
-#endif // MOUNT_H
+#endif // SAKI_MOUNT_H

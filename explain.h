@@ -1,5 +1,5 @@
-#ifndef EXPLAIN_H
-#define EXPLAIN_H
+#ifndef SAKI_EXPLAIN_H
+#define SAKI_EXPLAIN_H
 
 #include "tile.h"
 #include "hand.h"
@@ -82,4 +82,4 @@ private:
 
 
 
-#endif // EXPLAIN_H
+#endif // SAKI_EXPLAIN_H

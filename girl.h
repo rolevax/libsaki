@@ -1,5 +1,5 @@
-#ifndef GIRL_H
-#define GIRL_H
+#ifndef SAKI_GIRL_H
+#define SAKI_GIRL_H
 
 #include "mount.h"
 #include "who.h"
@@ -128,6 +128,6 @@ protected:
 
 
 
-#endif // GIRL_H
+#endif // SAKI_GIRL_H
 
 

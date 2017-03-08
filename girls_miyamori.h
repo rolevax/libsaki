@@ -1,5 +1,5 @@
-#ifndef GIRLS_MIYAMORI_H
-#define GIRLS_MIYAMORI_H
+#ifndef SAKI_GIRLS_MIYAMORI_H
+#define SAKI_GIRLS_MIYAMORI_H
 
 #include "girl.h"
 
@@ -29,6 +29,6 @@ private:
 
 
 
-#endif // GIRLS_MIYAMORI_H
+#endif // SAKI_GIRLS_MIYAMORI_H
 
 

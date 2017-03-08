@@ -1,5 +1,5 @@
-#ifndef GIRLS_USUZAN_H
-#define GIRLS_USUZAN_H
+#ifndef SAKI_GIRLS_USUZAN_H
+#define SAKI_GIRLS_USUZAN_H
 
 #include "girl.h"
 #include "ticketfolder.h"
@@ -88,6 +88,6 @@ private:
 
 
 
-#endif // GIRLS_USUZAN_H
+#endif // SAKI_GIRLS_USUZAN_H
 
 

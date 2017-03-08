@@ -1,5 +1,5 @@
-#ifndef TABLEVIEW_H
-#define TABLEVIEW_H
+#ifndef SAKI_TABLEVIEW_H
+#define SAKI_TABLEVIEW_H
 
 #include "who.h"
 #include "hand.h"
@@ -75,6 +75,6 @@ private:
 
 
 
-#endif // TABLEVIEW_H
+#endif // SAKI_TABLEVIEW_H
 
 

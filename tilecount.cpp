@@ -261,33 +261,6 @@ std::vector<T37> TileCount::t37s(bool allowDup) const
     return res;
 }
 
-/*
-std::vector<T34> TileCount::effB(int barkCt, const TileCount &remain) const
-{
-    std::vector<T34> res;
-
-    int currEffA = remain.sum(effA(barkCt));
-    int currStep = step4(barkCt);
-
-    for (int ti = 0; ti < 34; ti++) {
-        T34 t(ti);
-
-        if (remain.ct(t) > 0) {
-            c[t.id34()]++;
-
-            // remain - 1 since one is drawn
-            if (step(barkCt) == currStep
-                    && remain.sum(effA(barkCt)) - 1 > currEffA)
-                res.push_back(t);
-
-            c[t.id34()]--;
-        }
-    }
-
-    return res;
-}
-*/
-
 // 't' will be a floating tile (form-4) if added to this 'count'
 // a disliked tile might be 'useful' when there is a pure-empty ready
 // but logically that's still not 'effective-A'

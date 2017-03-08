@@ -1,5 +1,5 @@
-#ifndef GIRLS_KIYOSUMI_H
-#define GIRLS_KIYOSUMI_H
+#ifndef SAKI_GIRLS_KIYOSUMI_H
+#define SAKI_GIRLS_KIYOSUMI_H
 
 #include "girl.h"
 
@@ -32,6 +32,6 @@ public:
 
 
 
-#endif // GIRLS_KIYOSUMI_H
+#endif // SAKI_GIRLS_KIYOSUMI_H
 
 

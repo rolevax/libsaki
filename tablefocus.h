@@ -1,5 +1,5 @@
-#ifndef TABLEFOCUS_H
-#define TABLEFOCUS_H
+#ifndef SAKI_TABLEFOCUS_H
+#define SAKI_TABLEFOCUS_H
 
 #include "who.h"
 
@@ -54,6 +54,6 @@ private:
 
 
 
-#endif // TABLEFOCUS_H
+#endif // SAKI_TABLEFOCUS_H
 
 

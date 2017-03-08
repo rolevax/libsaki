@@ -1,5 +1,5 @@
-#ifndef GIRLS_ASAKUMI_H
-#define GIRLS_ASAKUMI_H
+#ifndef SAKI_GIRLS_ASAKUMI_H
+#define SAKI_GIRLS_ASAKUMI_H
 
 #include "girl.h"
 
@@ -46,4 +46,4 @@ public:
 
 
 
-#endif // GIRLS_ASAKUMI_H
+#endif // SAKI_GIRLS_ASAKUMI_H

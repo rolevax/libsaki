@@ -1,5 +1,5 @@
-#ifndef GIRLS_EISUI_H
-#define GIRLS_EISUI_H
+#ifndef SAKI_GIRLS_EISUI_H
+#define SAKI_GIRLS_EISUI_H
 
 #include "girl.h"
 #include "ticketfolder.h"
@@ -53,6 +53,6 @@ private:
 
 
 
-#endif // GIRLS_EISUI_H
+#endif // SAKI_GIRLS_EISUI_H
 
 

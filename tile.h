@@ -1,5 +1,5 @@
-#ifndef TILE_H
-#define TILE_H
+#ifndef SAKI_TILE_H
+#define SAKI_TILE_H
 
 #include "assume.h"
 
@@ -45,38 +45,24 @@ public:
     static char charOf(Suit s)
     {
         switch(s) {
-        case Suit::M:
-            return 'm';
-        case Suit::P:
-            return 'p';
-        case Suit::S:
-            return 's';
-        case Suit::F:
-            return 'f';
-        case Suit::Y:
-            return 'y';
-        default:
-            unreached("T34::charOf");
-            return 'x';
+        case Suit::M: return 'm';
+        case Suit::P: return 'p';
+        case Suit::S: return 's';
+        case Suit::F: return 'f';
+        case Suit::Y: return 'y';
+        default: unreached("T34::charOf");
         }
     }
 
     static Suit suitOf(char c)
     {
         switch(std::tolower(c)) {
-        case 'm':
-            return Suit::M;
-        case 'p':
-            return Suit::P;
-        case 's':
-            return Suit::S;
-        case 'f':
-            return Suit::F;
-        case 'y':
-            return Suit::Y;
-        default:
-            unreached("Tile::charToSuit() error");
-            return Suit::Y;
+        case 'm': return Suit::M;
+        case 'p': return Suit::P;
+        case 's': return Suit::S;
+        case 'f': return Suit::F;
+        case 'y': return Suit::Y;
+        default: unreached("Tile::charToSuit() error");
         }
     }
 
@@ -405,14 +391,10 @@ public:
     {
         if (isAka5()) {
             switch(suit()) {
-            case Suit::M:
-                return "0m";
-            case Suit::P:
-                return "0p";
-            case Suit::S:
-                return "0s";
-            default:
-                unreached("T37::str(): aka5 but z");
+            case Suit::M: return "0m";
+            case Suit::P: return "0p";
+            case Suit::S: return "0s";
+            default: unreached("T37::str(): aka5 but z");
             }
         } else {
             return T34::str();
@@ -577,6 +559,6 @@ const std::array<T37, 37> ORDER37
 } // namespace saki
 
 
-#endif // TILE_H
+#endif // SAKI_TILE_H
 
 

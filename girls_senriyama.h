@@ -1,5 +1,5 @@
-#ifndef GIRLS_SENRIYAMA_H
-#define GIRLS_SENRIYAMA_H
+#ifndef SAKI_GIRLS_SENRIYAMA_H
+#define SAKI_GIRLS_SENRIYAMA_H
 
 #include "girl.h"
 #include "tableobserver.h"
@@ -60,6 +60,6 @@ public:
 
 
 
-#endif // GIRLS_SENRIYAMA_H
+#endif // SAKI_GIRLS_SENRIYAMA_H
 
 
