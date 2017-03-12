@@ -767,7 +767,7 @@ void Hand::kakan(int barkId)
         t = mDrawn;
     } else {
         if (mCount.ct(t) == 0)
-            t = t.toAka5();
+            t = t.toInverse5();
         assert(mCount.ct(t) == 1);
         mCount.inc(t, -1);
         mCount.inc(mDrawn, 1);
