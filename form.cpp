@@ -171,6 +171,25 @@ std::string Form::spell() const
                 oss << YAKU_STRS[i] << "  ";
     } else {
         Yakus copy = mYakus;
+        if (copy[Yaku::RSKH]) {
+            copy.reset(Yaku::RSKH);
+            oss << "Rns";
+            if (copy.count() > 1)
+                oss << "Kah";
+        }
+
+        if (copy[Yaku::HTRY_T]) {
+            copy.reset(Yaku::HTRY_T);
+            oss << "Hai";
+            if (copy.count() > 1)
+                oss << "Rye";
+        }
+
+        if (copy[Yaku::DBRRC]) {
+            copy.reset(Yaku::DBRRC);
+            oss << "Wri";
+        }
+
         if (copy[Yaku::RC] && copy[Yaku::TYC] && copy[Yaku::PF]) {
             copy.reset(Yaku::RC);
             copy.reset(Yaku::TYC);
