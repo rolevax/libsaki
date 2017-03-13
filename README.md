@@ -4,7 +4,7 @@
 
 ## Docs
 
-See the [Wiki](https://github.com/mjpancake/libskai/wiki) for documentations. 
+See the [Wiki](https://github.com/mjpancake/libsaki/wiki) for documentations. 
 
 ## Contributing
 
