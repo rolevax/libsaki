@@ -29,6 +29,7 @@ struct TableSnap
     std::vector<T37> drids;
     std::vector<T37> urids;
     int wallRemain;
+    int deadRemain;
 
     int round;
     int extraRound;

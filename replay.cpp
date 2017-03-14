@@ -233,6 +233,7 @@ TableSnap Replay::look(int roundId, int turn)
             hands[w].inc(t, 1);
 
     snap.wallRemain = 70;
+    snap.deadRemain = 4;
 
     // flip first indicator
     if (!round.drids.empty())
@@ -243,7 +244,7 @@ TableSnap Replay::look(int roundId, int turn)
     std::array<int, 4> steps = { 0, 0, 0, 0 };
     bool toRiichi = false;
     bool toFlip = false;
-    bool chankanContext = false;
+    bool kanContext = false;
     Who lastDiscarder;
 
     for (bool inStage = true; turn --> 0; inStage = !inStage) {
@@ -254,9 +255,6 @@ TableSnap Replay::look(int roundId, int turn)
             if (step >= int(tracks[who.index()].in.size()))
                 break;
             const InAct &in = tracks[who.index()].in[step];
-
-            if (chankanContext && in.act != In::RON)
-                chankanContext = false;
 
             if (toRiichi && in.act != In::RON) {
                 toRiichi = false;
@@ -269,6 +267,8 @@ TableSnap Replay::look(int roundId, int turn)
                 snap.whoDrawn = who;
                 snap.drawn = in.t37;
                 snap.wallRemain--;
+                if (kanContext)
+                    snap.deadRemain--;
                 break;
             case In::CHII_AS_LEFT:
             case In::CHII_AS_MIDDLE:
@@ -279,6 +279,7 @@ TableSnap Replay::look(int roundId, int turn)
                 lookPon(snap, hands[who.index()], in.showAka5, who, lastDiscarder);
                 break;
             case In::DAIMINKAN:
+                kanContext = true;
                 lookDaiminkan(snap, hands[who.index()], who, lastDiscarder);
                 toFlip = true;
                 break;
@@ -286,7 +287,7 @@ TableSnap Replay::look(int roundId, int turn)
                 snap.endOfRound = true;
                 snap.openers.emplace_back(who);
 
-                if (chankanContext) {
+                if (kanContext) {
                     snap.cannon = snap[snap.gunner.index()].barks.back()[3];
                 } else {
                     snap.cannon = snap[snap.gunner.index()].river.back();
@@ -318,12 +319,14 @@ TableSnap Replay::look(int roundId, int turn)
 
             switch (out.act) {
             case Out::ADVANCE:
+                kanContext = false;
                 lookAdvance(snap, hands[who.index()], out.t37, who);
                 lastDiscarder = who;
                 checkFlip();
                 next();
                 break;
             case Out::SPIN:
+                kanContext = false;
                 snap[who.index()].river.emplace_back(snap.drawn);
                 snap.whoDrawn = Who();
                 lastDiscarder = who;
@@ -331,6 +334,7 @@ TableSnap Replay::look(int roundId, int turn)
                 next();
                 break;
             case Out::RIICHI_ADVANCE:
+                kanContext = false;
                 toRiichi = true;
                 snap[who.index()].riichiPos = snap[who.index()].river.size();
                 lookAdvance(snap, hands[who.index()], out.t37, who);
@@ -339,6 +343,7 @@ TableSnap Replay::look(int roundId, int turn)
                 next();
                 break;
             case Out::RIICHI_SPIN:
+                kanContext = false;
                 toRiichi = true;
                 snap[who.index()].riichiPos = snap[who.index()].river.size();
                 snap[who.index()].river.emplace_back(snap.drawn);
@@ -349,14 +354,14 @@ TableSnap Replay::look(int roundId, int turn)
                 break;
             case Out::ANKAN:
                 lookAnkan(snap, hands[who.index()], out.t37, who);
-                chankanContext = true;
+                kanContext = true;
                 checkFlip(); // flipping of previous kan
                 if (snap.drids.size() < round.drids.size()) // flip this kan
                     snap.drids.push_back(round.drids[snap.drids.size()]);
                 break;
             case Out::KAKAN:
                 lookKakan(snap, hands[who.index()], out.t37, who);
-                chankanContext = true;
+                kanContext = true;
                 checkFlip(); // flipping of previous kan
                 toFlip = true; // flip this kan
                 break;
