@@ -3,6 +3,7 @@
 
 #include "who.h"
 #include "hand.h"
+#include "girl.h"
 #include "ticketfolder.h"
 #include "tablefocus.h"
 
@@ -54,12 +55,14 @@ public:
     int getSelfWind() const;
     int getRoundWind() const;
     TileCount visibleRemain() const;
+    Who findGirl(Girl::Id id) const;
 
     const std::vector<T37> &getRiver(Who who) const;
     const std::vector<M37> &getBarks(Who who) const;
 
     bool genbutsu(Who whose, T34 t) const;
     bool riichiEstablished(Who who) const;
+    bool isMenzen(Who who) const;
     bool isAllLast() const;
     bool inIppatsuCycle() const;
 

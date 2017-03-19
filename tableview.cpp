@@ -197,6 +197,11 @@ TileCount TableView::visibleRemain() const
     return mTable.visibleRemain(mViewer);
 }
 
+Who TableView::findGirl(Girl::Id id) const
+{
+    return mTable.findGirl(id);
+}
+
 const std::vector<T37> &TableView::getRiver(Who who) const
 {
     return mTable.getRiver(who);
@@ -215,6 +220,11 @@ bool TableView::genbutsu(Who whose, T34 t) const
 bool TableView::riichiEstablished(Who who) const
 {
     return mTable.riichiEstablished(who);
+}
+
+bool TableView::isMenzen(Who who) const
+{
+    return mTable.getHand(who).isMenzen();
 }
 
 bool TableView::isAllLast() const

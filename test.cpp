@@ -45,8 +45,8 @@ void testAll()
 //    testTileCount();
 //    testHand();
 //    testForm();
-    testFormGb();
-//    testTable();
+//    testFormGb();
+    testTable();
 }
 
 void testUtil()
@@ -106,8 +106,7 @@ void testTable()
     TestScope test("table", true);
 
     std::array<int, 4> points { 25000, 25000, 25000, 25000 };
-//    std::array<int, 4> girlIds {713314,710115,712715,714915};
-    std::array<int, 4> girlIds {0,710115,712715,714915};
+    std::array<int, 4> girlIds {712714,0,0,0};
     std::array<std::unique_ptr<Ai>, 4> ais;
     std::array<TableOperator*, 4> ops;
     std::vector<TableObserver*> obs;

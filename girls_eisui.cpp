@@ -31,8 +31,19 @@ bool Hatsumi::checkInit(Who who, const Hand &init, const Princess &princess, int
 
 void Hatsumi::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
 {
-    if (who != mSelf || rinshan || table.getSelfWind(mSelf) != 4)
+    if (rinshan || table.getSelfWind(mSelf) != 4)
         return;
+
+    if (who != mSelf) {
+        const Hand &hand = table.getHand(who);
+        for (int v = 1; v <= 4; v++) {
+            T34 t(Suit::F, v);
+            // prevent rivals from having F-pairs
+            // let them to have floating useless F
+            mount.lightA(t, hand.ct(t) >= 1 ? -50 : (table.riichiEstablished(who) ? 500 : 100));
+        }
+        return;
+    }
 
     const std::vector<M37> &barks = table.getHand(mSelf).barks();
     const TileCount &closed = table.getHand(mSelf).closed();
@@ -51,7 +62,7 @@ void Hatsumi::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     int ctW = closed.ct(3_f);
     int ctN = closed.ct(4_f);
 
-    if (hasE && hasN && (ctS + ctW < 5 || ctS < 3 || ctW < 3)) {
+    if (hasE && hasN && (std::min(ctS, 3) + std::min(ctW, 3) < 5)) {
         for (int ti = 0; ti < 34; ti++) {
             T34 t(ti);
             mount.lightA(t, -50);

@@ -22,6 +22,7 @@ Ai *Ai::create(Who who, Girl::Id id)
     case Girl::Id::OOHOSHI_AWAI:        return new AiAwai(who);
     case Girl::Id::MATSUMI_KURO:        return new AiKuro(who);
     case Girl::Id::ONJOUJI_TOKI:        return new AiToki(who);
+    case Girl::Id::USUZUMI_HATSUMI:     return new AiHatsumi(who);
     case Girl::Id::IWATO_KASUMI:        return new AiKasumi(who);
     case Girl::Id::SHISHIHARA_SAWAYA:   return new AiSawaya(who);
     default:                            return new Ai(who);
@@ -265,6 +266,10 @@ int Ai::happy3(const TableView &view, const Action &action)
 
 bool Ai::riichi(const TableView &view)
 {
+    Who toyone = view.findGirl(Girl::Id::ANETAI_TOYONE);
+    if (toyone.somebody() && toyone != mSelf && view.isMenzen(toyone))
+        return false;
+
     const Hand &hand = view.myHand();
     bool spinnable;
     std::vector<T37> swappables;
