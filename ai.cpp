@@ -3,6 +3,7 @@
 
 #include "ai_shiraitodai.h"
 #include "ai_achiga.h"
+#include "ai_miyamori.h"
 #include "ai_senriyama.h"
 #include "ai_eisui.h"
 #include "ai_usuzan.h"
@@ -19,11 +20,13 @@ Ai *Ai::create(Who who, Girl::Id id)
 {
     switch (id) {
     case Girl::Id::SHIBUYA_TAKAMI:      return new AiTakami(who);
+    case Girl::Id::MATANO_SEIKO:        return new AiSeiko(who);
     case Girl::Id::OOHOSHI_AWAI:        return new AiAwai(who);
     case Girl::Id::MATSUMI_KURO:        return new AiKuro(who);
     case Girl::Id::ONJOUJI_TOKI:        return new AiToki(who);
     case Girl::Id::USUZUMI_HATSUMI:     return new AiHatsumi(who);
     case Girl::Id::IWATO_KASUMI:        return new AiKasumi(who);
+    case Girl::Id::ANETAI_TOYONE:       return new AiToyone(who);
     case Girl::Id::SHISHIHARA_SAWAYA:   return new AiSawaya(who);
     default:                            return new Ai(who);
     }

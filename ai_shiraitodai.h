@@ -19,6 +19,15 @@ public:
 
 
 
+class AiSeiko : public Ai
+{
+public:
+    AI_CTORS(AiSeiko)
+    int happy(const TableView &view, int iter, const Action &action) override;
+};
+
+
+
 class AiAwai : public Ai
 {
 public:

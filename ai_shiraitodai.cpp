@@ -34,6 +34,32 @@ int AiTakami::happy(const TableView &view, int iter, const Action &action)
 
 
 
+int AiSeiko::happy(const TableView &view, int iter, const Action &action)
+{
+    if (iter > 0)
+        return Ai::happy(view, iter - 1, action);
+
+    if (action.isCpdmk()) {
+        if (view.myHand().barks().size() < 3) {
+            ActCode act = action.act();
+            switch (act) {
+            case ActCode::DAIMINKAN:
+                return 3;
+            case ActCode::PON:
+                return 2;
+            default: // chii cases
+                return 0;
+            }
+        } else {
+            return 0;
+        }
+    } else {
+        return 1;
+    }
+}
+
+
+
 Action AiAwai::forward(const TableView &view)
 {
     if (view.iCan(ActCode::IRS_CHECK)) {
