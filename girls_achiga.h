@@ -15,12 +15,11 @@ class Kuro : public Girl
 public:
     GIRL_CTORS(Kuro)
     void onMonkey(std::array<Exist, 4> &exists, const Princess &princess) override;
+    bool checkInit(Who who, const Hand &init, const Princess &princess, int iter) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
     void onDiscarded(const Table &table, Who who) override;
 
 private:
-    static const int INIT_DRAG_MK = 30;
-    static const int DRAG_MK = 200;
     static const int EJECT_MK = 5000;
     bool mCd = false;
 };

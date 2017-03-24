@@ -156,7 +156,7 @@ void Kasumi::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         return;
 
     int turn = table.getRiver(mSelf).size();
-    if (turn > 9)
+    if (turn > 10)
         return;
 
     if (who == mSelf) {
@@ -166,10 +166,10 @@ void Kasumi::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         int currStep = hand.step();
 
         for (int v = 1; v <= 9; v++) {
-            mount.lightA(T34(s1, v), -700);
-            mount.lightA(T34(s2, v), -700);
+            mount.lightA(T34(s1, v), -1100);
+            mount.lightA(T34(s2, v), -1100);
 
-            if (currStep <= 2) {
+            if (currStep <= 1) {
                 T34 t(mZimSuit, v);
                 if (!hand.hasEffA(t))
                     mount.lightA(t, 300);

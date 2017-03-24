@@ -29,14 +29,26 @@ void Kuro::onMonkey(std::array<Exist, 4> &exists, const Princess &princess)
         exists[self].inc(0_s, -EJECT_MK);
     } else {
         for (int w = 0; w < 4; w++) {
-            int doraDelta = w == self ? INIT_DRAG_MK : -EJECT_MK;
-            int akadoraDelta = w == self ? INIT_DRAG_MK : -EJECT_MK;
+            int doraDelta = w == self ? 150 : -EJECT_MK;
+            int akadoraDelta = w == self ? 60 : -EJECT_MK;
             exists[w].inc(dora, doraDelta);
             exists[w].inc(0_m, akadoraDelta);
             exists[w].inc(0_p, akadoraDelta);
             exists[w].inc(0_s, akadoraDelta);
         }
     }
+}
+
+bool Kuro::checkInit(Who who, const Hand &init, const Princess &princess, int iter)
+{
+    if (who != mSelf || iter > 100)
+        return true;
+
+
+    // drop extreme cases
+    int doraCt = princess.getImageIndic(Princess::Indic::DORA) % init;
+    int akaCt = init.ctAka5();
+    return (1 <= doraCt && doraCt <= 2) && (1 <= akaCt && akaCt <= 3);
 }
 
 void Kuro::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
@@ -60,16 +72,27 @@ void Kuro::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         mount.lightA(0_s, -EJECT_MK, rinshan);
     } else {
         if (who == mSelf) {
-            for (T34 d : doras)
-                mount.lightA(d, DRAG_MK, rinshan);
+            int turn = table.getRiver(mSelf).size();
+            const Hand &hand = table.getHand(mSelf);
+
+            for (T34 d : doras) {
+                int expect = turn < 6 ? 2 : 3;
+                if (hand.ct(d) < expect)
+                    mount.lightA(d, d == doras.front() ? 300 : 600, rinshan);
+            }
+
+            int akaExpect = turn < 5 ? 2 : (turn < 10 ? 3 : 4);
+            int akaMk = hand.ctAka5() < akaExpect ? 200 : 60;
+            mount.lightA(0_m, akaMk, rinshan);
+            mount.lightA(0_p, akaMk, rinshan);
+            mount.lightA(0_s, akaMk, rinshan);
         } else {
             for (T34 d : doras)
                 mount.lightA(d, -EJECT_MK, rinshan);
+            mount.lightA(0_m, -EJECT_MK, rinshan);
+            mount.lightA(0_p, -EJECT_MK, rinshan);
+            mount.lightA(0_s, -EJECT_MK, rinshan);
         }
-
-        mount.lightA(0_m, who == mSelf ? DRAG_MK / 3 : -EJECT_MK, rinshan);
-        mount.lightA(0_p, who == mSelf ? DRAG_MK / 3 : -EJECT_MK, rinshan);
-        mount.lightA(0_s, who == mSelf ? DRAG_MK / 3 : -EJECT_MK, rinshan);
     }
 }
 
@@ -166,6 +189,16 @@ void Ako::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
             }
         }
     }
+
+    const std::vector<T37> &drids = mount.getDrids();
+    accelerate(mount, hand, table.getRiver(mSelf), 15);
+    if (hand.ctAka5() + drids % hand < 1) {
+        for (const T37 &t : drids)
+            mount.lightA(t.dora(), 80);
+        mount.lightA(T37(Suit::M, 0), 30);
+        mount.lightA(T37(Suit::P, 0), 30);
+        mount.lightA(T37(Suit::S, 0), 30);
+    }
 }
 
 int Ako::sskDist(const TileCount &c, T34 head)
@@ -211,7 +244,7 @@ void Ako::oneDragTwo(Mount &mount, const TileCount &closed, T34 head)
     int dist3 = sskDist(closed, head);
     int dist1 = ittDist(closed, head);
     if (dist3 < dist1) {
-        if (0 < dist3 && dist3 <= 4) {
+        if (0 < dist3 && dist3 <= 3) {
             for (Suit s : { Suit::M, Suit::P, Suit::S }) {
                 if (s == head.suit())
                     continue;
@@ -219,7 +252,7 @@ void Ako::oneDragTwo(Mount &mount, const TileCount &closed, T34 head)
             }
         }
     } else {
-        if (0 < dist1 && dist1 <= 4) {
+        if (0 < dist1 && dist1 <= 3) {
             for (int v : { 1, 4, 7 }) {
                 if (v == head.val())
                     continue;
@@ -233,7 +266,7 @@ void Ako::thinFill(Mount &mount, const TileCount &closed, T34 head)
 {
     for (T34 t : { head, head.next(), head.nnext() })
         if (closed.ct(t) == 0)
-            mount.lightA(t, 500);
+            mount.lightA(t, 600);
 }
 
 

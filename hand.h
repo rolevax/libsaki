@@ -166,7 +166,7 @@ private:
     std::vector<M37> mBarks;
 };
 
-int operator%(const T37 &ind, const Hand &hand);
+int operator%(T34 ind, const Hand &hand);
 int operator%(const std::vector<T37> &inds, const Hand &hand);
 int operator%(const std::vector<T37> &inds, const HandDream &dream);
 

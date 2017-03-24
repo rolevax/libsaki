@@ -1,8 +1,7 @@
 #include "girls_miyamori.h"
 #include "table.h"
 #include "tilecount.h"
-
-#include <iostream>
+#include "util.h"
 
 
 
@@ -25,14 +24,14 @@ void Toyone::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     if (rinshan)
         return;
 
-    const Hand &hand = table.getHand(mSelf);
+    const Hand &myHand = table.getHand(mSelf);
 
     if (mFirstRiichi.somebody() && mFirstRiichi != mSelf) { // senbu
         if (who == mSelf) {
-            if (hand.isMenzen() && !hand.ready()) {
+            if (myHand.isMenzen() && !myHand.ready()) {
                 for (int ti = 0; ti < 34; ti++) {
                     T34 t(ti);
-                    int mk = hand.hasEffA(t) ? 1000 : -100;
+                    int mk = myHand.hasEffA(t) ? 1400 : -100;
                     mount.lightA(t, mk);
                     mount.lightB(t, mk / 10);
                 }
@@ -40,20 +39,31 @@ void Toyone::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         } else if (who == mFirstRiichi && table.riichiEstablished(mSelf)) {
             for (int ti = 0; ti < 34; ti++) {
                 T34 t(ti);
-                int mk = hand.hasEffA(t) ? 1000 : -100;
+                int mk = myHand.hasEffA(t) ? 1400 : -100;
                 mount.lightA(t, mk);
                 mount.lightB(t, mk / 10);
             }
         }
     }
 
-    if (who == mSelf && hand.barks().size() == 4) { // tomobiki
+    if (who == mSelf && myHand.barks().size() == 4) { // tomobiki
         for (int ti = 0; ti < 34; ti++) {
             T34 t(ti);
-            int mk = hand.hasEffA(t) ? 1000 : -100;
+            int mk = myHand.hasEffA(t) ? 1000 : -100;
             mount.lightA(t, mk);
             mount.lightB(t, mk / 10);
         }
+    }
+
+    // push pon-material to rivals to enforce tomobiki
+    if (!myHand.isMenzen() && who != mSelf) {
+        std::vector<T34> myEffs = myHand.effA4();
+        std::vector<T34> herEffs = table.getHand(who).effA();
+
+        for (T34 t : myEffs)
+            if (myHand.canPon(t))
+                if (!util::has(herEffs, t))
+                    mount.lightA(t, 1000);
     }
 }
 

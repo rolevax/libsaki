@@ -155,10 +155,15 @@ void Seiko::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
                 mount.lightA(t, -PAIR_MK);
             }
         }
-        if (needPair > 0)
-            for (T34 t : tiles34::YAO13)
+        if (needPair > 0) {
+            using namespace tiles34;
+            for (T34 t : YAO13)
                 if (closed.ct(t) == 1)
                     mount.lightA(t, PAIR_MK);
+            for (T34 t : { 2_m, 8_m, 2_p, 8_p, 2_s, 8_s })
+                if (closed.ct(t) == 1)
+                    mount.lightA(t, PAIR_MK);
+        }
     }
 }
 

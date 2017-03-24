@@ -840,7 +840,7 @@ std::vector<T37> Hand::makeChoices(SwapOk ok) const
 
 
 
-int operator%(const T37 &ind, const Hand &hand)
+int operator%(T34 ind, const Hand &hand)
 {
     int inClosed = hand.closed().ct(ind.dora());
 
