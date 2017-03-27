@@ -38,7 +38,10 @@ void Toki::onActivate(const Table &table, TicketFolder &tickets)
     if (mToRiichi)
         return;
 
-    if (tickets.can(ActCode::DICE) || tickets.spinOnly())
+    if (tickets.can(ActCode::DICE)
+            || tickets.can(ActCode::NEXT_ROUND)
+            || tickets.can(ActCode::END_TABLE)
+            || tickets.spinOnly())
         return; // not a branch point
 
     if (mCd > 0) {
