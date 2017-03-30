@@ -1208,9 +1208,10 @@ void Table::endTable()
         rank[getRank(Who(w)) - 1] = Who(w);
 
     mPoints[rank[0].index()] += mDeposit;
-    mPoints[rank[0].index()] += mRule.hill;
 
     std::array<int, 4> scores(mPoints);
+    scores[rank[0].index()] += mRule.hill;
+
     for (int &sc : scores) {
         sc -= mRule.returnLevel;
         int q = std::abs(sc) / 1000;
