@@ -61,6 +61,7 @@ public:
     int han() const;
     int base() const;
     const Yakus &yakus() const;
+    std::vector<const char *> keys() const;
     ManganType manganType() const;
     bool hasYaku() const;
 

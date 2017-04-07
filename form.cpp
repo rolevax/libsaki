@@ -28,9 +28,27 @@ std::array<const char *, NUM_YAKUS> YAKU_STRS {
 
     "Mnh", "Jnc", "Rpk", "C1t", "Mnc",
 
-    "X13", "Xd3", "X4a",  "Xt1", "Xs4", "Xd4",
+    "X13", "Xd3", "X4a", "Xt1", "Xs4", "Xd4",
     "Xcr", "Xr1", "Xth", "Xch", "X4k", "X9r",
     "W13", "W4a", "W9r"
+};
+
+std::array<const char *, NUM_YAKUS> YAKU_UNIQUES {
+    "rci", "ipt", "tmo", "tny", "pnf",
+    "y1y", "y2y", "y3y",
+    "jk1", "jk2", "jk3", "jk4",
+    "bk1", "bk2", "bk3", "bk4",
+    "ipk", "rns", "hai", "hou", "ckn",
+    "ss1", "it1", "ct1",
+
+    "wri", "ss2", "it2", "ct2",
+    "toi", "ctt", "sak", "skt", "stk", "hrt", "s3g", "h1t", "jc2",
+
+    "mnh", "jc3", "rpk", "c1t", "mnc",
+
+    "x13", "xd3", "x4a", "xt1", "xs4", "xd4",
+    "xcr", "xr1", "xth", "xch", "x4k", "x9r",
+    "w13", "w4a", "w9r"
 };
 
 
@@ -98,6 +116,17 @@ int Form::base() const
 const Form::Yakus &Form::yakus() const
 {
     return mYakus;
+}
+
+std::vector<const char *> Form::keys() const
+{
+    std::vector<const char*> res;
+
+    for (int i = 0; i < NUM_YAKUS; i++)
+        if (mYakus[i])
+            res.push_back(YAKU_UNIQUES[i]);
+
+    return res;
 }
 
 ManganType Form::manganType() const
