@@ -60,6 +60,9 @@ public:
     int fu() const;
     int han() const;
     int base() const;
+    int dora() const;
+    int uradora() const;
+    int akadora() const;
     const Yakus &yakus() const;
     std::vector<const char *> keys() const;
     ManganType manganType() const;

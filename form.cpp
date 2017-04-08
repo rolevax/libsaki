@@ -113,6 +113,21 @@ int Form::base() const
     return mBase;
 }
 
+int Form::dora() const
+{
+    return mDora;
+}
+
+int Form::uradora() const
+{
+    return mUradora;
+}
+
+int Form::akadora() const
+{
+    return mAkadora;
+}
+
 const Form::Yakus &Form::yakus() const
 {
     return mYakus;
