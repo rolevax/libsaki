@@ -3,6 +3,8 @@
 
 #include "table.h"
 
+#include <functional>
+
 
 
 #define AI_CTORS(Name) \
@@ -21,6 +23,8 @@ class Ai : public TableOperator
 {
 public:
     static Ai *create(Who who, Girl::Id id);
+    static std::vector<Action> filter(const std::vector<Action> &orig,
+                                      std::function<bool(const Action &)> pass);
 
     virtual ~Ai() = default;
 
@@ -35,33 +39,27 @@ protected:
     Action maxHappy(const TableView &view);
     virtual Action forward(const TableView &view);
 
-    virtual int happy(const TableView &view, int iter, const Action &action);
+    /// return value must be an element in 'choices'
+    virtual Action think(const TableView &view, const std::vector<Action> &choices);
+
+    Action placeHolder(const TableView &view);
+    Action thinkTrivial(const std::vector<Action> &choices);
 
 private:
-    Action placeHolder(const TableView &view);
-
-    int happy0(const TableView &view, const Action &action);
-    int happy1(const TableView &view, const Action &action);
-    int happy1D(const TableView &view, const Action &action);
-    int happy1A(const TableView &view, const Action &action);
-    int happy2(const TableView &view, const Action &action);
-    int happy2D(const TableView &view, const Action &action);
-    int happy2A(const TableView &view, const Action &action);
-    int happy3(const TableView &view, const Action &action);
+    Action thinkAggress(const std::vector<Action> &choices, const TableView &view);
+    Action thinkDefense(const std::vector<Action> &choices, const TableView &view,
+                        const std::vector<Who> &threats);
+    Action thinkDefenseDiscard(const std::vector<Action> &choices, const TableView &view,
+                               const std::vector<Who> &threats);
+    Action thinkAttack(const std::vector<Action> &choices, const TableView &view);
+    Action thinkAttackDiscard(std::vector<Action> &choices, const TableView &view);
+    Action thinkAttackDiscardWide(std::vector<Action> &choices, const TableView &view);
 
     bool riichi(const TableView &view);
 
     int chance(const TableView &view, Who tar, T34 t);
     int ruleChance(const TableView &view, Who tar, T34 t);
     int logicChance(const TableView &view, T34 t);
-
-private:
-    struct Picture
-    {
-        int lastUpdate = 0;
-        bool defense = false;
-        std::vector<Who> threats;
-    } mPicture;
 };
 
 

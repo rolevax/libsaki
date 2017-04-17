@@ -165,6 +165,28 @@ inline bool common(V v1, V v2)
     return any(v1, f);
 }
 
+template<typename V, typename F>
+inline V maxs(V inputs, F measure, int floor)
+{
+    int max = floor;
+    V res;
+
+    for (const auto &a : inputs) {
+        int comax = measure(a);
+
+        if (comax > max) {
+            max = comax;
+            res.clear();
+        }
+
+        if (comax == max) {
+            res.emplace_back(a);
+        }
+    }
+
+    return res;
+}
+
 ///
 /// @brief alias for 'std::cout << arg << std::endl;', just save typing
 ///

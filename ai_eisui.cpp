@@ -7,21 +7,30 @@ namespace saki
 
 
 
-int AiHatsumi::happy(const TableView &view, int iter, const Action &action)
+Action AiHatsumi::think(const TableView &view, const std::vector<Action> &choices)
 {
-    if (iter > 0)
-        return Ai::happy(view, iter - 1, action);
+    // pick dmk-F
+    auto take = [&view](const Action &action) {
+        return action.act() == ActCode::DAIMINKAN
+                && view.getFocusTile().suit() == Suit::F;
+    };
 
-    // pick dmk-F, filter-out discard-F
-    if (action.act() == ActCode::DAIMINKAN && view.getFocusTile().suit() == Suit::F) {
-        return 2;
-    } else if (action.isDiscard()) {
-        const T37 &tile = action.act() == ActCode::SWAP_OUT ? action.tile()
-                                                            : view.myHand().drawn();
-        return tile.suit() == Suit::F ? 0 : 1;
-    } else {
-        return 1;
-    }
+    auto it = std::find_if(choices.begin(), choices.end(), take);
+    if (it != choices.end())
+        return *it;
+
+    // filter-out discard-F
+    auto pass = [&view](const Action &action) {
+        if (action.isDiscard()) {
+            const T37 &tile = action.act() == ActCode::SWAP_OUT ? action.tile()
+                                                                : view.myHand().drawn();
+            return tile.suit() != Suit::F;
+        } else {
+            return true;
+        }
+    };
+
+    return Ai::think(view, filter(choices, pass));
 }
 
 

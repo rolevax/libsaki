@@ -29,26 +29,26 @@ Action AiSawaya::forward(const TableView &view)
     }
 }
 
-int AiSawaya::happy(const TableView &view, int iter, const Action &action)
+Action AiSawaya::think(const TableView &view, const std::vector<Action> &choices)
 {
     const Sawaya &girl = static_cast<const Sawaya&>(view.me());
     assert(girl.getId() == Girl::Id::SHISHIHARA_SAWAYA);
 
     if (!girl.usingRedCloud() || view.getRiver(mSelf).size() > 3)
-        return Ai::happy(view, iter, action);
+        return Ai::think(view, choices);
 
-    if (iter == 0) {
-        if (action.isDiscard()) {
-            // reserve Z when using red cloud
-            const T37 &tile = action.act() == ActCode::SWAP_OUT ? action.tile()
-                                                                : view.myHand().drawn();
-            return tile.isZ() ? 0 : 1;
+    // reserve Z when using red cloud
+    auto pass = [&view](const Action &act) {
+        if (act.isDiscard()) {
+            const T37 &tile = act.act() == ActCode::SWAP_OUT ? act.tile()
+                                                             : view.myHand().drawn();
+            return !tile.isZ();
         } else {
-            return 1;
+            return true;
         }
-    } else {
-        return Ai::happy(view, iter - 1, action);
-    }
+    };
+
+    return Ai::think(view, filter(choices, pass));
 }
 
 

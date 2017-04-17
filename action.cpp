@@ -111,6 +111,13 @@ bool Action::isDiscard() const
     return mAct == ActCode::SWAP_OUT || mAct == ActCode::SPIN_OUT;
 }
 
+bool Action::isChii() const
+{
+    return mAct == ActCode::CHII_AS_LEFT
+            || mAct == ActCode::CHII_AS_MIDDLE
+            || mAct == ActCode::CHII_AS_RIGHT;
+}
+
 bool Action::isCpdmk() const
 {
     return mAct == ActCode::CHII_AS_LEFT

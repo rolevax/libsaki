@@ -54,6 +54,7 @@ public:
     int encodeArg() const;
 
     bool isDiscard() const;
+    bool isChii() const;
     bool isCpdmk() const;
     bool isIrs() const;
 

@@ -15,7 +15,7 @@ class AiSawaya : public Ai
 public:
     AI_CTORS(AiSawaya)
     Action forward(const TableView &view) override;
-    int happy(const TableView &view, int iter, const Action &action) override;
+    Action think(const TableView &view, const std::vector<Action> &choices) override;
 };
 
 

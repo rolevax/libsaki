@@ -32,6 +32,17 @@ Ai *Ai::create(Who who, Girl::Id id)
     }
 }
 
+std::vector<Action> Ai::filter(const std::vector<Action> &orig,
+                               std::function<bool(const Action &)> pass)
+{
+    std::vector<Action> res(orig.size());
+
+    auto it = std::copy_if(orig.begin(), orig.end(), res.begin(), pass);
+    res.resize(std::distance(res.begin(), it));
+
+    return res;
+}
+
 void Ai::onActivated(Table &table)
 {
     TableView view(table.getView(mSelf));
@@ -44,8 +55,10 @@ void Ai::onActivated(Table &table)
     if (view.iForwardAny())
         decision = forward(view);
 
-    if (decision.act() == ActCode::NOTHING)
-        decision = maxHappy(view);
+    if (decision.act() == ActCode::NOTHING) {
+        std::vector<Action> choices = view.myChoices();
+        decision = think(view, choices);
+    }
 #endif
 
     assert(decision.act() != ActCode::NOTHING);
@@ -57,53 +70,21 @@ Ai::Ai(Who who)
 {
 }
 
-Action Ai::maxHappy(const TableView &view)
-{
-    mPicture = Picture();
-
-    std::vector<Action> choices = view.myChoices();
-    for (int iter = 0; iter < 10; iter++) {
-        int maxHappy = 0;
-        std::vector<Action> maxActs;
-
-        for (const Action &act : choices) {
-            int comax = happy(view, iter, act);
-            if (comax > maxHappy) {
-                maxHappy = comax;
-                maxActs.clear();
-            }
-
-            if (comax == maxHappy)
-                maxActs.push_back(act);
-        }
-
-        choices = maxActs;
-        if (choices.size() == 1)
-            break;
-    }
-
-    assert(!choices.empty());
-    return choices[0];
-}
-
 Action Ai::forward(const TableView &view)
 {
     (void) view;
     unreached("unoverriden Ai::forward");
 }
 
-int Ai::happy(const TableView &view, int iter, const Action &action)
+Action Ai::think(const TableView &view, const std::vector<Action> &choices)
 {
-    assert(iter >= 0);
-    assume_opt_out(iter >= 0);
+    Action res;
 
-    switch (iter) {
-    case 0:     return happy0(view, action);
-    case 1:     return happy1(view, action);
-    case 2:     return happy2(view, action);
-    case 3:     return happy3(view, action);
-    default:    return 1;
-    }
+    res = thinkTrivial(choices);
+    if (res.act() != ActCode::NOTHING)
+        return res;
+
+    return thinkAggress(choices, view);
 }
 
 Action Ai::placeHolder(const TableView &view)
@@ -111,160 +92,182 @@ Action Ai::placeHolder(const TableView &view)
     return view.mySweep();
 }
 
-int Ai::happy0(const TableView &view, const Action &action)
+Action Ai::thinkTrivial(const std::vector<Action> &choices)
 {
-    (void) view;
+    using AC = ActCode;
 
-    switch (action.act()) {
-    case ActCode::END_TABLE:
-        return 3;
-    case ActCode::NEXT_ROUND:
-    case ActCode::TSUMO:
-    case ActCode::RON:
-    case ActCode::DICE:
-        return 2;
-    default:
-        return 1;
+    for (Action act : choices)
+        if (act.act() == AC::END_TABLE)
+            return act;
+
+    for (Action act : choices) {
+        AC a = act.act();
+        if (a == AC::NEXT_ROUND || a == AC::TSUMO || a == AC::RON || a == AC::DICE)
+            return act;
     }
+
+    return Action();
 }
 
-int Ai::happy1(const TableView &view, const Action &action)
+Action Ai::thinkAggress(const std::vector<Action> &choices, const TableView &view)
 {
-    if (mPicture.lastUpdate < 1) {
-        if (view.riichiEstablished(mSelf) || view.getRiver(mSelf).size() < 6) {
-            mPicture.defense = false;
-        } else {
-            for (int w = 0; w < 4; w++) {
-                Who who(w);
-                if (who == mSelf)
-                    continue;
-                int riverCt = view.getRiver(who).size();
-                int barkCt = view.getBarks(who).size();
-                if (view.riichiEstablished(who)
-                        || (riverCt > 5 && barkCt >= 2)
-                        || (riverCt > 12 && barkCt >= 1))
-                    mPicture.threats.push_back(who);
-            }
+    bool defense = false;
+    std::vector<Who> threats;
 
-            if (mPicture.threats.empty()) {
-                mPicture.defense = false;
-            } else {
-                int step = view.myHand().step();
-                int doraCt = view.getDrids() % view.myHand() + view.myHand().ctAka5();
-                mPicture.defense = step > 1 || doraCt < 2;
-            }
+    if (!(view.riichiEstablished(mSelf) || view.getRiver(mSelf).size() < 6)) {
+        for (int w = 0; w < 4; w++) {
+            Who who(w);
+            if (who == mSelf)
+                continue;
+            int riverCt = view.getRiver(who).size();
+            int barkCt = view.getBarks(who).size();
+            if (view.riichiEstablished(who)
+                    || (riverCt > 5 && barkCt >= 2)
+                    || (riverCt > 12 && barkCt >= 1))
+                threats.push_back(who);
         }
 
-        mPicture.lastUpdate = 1;
+        if (!threats.empty()) {
+            int step = view.myHand().step();
+            int doraCt = view.getDrids() % view.myHand() + view.myHand().ctAka5();
+            defense = step > 1 || doraCt < 1;
+        }
     }
 
-    return mPicture.defense ? happy1D(view, action) : happy1A(view, action);
+    return defense ? thinkDefense(choices, view, threats)
+                   : thinkAttack(choices, view);
 }
 
-int Ai::happy1D(const TableView &view, const Action &action)
+Action Ai::thinkDefense(const std::vector<Action> &choices, const TableView &view,
+                        const std::vector<Who> &threats)
 {
-    switch (action.act()) {
-    case ActCode::RYUUKYOKU:
-        return 2;
-    case ActCode::CHII_AS_MIDDLE:
-        return view.getRuleInfo().ippatsu && view.inIppatsuCycle() ? 5 : 0;
-    case ActCode::CHII_AS_LEFT:
-        return view.getRuleInfo().ippatsu && view.inIppatsuCycle() ? 4 : 0;
-    case ActCode::CHII_AS_RIGHT:
-        return view.getRuleInfo().ippatsu && view.inIppatsuCycle() ? 3 : 0;
-    case ActCode::PASS:
-        return 2;
-    default:
-        return 1;
-    case ActCode::ANKAN:
-    case ActCode::RIICHI:
-    case ActCode::KAKAN:
-    case ActCode::PON:
-    case ActCode::DAIMINKAN:
-        return 0;
+    using AC = ActCode;
+
+    bool pass = false;
+    std::vector<Action> nexts;
+    for (const Action &act : choices) {
+        AC a = act.act();
+        if (a == AC::RYUUKYOKU)
+            return act;
+        if (act.isChii() && view.getRuleInfo().ippatsu && view.inIppatsuCycle())
+            return act;
+        if (a == AC::PASS)
+            pass = true;
+        if (act.isDiscard())
+            nexts.emplace_back(act);
     }
+
+    if (pass)
+        return Action(AC::PASS);
+
+    return thinkDefenseDiscard(nexts, view, threats);
 }
 
-int Ai::happy1A(const TableView &view, const Action &action)
+Action Ai::thinkDefenseDiscard(const std::vector<Action> &choices, const TableView &view,
+                               const std::vector<Who> &threats)
 {
+    assert(!choices.empty());
+    assert(util::all(choices, [](const Action &a) { return a.isDiscard(); }));
+
+    auto happy = [&](const Action &action) {
+        const T37 &out = action.act() == ActCode::SWAP_OUT ? action.tile()
+                                                           : view.myHand().drawn();
+        int cc = 0;
+        for (Who who : threats)
+            cc = std::max(cc, chance(view, who, out));
+        int safe = 20 - cc;
+        return 100 * safe + 10 * (view.getDrids() % out + out.isAka5()) + (34 - out.id34());
+    };
+
+    std::vector<int> happys;
+    happys.resize(choices.size());
+    std::transform(choices.begin(), choices.end(), happys.begin(), happy);
+
+    auto it = std::max_element(happys.begin(), happys.end());
+    return choices[it - happys.begin()];
+}
+
+Action Ai::thinkAttack(const std::vector<Action> &choices, const TableView &view)
+{
+    using AC = ActCode;
+
     bool barked = !view.myHand().isMenzen();
     int sw = view.getSelfWind();
     int rw = view.getRoundWind();
 
-    switch (action.act()) {
-    case ActCode::RIICHI:
-        return riichi(view) ? 3 : 0;
-    case ActCode::ANKAN:
-        return !view.myHand().hasEffA(action.tile()) ? 2 : 0;
-    case ActCode::PON:
-        return (barked || view.getFocusTile().isYakuhai(sw, rw))
-                && view.myHand().hasEffA(view.getFocusTile()) ? 6 : 0;
-    case ActCode::CHII_AS_MIDDLE:
-        return (barked && view.myHand().hasEffA(view.getFocusTile())) ? 5 : 0;
-    case ActCode::CHII_AS_LEFT:
-        return (barked && view.myHand().hasEffA(view.getFocusTile())) ? 4 : 0;
-    case ActCode::CHII_AS_RIGHT:
-        return (barked && view.myHand().hasEffA(view.getFocusTile())) ? 3 : 0;
-    case ActCode::PASS:
-        return 2;
-    default:
-        return 1;
-    case ActCode::DAIMINKAN:
-    case ActCode::KAKAN:
-    case ActCode::RYUUKYOKU:
-        return 0;
-    }
-}
+    // drunk ai, making no sense, nearyly random, don't read it.
+    // just too lazy to write a good one.
+    for (const Action &act : choices) {
+        if (act.act() == AC::PON) {
+            if ((barked || view.getFocusTile().isYakuhai(sw, rw))
+                    && view.myHand().hasEffA(view.getFocusTile()))
+                return act;
+        }
 
-int Ai::happy2(const TableView &view, const Action &action)
-{
-    if (mPicture.lastUpdate < 2) {
-        // nothing to update yet now
-        mPicture.lastUpdate = 2;
+        if (act.isChii()) {
+            if (barked && view.myHand().hasEffA(view.getFocusTile()))
+                return act;
+        }
     }
 
-    return mPicture.defense ? happy2D(view, action) : happy2A(view, action);
+    for (const Action &act : choices)
+        if (act.act() == AC::PASS)
+            return act;
+
+    std::vector<Action> nexts;
+
+    for (const Action &act : choices) {
+        if (act.act() == AC::RIICHI && riichi(view))
+            return act;
+
+        if (act.act() == AC::ANKAN && !view.myHand().hasEffA(act.tile()))
+            return act;
+
+        if (act.isDiscard())
+            nexts.emplace_back(act);
+    }
+
+    return thinkAttackDiscard(nexts, view);
 }
 
-int Ai::happy2D(const TableView &view, const Action &action)
+Action Ai::thinkAttackDiscard(std::vector<Action> &choices, const TableView &view)
 {
-    assert(action.act() == ActCode::SWAP_OUT || action.act() == ActCode::SPIN_OUT);
+    // drunk ai, just a placeholder, don't read it
+    assert(!choices.empty());
+    assert(util::all(choices, [](const Action &a) { return a.isDiscard(); }));
 
-    const T37 &out = action.act() == ActCode::SWAP_OUT ? action.tile()
-                                                       : view.myHand().drawn();
-    int cc = 0;
-    for (Who who : mPicture.threats)
-        cc = std::max(cc, chance(view, who, out));
-    int safe = 20 - cc;
-    return 100 * safe + 10 * (view.getDrids() % out + out.isAka5()) + (34 - out.id34());
-}
-
-int Ai::happy2A(const TableView &view, const Action &action)
-{
-    HandDream dream = view.myHand().withAction(action);
-
-    switch (action.act()) {
-    case ActCode::SWAP_OUT:
-    case ActCode::SPIN_OUT:
+    auto stepHappy = [&](const Action &action) {
+        HandDream dream = view.myHand().withAction(action);
         return 2 + (13 - dream.step());
-    default:
-        unreached("Ai::happy2");
-    }
+    };
+
+    std::vector<Action> minSteps = util::maxs(choices, stepHappy, 0);
+    if (minSteps.size() == 1)
+        return minSteps[0];
+
+    return thinkAttackDiscardWide(minSteps, view);
 }
 
-int Ai::happy3(const TableView &view, const Action &action)
+Action Ai::thinkAttackDiscardWide(std::vector<Action> &choices, const TableView &view)
 {
-    assert(action.act() == ActCode::SWAP_OUT || action.act() == ActCode::SPIN_OUT);
+    // drunk ai, just a placeholder, don't read it
+    assert(!choices.empty());
+    assert(util::all(choices, [](const Action &a) { return a.isDiscard(); }));
 
-    HandDream dream = view.myHand().withAction(action);
-    const T37 &out = action.act() == ActCode::SWAP_OUT ? action.tile()
-                                                       : view.myHand().drawn();
+    auto happy = [&](const Action &action) {
+        HandDream dream = view.myHand().withAction(action);
+        const T37 &out = action.act() == ActCode::SWAP_OUT ? action.tile()
+                                                           : view.myHand().drawn();
 
-    int remainEffA = view.visibleRemain().ct(dream.effA());
-    int floatTrash = (5 - (view.getDrids() % out + out.isAka5()))
-            + 2 * (view.getRiver(mSelf).size() < 6 ? out.isYao() : !out.isYao());
+        int remainEffA = view.visibleRemain().ct(dream.effA());
+        int floatTrash = (5 - (view.getDrids() % out + out.isAka5()))
+                + 2 * (view.getRiver(mSelf).size() < 6 ? out.isYao() : !out.isYao());
 
-    return 2 + 10 * remainEffA + floatTrash;
+        return 2 + 10 * remainEffA + floatTrash;
+    };
+
+    std::vector<Action> maxHappys = util::maxs(choices, happy, 0);
+    return maxHappys[0];
 }
 
 bool Ai::riichi(const TableView &view)
@@ -282,19 +285,9 @@ bool Ai::riichi(const TableView &view)
         acts.emplace_back(ActCode::SWAP_OUT, t);
     if (spinnable)
         acts.emplace_back(ActCode::SPIN_OUT);
-    // TODO dangerous code:
-    //      1. assuming calling happy3 does not smashes states
-    //         sol: use list-ordered picture-update
-    //      2. should make it more reduced and reused and safe
-    //         such as maxHappy(TableView(view, temp)),
-    std::vector<int> happys;
-    happys.resize(acts.size());
-    std::transform(acts.begin(), acts.end(), happys.begin(),
-                   [&](const Action &a) { return happy3(view, a); });
-    auto maxi = std::max_element(happys.begin(), happys.end());
-    const Action &act = acts[maxi - happys.begin()];
-    HandDream dream = hand.withAction(act);
 
+    Action act = thinkAttackDiscardWide(acts, view);
+    HandDream dream = hand.withAction(act);
     int est = dream.estimate(view.getRuleInfo(),
                              view.getSelfWind(), view.getRoundWind(),
                              view.getDrids());

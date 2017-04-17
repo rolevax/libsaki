@@ -14,7 +14,9 @@ class AiKuro : public Ai
 {
 public:
     AI_CTORS(AiKuro)
-    int happy(const TableView &view, int iter, const Action &action) override;
+
+protected:
+    Action think(const TableView &view, const std::vector<Action> &choices) override;
 };
 
 

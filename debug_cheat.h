@@ -45,12 +45,12 @@ namespace cheat
 
 
 #ifdef LIBSAKI_CHEAT_ROUND
-const int round = 0;
+const int round = 1;
 const int extra = 0;
-const int dealer = 2;
+const int dealer = 1;
 const bool allLast = false;
 const int deposit = 0;
-const uint32_t state = 851877720;
+const uint32_t state = 708596229;
 #endif
 
 

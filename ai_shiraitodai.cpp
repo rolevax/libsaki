@@ -9,53 +9,57 @@ namespace saki
 
 
 
-int AiTakami::happy(const TableView &view, int iter, const Action &action)
+Action AiTakami::think(const TableView &view, const std::vector<Action> &choices)
 {
+    Action act = thinkTrivial(choices);
+    if (act.act() != ActCode::NOTHING)
+        return act;
+
     if (view.getRiver(mSelf).empty()
             && view.myHand().barks().empty()
             && !view.isAllLast()) {
-        if (iter > 0)
-            return Ai::happy(view, iter - 1, action);
+        // first discard of a non-all-last
+        const Takami &takami = static_cast<const Takami&>(view.me());
+        assert(takami.getId() == Girl::Id::SHIBUYA_TAKAMI);
 
-        if (action.isDiscard()) {
-            // first discard of a non-all-last
-            const Takami &takami = static_cast<const Takami&>(view.me());
-            assert(takami.getId() == Girl::Id::SHIBUYA_TAKAMI);
-            const T37 &out = action.act() == ActCode::SWAP_OUT ? action.tile()
-                                                               : view.myHand().drawn();
-            return out.isZ() + (out.suit() == Suit::Y) + takami.d3gNeed(out);
-        } else {
-            return action.act() == ActCode::TSUMO ? 6 : 0;
+        int max = 0;
+        Action res;
+        for (const Action &act : choices) {
+            if (act.isDiscard()) {
+                const T37 &out = act.act() == ActCode::SWAP_OUT ? act.tile()
+                                                                : view.myHand().drawn();
+                int comax = out.isZ() + (out.suit() == Suit::Y) + takami.d3gNeed(out);
+                if (comax > max) {
+                    max = comax;
+                    res = act;
+                }
+            }
         }
-    } else {
-        return Ai::happy(view, iter, action);
+
+        if (res.act() != ActCode::NOTHING)
+            return res;
     }
+
+    return Ai::think(view, choices);
 }
 
 
 
-int AiSeiko::happy(const TableView &view, int iter, const Action &action)
+Action AiSeiko::think(const TableView &view, const std::vector<Action> &choices)
 {
-    if (iter > 0)
-        return Ai::happy(view, iter - 1, action);
+    auto isDmk = [](const Action &a) { return a.act() == ActCode::DAIMINKAN; };
+    auto it = std::find_if(choices.begin(), choices.end(), isDmk);
+    if (it != choices.end())
+        return *it;
 
-    if (action.isCpdmk()) {
-        if (view.myHand().barks().size() < 3) {
-            ActCode act = action.act();
-            switch (act) {
-            case ActCode::DAIMINKAN:
-                return 3;
-            case ActCode::PON:
-                return 2;
-            default: // chii cases
-                return 0;
-            }
-        } else {
-            return 0;
-        }
-    } else {
-        return 1;
-    }
+    auto isPon = [](const Action &a) { return a.act() == ActCode::PON; };
+    it = std::find_if(choices.begin(), choices.end(), isPon);
+    if (it != choices.end())
+        return *it;
+
+    // never chii
+    auto pass = [](const Action &a) { return !a.isChii(); };
+    return Ai::think(view, filter(choices, pass));
 }
 
 

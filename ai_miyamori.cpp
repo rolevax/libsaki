@@ -8,20 +8,21 @@ namespace saki
 
 
 
-int AiToyone::happy(const TableView &view, int iter, const Action &action)
+Action AiToyone::think(const TableView &view, const std::vector<Action> &choices)
 {
-    if (iter > 0)
-        return Ai::happy(view, iter - 1, action);
+    // always riichi when available
+    auto take = [](const Action &act) { return act.act() == ActCode::RIICHI; };
+    auto it = std::find_if(choices.begin(), choices.end(), take);
+    if (it != choices.end())
+        return *it;
 
-    if (action.isCpdmk()) {
-        // as tomibiki is not working so well in 0.7.4
+    auto pass = [](const Action &action) {
+        // as tomibiki is not working so well
         // also, override 1pt-canceling in defense
-        return 0;
-    } else if (action.act() == ActCode::RIICHI) {
-        return 2; // afraid what afraid
-    } else {
-        return 1;
-    }
+        return !action.isCpdmk();
+    };
+
+    return Ai::think(view, filter(choices, pass));
 }
 
 
