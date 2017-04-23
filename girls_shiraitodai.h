@@ -15,7 +15,7 @@ class Teru : public Girl
 {
 public:
     GIRL_CTORS(Teru)
-    void onMonkey(std::array<Exist, 4> &exists, const Princess &princess);
+    void onMonkey(std::array<Exist, 4> &exists, const Princess &princess) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
     void onRoundEnded(const Table &table, RoundResult result,
                       const std::vector<Who> &openers, Who gunner,
@@ -69,7 +69,7 @@ public:
 
     void onDice(Rand &rand, const Table &table, TicketFolder &tickets) override;
     bool checkInit(Who who, const Hand &init, const Princess &princess, int iter) override;
-    void onMonkey(std::array<Exist, 4> &exists, const Princess &princess);
+    void onMonkey(std::array<Exist, 4> &exists, const Princess &princess) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
 
     void nonMonkey(Rand &rand, TileCount &init, Mount &mount,
