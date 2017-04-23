@@ -52,7 +52,7 @@ public:
     const T37 &getFocusTile() const;
     const std::vector<T37> &getDrids() const;
     const RuleInfo &getRuleInfo() const;
-    int getSelfWind() const;
+    int getSelfWind(Who who) const;
     int getRoundWind() const;
     TileCount visibleRemain() const;
     Who findGirl(Girl::Id id) const;

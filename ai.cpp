@@ -78,11 +78,37 @@ Action Ai::forward(const TableView &view)
 
 Action Ai::think(const TableView &view, const std::vector<Action> &choices)
 {
-    Action res;
+    if (choices.empty()) {
+        util::p("Ai.think: get empty choices");
+        return placeHolder(view);
+    }
 
-    res = thinkTrivial(choices);
+    Action res = thinkTrivial(choices);
     if (res.act() != ActCode::NOTHING)
         return res;
+
+    Who hatsumi = view.findGirl(Girl::Id::USUZUMI_HATSUMI);
+    if (hatsumi.somebody() && hatsumi != mSelf && view.getSelfWind(hatsumi) == 4) {
+        const std::vector<M37> &barks = view.getBarks(hatsumi);
+        using namespace tiles34;
+        if (barks.size() == 1 && (barks[0][0] == 1_f || barks[0][0] == 4_f)) {
+            T34 another(Suit::F, 5 - barks[0][0].val());
+            auto pass = [another, &view](const Action &act) {
+                if (act.act() == ActCode::SWAP_OUT)
+                    return act.tile() != another;
+                else if (act.act() == ActCode::SPIN_OUT)
+                    return view.myHand().drawn() != another;
+                else if (act.act() == ActCode::RIICHI)
+                    return false;
+                else
+                    return true;
+            };
+
+            std::vector<Action> next = filter(choices, pass);
+            if (!next.empty())
+                return thinkAggress(next, view);
+        }
+    }
 
     return thinkAggress(choices, view);
 }
@@ -192,7 +218,7 @@ Action Ai::thinkAttack(const std::vector<Action> &choices, const TableView &view
     using AC = ActCode;
 
     bool barked = !view.myHand().isMenzen();
-    int sw = view.getSelfWind();
+    int sw = view.getSelfWind(mSelf);
     int rw = view.getRoundWind();
 
     // drunk ai, making no sense, nearyly random, don't read it.
@@ -289,7 +315,7 @@ bool Ai::riichi(const TableView &view)
     Action act = thinkAttackDiscardWide(acts, view);
     HandDream dream = hand.withAction(act);
     int est = dream.estimate(view.getRuleInfo(),
-                             view.getSelfWind(), view.getRoundWind(),
+                             view.getSelfWind(mSelf), view.getRoundWind(),
                              view.getDrids());
 
     return est < 7000;

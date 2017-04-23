@@ -47,13 +47,20 @@ Action AiTakami::think(const TableView &view, const std::vector<Action> &choices
 
 Action AiSeiko::think(const TableView &view, const std::vector<Action> &choices)
 {
-    auto isDmk = [](const Action &a) { return a.act() == ActCode::DAIMINKAN; };
-    auto it = std::find_if(choices.begin(), choices.end(), isDmk);
+    auto find = [&choices](ActCode act) {
+        auto is = [act](const Action &a) { return a.act() == act; };
+        return std::find_if(choices.begin(), choices.end(), is);
+    };
+
+    auto it = find(ActCode::RON);
     if (it != choices.end())
         return *it;
 
-    auto isPon = [](const Action &a) { return a.act() == ActCode::PON; };
-    it = std::find_if(choices.begin(), choices.end(), isPon);
+    it = find(ActCode::DAIMINKAN);
+    if (it != choices.end())
+        return *it;
+
+    it = find(ActCode::PON);
     if (it != choices.end())
         return *it;
 

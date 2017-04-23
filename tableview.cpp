@@ -182,9 +182,9 @@ const RuleInfo &TableView::getRuleInfo() const
     return mTable.getRuleInfo();
 }
 
-int TableView::getSelfWind() const
+int TableView::getSelfWind(Who who) const
 {
-    return mTable.getSelfWind(mViewer);
+    return mTable.getSelfWind(who);
 }
 
 int TableView::getRoundWind() const

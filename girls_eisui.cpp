@@ -40,7 +40,7 @@ void Hatsumi::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
             T34 t(Suit::F, v);
             // prevent rivals from having F-pairs
             // let them to have floating useless F
-            mount.lightA(t, hand.ct(t) >= 1 ? -50 : (table.riichiEstablished(who) ? 500 : 100));
+            mount.lightA(t, hand.ct(t) >= 1 ? -50 : (table.riichiEstablished(who) ? 500 : 80));
         }
         return;
     }
@@ -156,7 +156,7 @@ void Kasumi::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         return;
 
     int turn = table.getRiver(mSelf).size();
-    if (turn > 10)
+    if (turn > 12)
         return;
 
     if (who == mSelf) {
@@ -172,7 +172,7 @@ void Kasumi::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
             if (currStep <= 1) {
                 T34 t(mZimSuit, v);
                 if (!hand.hasEffA(t))
-                    mount.lightA(t, 300);
+                    mount.lightA(t, 280);
             }
         }
     } else { // rival's draw
