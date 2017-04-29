@@ -40,13 +40,14 @@ Girl *Girl::create(Who who, int id_)
     case Id::ANETAI_TOYONE:     return new Toyone(who, id);
     case Id::KATAOKA_YUUKI:     return new Yuuki(who, id);
     case Id::HARAMURA_NODOKA:   return new Nodoka(who, id);
+    case Id::NANPO_KAZUE:       return new Kazue(who, id);
     case Id::UESHIGE_SUZU:      return new Suzu(who, id);
     case Id::SUEHARA_KYOUKO:    return new Kyouko(who, id);
     case Id::SHISHIHARA_SAWAYA: return new Sawaya(who, id);
     case Id::HAO_HUIYU: 		return new Huiyu(who, id);
-    case Id::NANPO_KAZUE:       return new Kazue(who, id);
     case Id::INAMURA_KYOUKA:    return new Kyouka(who, id);
     case Id::SHIRATSUKI_SHINO:  return new Shino(who, id);
+    case Id::HONDOU_YUE:        return new Yue(who, id);
     default:
         unreached("unimplemented girl");
     }

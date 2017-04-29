@@ -42,6 +42,16 @@ public:
 
 
 
+class Yue : public Girl
+{
+public:
+    GIRL_CTORS(Yue)
+    void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
+
+private:
+    void dye(const TileCount &closed, Mount &mount);
+};
+
 } // namespace saki
 
 

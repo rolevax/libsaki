@@ -246,6 +246,78 @@ void Kyouka::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
 
 
 
+void Yue::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
+{
+    (void) rinshan;
+
+    if (who != mSelf)
+        return;
+
+    using namespace tiles34;
+    std::vector<T34> guests;
+    std::vector<T34> hosts;
+    {
+        int sw = table.getSelfWind(mSelf);
+        int rw = table.getRoundWind();
+        guests.reserve(3);
+        hosts.reserve(2);
+        for (T34 t : { 1_f, 2_f, 3_f, 4_f })
+            (t.isYakuhai(sw, rw) ? hosts : guests).push_back(t);
+    }
+
+    const Hand &hand = table.getHand(mSelf);
+    int step4 = hand.step4();
+
+    T34 maxGuest;
+    int maxGuestCt = 0;
+    for (T34 g : guests) {
+        int comax = hand.closed().ct(g);
+        if (comax > maxGuestCt) {
+            maxGuest = g;
+            maxGuestCt = comax;
+        }
+    }
+
+    if (step4 <= 1) {
+        // CONTINUE
+        // drag if satisfied, otherwise reject
+        // 1. 1-color 2. closed guest >= 3 3. closed host <= 2
+        // for (2), if guest is eff, >= 2; else >= 3
+    } else {
+        if (maxGuestCt == 0) {
+            for (T34 t : guests)
+                mount.lightA(t, 500);
+        } else if (1 <= maxGuestCt && maxGuestCt <= 2) {
+            mount.lightA(maxGuest, 500);
+        }
+
+        if (maxGuestCt >= 2)
+            dye(hand.closed(), mount);
+
+        for (T34 h : hosts) // reject closed host triplet
+            if (hand.closed().ct(h) >= 2)
+                mount.lightA(h, -50);
+    }
+}
+
+void Yue::dye(const TileCount &closed, Mount &mount)
+{
+    std::array<int, 3> ofss { 0, 9, 18 };
+    auto sum = [&closed](int ofs) {
+        int s = 0;
+        for (int i = 0; i < 9; i++)
+            s += closed.ct(T34(ofs + i));
+        return s;
+    };
+    std::array<int, 3> sums;
+    std::transform(ofss.begin(), ofss.end(), sums.begin(), sum);
+    int ofs = ofss[std::max_element(sums.begin(), sums.end()) - sums.begin()];
+    for (int i = 0; i < 9; i++)
+        mount.lightA(T34(ofs + i), 300);
+}
+
+
+
 } // namespace saki
 
 
