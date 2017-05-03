@@ -271,7 +271,7 @@ void Yue::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     T34 maxGuest;
     int maxGuestCt = 0;
     for (T34 g : guests) {
-        int comax = hand.closed().ct(g);
+        int comax = countGuest(hand, g);
         if (comax > maxGuestCt) {
             maxGuest = g;
             maxGuestCt = comax;
@@ -279,10 +279,16 @@ void Yue::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     }
 
     if (step4 <= 1) {
-        // CONTINUE
-        // drag if satisfied, otherwise reject
-        // 1. 1-color 2. closed guest >= 3 3. closed host <= 2
-        // for (2), if guest is eff, >= 2; else >= 3
+        bool wellDyed = dyed(hand) && limitedHosts(hand, hosts);
+        if (!wellDyed || maxGuestCt < 2) {
+            for (T34 t : hand.effA())
+                mount.lightA(t, -50);
+        } else if (maxGuestCt == 2) {
+            mount.lightA(maxGuest, 300);
+        } else { // maxGuestCt >= 3
+            for (T34 t : hand.effA())
+                mount.lightA(t, 250);
+        }
     } else {
         if (maxGuestCt == 0) {
             for (T34 t : guests)
@@ -291,8 +297,10 @@ void Yue::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
             mount.lightA(maxGuest, 500);
         }
 
-        if (maxGuestCt >= 2)
-            dye(hand.closed(), mount);
+        if (maxGuestCt == 2)
+            dye(hand.closed(), mount, 100);
+        else if (maxGuestCt >= 3)
+            dye(hand.closed(), mount, 200);
 
         for (T34 h : hosts) // reject closed host triplet
             if (hand.closed().ct(h) >= 2)
@@ -300,7 +308,7 @@ void Yue::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     }
 }
 
-void Yue::dye(const TileCount &closed, Mount &mount)
+void Yue::dye(const TileCount &closed, Mount &mount, int mk)
 {
     std::array<int, 3> ofss { 0, 9, 18 };
     auto sum = [&closed](int ofs) {
@@ -313,9 +321,45 @@ void Yue::dye(const TileCount &closed, Mount &mount)
     std::transform(ofss.begin(), ofss.end(), sums.begin(), sum);
     int ofs = ofss[std::max_element(sums.begin(), sums.end()) - sums.begin()];
     for (int i = 0; i < 9; i++)
-        mount.lightA(T34(ofs + i), 300);
+        mount.lightA(T34(ofs + i), mk);
 }
 
+bool Yue::dyed(const Hand &hand)
+{
+    int suitCt = 0;
+
+    for (Suit s : { Suit::M, Suit::P, Suit::S }) {
+        for (int v = 1; v <= 9; v++) {
+            if (hand.ct(T34(s, v)) > 0) {
+                suitCt++;
+                if (suitCt >= 2)
+                    return false;
+                break; // go for next suit
+            }
+        }
+    }
+
+    return true;
+}
+
+int Yue::countGuest(const Hand &hand, T34 g)
+{
+    // count 'closed' only
+    auto isAnkan = [g](const M37 &m) {
+        return m.type() == M37::Type::ANKAN && m[0] == g;
+    };
+
+    if (util::any(hand.barks(), isAnkan))
+        return 4;
+
+    return hand.closed().ct(g);
+}
+
+bool Yue::limitedHosts(const Hand &hand, const std::vector<T34> &hosts)
+{
+    auto aux = [&hand](T34 h) { return hand.closed().ct(h) <= 2; };
+    return util::all(hosts, aux);
+}
 
 
 } // namespace saki
