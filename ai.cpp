@@ -186,7 +186,7 @@ Action Ai::thinkDefense(const std::vector<Action> &choices, const TableView &vie
     if (pass)
         return Action(AC::PASS);
 
-    return thinkDefenseDiscard(nexts, view, threats);
+    return nexts.empty() ? placeHolder(view) : thinkDefenseDiscard(nexts, view, threats);
 }
 
 Action Ai::thinkDefenseDiscard(const std::vector<Action> &choices, const TableView &view,
@@ -253,7 +253,7 @@ Action Ai::thinkAttack(const std::vector<Action> &choices, const TableView &view
             nexts.emplace_back(act);
     }
 
-    return thinkAttackDiscard(nexts, view);
+    return nexts.empty() ? placeHolder(view) : thinkAttackDiscard(nexts, view);
 }
 
 Action Ai::thinkAttackDiscard(std::vector<Action> &choices, const TableView &view)
