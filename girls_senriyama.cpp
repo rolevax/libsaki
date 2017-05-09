@@ -182,7 +182,9 @@ void Sera::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
             int ronHan = f.han();
             int tsumoHan = hand.isMenzen() ? ronHan + 1 : ronHan;
             bool pinfu = f.yakus().test(Yaku::PF);
-            mount.lightA(t, tsumoHan >= (4 + pinfu) ? 400 : -200);
+            bool ok = tsumoHan >= (4 + pinfu);
+            bool modest = tsumoHan <= 7;
+            mount.lightA(t, ok ? (modest ? 400 : 100) : -200);
         }
     } else {
         accelerate(mount, hand, table.getRiver(mSelf), 30);

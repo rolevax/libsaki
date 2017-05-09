@@ -279,8 +279,7 @@ void Yue::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     }
 
     if (step4 <= 1) {
-        bool wellDyed = dyed(hand) && limitedHosts(hand, hosts);
-        if (!wellDyed || maxGuestCt < 2) {
+        if (!dyed(hand) || maxGuestCt < 2) {
             for (T34 t : hand.effA())
                 mount.lightA(t, -50);
         } else if (maxGuestCt == 2) {
@@ -355,11 +354,6 @@ int Yue::countGuest(const Hand &hand, T34 g)
     return hand.closed().ct(g);
 }
 
-bool Yue::limitedHosts(const Hand &hand, const std::vector<T34> &hosts)
-{
-    auto aux = [&hand](T34 h) { return hand.closed().ct(h) <= 2; };
-    return util::all(hosts, aux);
-}
 
 
 } // namespace saki

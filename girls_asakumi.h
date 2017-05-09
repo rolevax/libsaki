@@ -52,7 +52,6 @@ private:
     void dye(const TileCount &closed, Mount &mount, int mk);
     bool dyed(const Hand &hand);
     int countGuest(const Hand &hand, T34 g);
-    bool limitedHosts(const Hand &hand, const std::vector<T34> &hosts);
 };
 
 } // namespace saki
