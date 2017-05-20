@@ -279,14 +279,18 @@ void Yue::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     }
 
     if (step4 <= 1) {
-        if (!dyed(hand) || maxGuestCt < 2) {
-            for (T34 t : hand.effA())
-                mount.lightA(t, -50);
-        } else if (maxGuestCt == 2) {
-            mount.lightA(maxGuest, 300);
-        } else { // maxGuestCt >= 3
-            for (T34 t : hand.effA())
-                mount.lightA(t, 250);
+        if (hand.isMenzen()) { // ignore barked cases
+            if (!dyed(hand)) {
+                for (T34 t : hand.effA())
+                    mount.lightA(t, -50);
+            } else {
+                if (maxGuestCt == 2) {
+                    mount.lightA(maxGuest, 300);
+                } else if (maxGuestCt >= 3) {
+                    for (T34 t : hand.effA())
+                        mount.lightA(t, 250);
+                }
+            }
         }
     } else {
         if (maxGuestCt == 0) {

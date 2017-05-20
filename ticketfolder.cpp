@@ -71,6 +71,20 @@ bool TicketFolder::can(ActCode act) const
     return mTickets[act];
 }
 
+bool TicketFolder::can(const Action &act) const
+{
+    if (!mTickets[act.act()])
+        return false;
+
+    if (act.act() == ActCode::SWAP_OUT)
+        if (!util::has(mSwappables, act.tile()))
+            return false;
+
+    // FUCK other code-and-arg cases not covered yet
+
+    return true;
+}
+
 bool TicketFolder::spinOnly() const
 {
     int sum = std::accumulate(mTickets.begin(), mTickets.end(), 0);

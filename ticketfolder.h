@@ -25,6 +25,7 @@ public:
     bool forwardAny() const;
     bool any() const;
     bool can(ActCode act) const;
+    bool can(const Action &act) const;
     bool spinOnly() const;
     bool swappable(T34 tile) const;
     const std::vector<T37> &swappables() const;

@@ -127,7 +127,7 @@ void Table::start()
 
 void Table::action(Who who, const Action &act)
 {
-    assert(mTicketFolders[who.index()].can(act.act()));
+    assert(mTicketFolders[who.index()].can(act));
 
     int w = who.index();
     bool reactivate = false;
@@ -663,10 +663,6 @@ void Table::tryDraw(Who who)
 
 void Table::swapOut(Who who, const T37 &out)
 {
-    // the ticket argumetns are always cleared lazily
-    // so swappables() is still valid at this time point
-    assert(util::has(mTicketFolders[who.index()].swappables(), out));
-
     mKanContext.leave();
 
     mRivers[who.index()].emplace_back(out);

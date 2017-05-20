@@ -172,7 +172,7 @@ void Kasumi::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
             if (currStep <= 1) {
                 T34 t(mZimSuit, v);
                 if (!hand.hasEffA(t))
-                    mount.lightA(t, 280);
+                    mount.lightA(t, 270);
             }
         }
     } else { // rival's draw

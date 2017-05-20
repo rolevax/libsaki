@@ -79,7 +79,8 @@ Action Ai::forward(const TableView &view)
 Action Ai::think(const TableView &view, const std::vector<Action> &choices)
 {
     if (choices.empty()) {
-        util::p("Ai.think: get empty choices");
+        util::p("Ai.think: get empty choices, self", mSelf.index(),
+                "gid", static_cast<int>(view.me().getId()));
         return placeHolder(view);
     }
 
