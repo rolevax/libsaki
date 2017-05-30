@@ -13,7 +13,7 @@ namespace saki
 
 Action AiSawaya::forward(const TableView &view)
 {
-    if (view.iCan(ActCode::IRS_CHECK)) {
+    if (view.myChoices().can(ActCode::IRS_CHECK)) {
         unsigned mask = 0;
         if (view.getDealer() == mSelf) {
             const Sawaya &girl = static_cast<const Sawaya&>(view.me());
@@ -29,26 +29,19 @@ Action AiSawaya::forward(const TableView &view)
     }
 }
 
-Action AiSawaya::think(const TableView &view, const std::vector<Action> &choices)
+Action AiSawaya::think(const TableView &view, Limits &limits)
 {
     const Sawaya &girl = static_cast<const Sawaya&>(view.me());
     assert(girl.getId() == Girl::Id::SHISHIHARA_SAWAYA);
 
     if (!girl.usingRedCloud() || view.getRiver(mSelf).size() > 3)
-        return Ai::think(view, choices);
+        return Ai::think(view, limits);
 
     // reserve Z when using red cloud
-    auto pass = [&view](const Action &act) {
-        if (act.isDiscard()) {
-            const T37 &tile = act.act() == ActCode::SWAP_OUT ? act.tile()
-                                                             : view.myHand().drawn();
-            return !tile.isZ();
-        } else {
-            return true;
-        }
-    };
+    for (T34 z : tiles34::Z7)
+        limits.addNoOut(z);
 
-    return Ai::think(view, filter(choices, pass));
+    return Ai::think(view, limits);
 }
 
 

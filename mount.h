@@ -2,7 +2,7 @@
 #define SAKI_MOUNT_H
 
 #include "tile.h"
-#include "tilecount.h"
+#include "tile_count.h"
 #include "rand.h"
 
 #include <memory>
@@ -60,8 +60,8 @@ protected:
     MountPrivate &operator=(const MountPrivate &assign) = default;
 
 protected:
-    std::vector<T37> mDrids;
-    std::vector<T37> mUrids;
+    util::Stactor<T37, 5> mDrids;
+    util::Stactor<T37, 5> mUrids;
     int mKanCt = 0;
     int mRemain = 136 - 14;
 
@@ -89,8 +89,8 @@ public:
     int remainA(const T37 &t) const;
     bool affordA(const TileCount &need) const;
 
-    const std::vector<T37> &getDrids() const;
-    const std::vector<T37> &getUrids() const;
+    const util::Stactor<T37, 5> &getDrids() const;
+    const util::Stactor<T37, 5> &getUrids() const;
 
     void lightA(T34 t, int delta, bool rinshan = false);
     void lightA(const T37 &t, int delta, bool rinshan = false);

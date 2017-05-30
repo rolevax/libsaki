@@ -135,7 +135,7 @@ void Seiko::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
 
     const Hand &hand = table.getHand(mSelf);
     const TileCount &closed = hand.closed();
-    const std::vector<M37> &barks = hand.barks();
+    const auto &barks = hand.barks();
 
     static const auto isFish = [](const M37 &m) {
         return m.type() == M37::Type::PON
@@ -169,12 +169,12 @@ void Seiko::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
 
 
 
-void Awai::onDice(Rand &rand, const Table &table, TicketFolder &tickets)
+void Awai::onDice(Rand &rand, const Table &table, Choices &choices)
 {
     (void) rand;
     (void) table;
-    mTicketsBackup = tickets;
-    tickets = TicketFolder(ActCode::IRS_CHECK);
+    mChoicesBackup = choices;
+    choices.setCut();
 }
 
 bool Awai::checkInit(Who who, const Hand &init, const Princess &princess, int iter)
@@ -216,8 +216,7 @@ void Awai::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
             && table.getRiver(who).empty()
             && table.getHand(who).barks().empty()) {
         // dealer's very first draw, slow her down
-        std::vector<T34> effs = table.getHand(who).effA();
-        for (T34 t : effs)
+        for (T34 t : table.getHand(who).effA())
             mount.lightA(t, -ACCEL_MK);
         return;
     }
@@ -236,7 +235,7 @@ void Awai::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
             }
         }
     } else {
-        const std::vector<M37> &barks = table.getHand(mSelf).barks();
+        const auto &barks = table.getHand(mSelf).barks();
         int barkCt = barks.size();
         if (barkCt > 0
                 && util::any(barks, [](const M37 &m) { return m.type() == M37::Type::ANKAN; })
@@ -261,7 +260,7 @@ void Awai::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
                 }
             } else {
                 // don't tsumo too early
-                accelerate(mount, table.getHand(mSelf), std::vector<T37>(), -EJECT_MK);
+                accelerate(mount, table.getHand(mSelf), util::Stactor<T37, 24>(), -EJECT_MK);
                 // don't get the kan-material which is not kanura
                 // (awai can have 2 closed triplets in init hand)
                 for (int ti = 0; ti < 34; ti++)
@@ -306,7 +305,7 @@ void Awai::nonMonkey(Rand &rand, TileCount &init, Mount &mount,
         if (!mount.affordA(ske.need))
             continue;
         auto mayHaveDora = [&princess](T34 t) { return princess.mayHaveDora(t); };
-        if (iter > 100 && util::any(ske.need.t34s(), mayHaveDora))
+        if (iter > 100 && util::any(ske.need.t34s13(), mayHaveDora))
             continue;
 
         // pick the last wait tile
@@ -314,7 +313,7 @@ void Awai::nonMonkey(Rand &rand, TileCount &init, Mount &mount,
             continue;
 
         // done
-        for (const T37 &t : ske.need.t37s(true))
+        for (const T37 &t : ske.need.t37s13(true))
             init.inc(mount.initPopExact(t), 1);
         break;
     }
@@ -331,12 +330,12 @@ int Awai::irsCheckCount() const
     return 1;
 }
 
-TicketFolder Awai::forwardAction(const Table &table, Mount &mount, const Action &action)
+Choices Awai::forwardAction(const Table &table, Mount &mount, const Action &action)
 {
     (void) table;
     (void) mount;
     mDaburi.on = action.mask() & 0b1;
-    return mTicketsBackup;
+    return mChoicesBackup;
 }
 
 int Awai::lastCorner(int dice, int kanCt)
@@ -457,7 +456,7 @@ bool Awai::pickWait(Rand &rand, Awai::InitSketch &ske, Mount &mount)
     }
 
     // make step-1 (or step-0 if lucky)
-    std::vector<T37> kick1ables = ske.need.t37s();
+    util::Stactor<T37, 13> kick1ables = ske.need.t37s13();
     mNeedFirstDraw = true;
     mFirstDraw = kick1ables[rand.gen(kick1ables.size())];
     ske.need.inc(mFirstDraw, -1);

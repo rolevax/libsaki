@@ -18,49 +18,59 @@ Action::Action()
 
 Action::Action(ActCode act)
     : mAct(act)
-    , mArg(0) // use zero to make 'encodeArg' equal
+    , mArg(0) // use zero to guarentee equality
 {
-    assert(!argIsTile()
-           && !argIsShowAka5()
+    assert(!argIsOneT37()
+           && !isCp()
+           && mAct != ActCode::ANKAN
            && mAct != ActCode::KAKAN
-           && mAct != ActCode::IRS_CHECK
-           && mAct != ActCode::IRS_RIVAL);
+           && mAct != ActCode::IRS_CHECK);
 }
 
 Action::Action(ActCode act, int arg)
     : mAct(act)
     , mArg(arg)
 {
-    assert(argIsShowAka5()
-           || mAct == ActCode::KAKAN
-           || mAct == ActCode::IRS_CHECK);
+    assert(mAct == ActCode::KAKAN);
 }
 
-Action::Action(ActCode act, Who who)
+Action::Action(ActCode act, unsigned mask)
     : mAct(act)
-    , mWho(who)
+    , mMask(mask)
 {
-    assert(mAct == ActCode::IRS_RIVAL);
+    assert(mAct == ActCode::IRS_CHECK);
 }
 
 Action::Action(ActCode act, const T37 &t)
     : mAct(act)
-    , mTile(t)
+    , mT37(t)
 {
-    assert(argIsTile());
+    assert(argIsOneT37());
 }
 
-bool Action::argIsTile() const
+Action::Action(ActCode act, T34 t)
+    : mAct(act)
+    , mT34(t)
 {
-    return mAct == ActCode::SWAP_OUT || mAct == ActCode::ANKAN;
+    assert(mAct == ActCode::ANKAN);
 }
 
-bool Action::argIsShowAka5() const
+Action::Action(ActCode act, int showAka5, const T37 &t)
+    : mAct(act)
+    , mArg(showAka5)
+    , mT37(t)
 {
-    return mAct == ActCode::CHII_AS_LEFT
-            || mAct == ActCode::CHII_AS_MIDDLE
-            || mAct == ActCode::CHII_AS_RIGHT
-            || mAct == ActCode::PON;
+    assert(isCp());
+}
+
+bool Action::argIsOneT37() const
+{
+    return mAct == ActCode::SWAP_OUT || mAct == ActCode::SWAP_RIICHI;
+}
+
+bool Action::argIsOneIntegral() const
+{
+    return mAct == ActCode::KAKAN || mAct == ActCode::IRS_CHECK;
 }
 
 ActCode Action::act() const
@@ -68,15 +78,21 @@ ActCode Action::act() const
     return mAct;
 }
 
-const T37 &Action::tile() const
+const T37 &Action::t37() const
 {
-    assert(argIsTile());
-    return mTile;
+    assert(argIsOneT37() || isCp());
+    return mT37;
+}
+
+T34 Action::t34() const
+{
+    assert(mAct == ActCode::ANKAN);
+    return mT34;
 }
 
 int Action::showAka5() const
 {
-    assert(argIsShowAka5());
+    assert(isCp());
     return mArg;
 }
 
@@ -89,26 +105,17 @@ int Action::barkId() const
 unsigned Action::mask() const
 {
     assert(mAct == ActCode::IRS_CHECK);
-    return static_cast<unsigned>(mArg);
-}
-
-Who Action::rival() const
-{
-    assert(mAct == ActCode::IRS_RIVAL);
-    return mWho;
-}
-
-int Action::encodeArg() const
-{
-    if (mAct == ActCode::SWAP_OUT || mAct == ActCode::ANKAN)
-        return mTile.id34() + (mTile.isAka5() ? 100 : 0);
-    else
-        return mArg;
+    return mMask;
 }
 
 bool Action::isDiscard() const
 {
     return mAct == ActCode::SWAP_OUT || mAct == ActCode::SPIN_OUT;
+}
+
+bool Action::isRiichi() const
+{
+    return mAct == ActCode::SWAP_RIICHI || mAct == ActCode::SPIN_RIICHI;
 }
 
 bool Action::isChii() const
@@ -118,20 +125,44 @@ bool Action::isChii() const
             || mAct == ActCode::CHII_AS_RIGHT;
 }
 
-bool Action::isCpdmk() const
+bool Action::isCp() const
 {
     return mAct == ActCode::CHII_AS_LEFT
             || mAct == ActCode::CHII_AS_MIDDLE
             || mAct == ActCode::CHII_AS_RIGHT
-            || mAct == ActCode::PON
-            || mAct == ActCode::DAIMINKAN;
+            || mAct == ActCode::PON;
+}
+
+bool Action::isCpdmk() const
+{
+    return isCp() || mAct == ActCode::DAIMINKAN;
 }
 
 bool Action::isIrs() const
 {
-    return mAct == ActCode::IRS_CHECK
-            || mAct == ActCode::IRS_CLICK
-            || mAct == ActCode::IRS_RIVAL;
+    return mAct == ActCode::IRS_CHECK || mAct == ActCode::IRS_CLICK;
+}
+
+bool Action::operator==(const Action &that) const
+{
+    if (mAct != that.mAct)
+        return false;
+
+    if (argIsOneT37())
+        return mT37 == that.mT37;
+    if (isCp())
+        return mArg == that.mArg && mT37 == that.mT37;
+    if (argIsOneIntegral())
+        return mArg == that.mArg;
+
+    return true;
+}
+
+Action Action::toRiichi() const
+{
+    assert(isDiscard());
+    return mAct == ActCode::SPIN_OUT ? Action(ActCode::SPIN_RIICHI)
+                                     : Action(ActCode::SWAP_RIICHI, mT37);
 }
 
 

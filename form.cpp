@@ -54,26 +54,26 @@ std::array<const char *, NUM_YAKUS> YAKU_UNIQUES {
 
 
 Form::Form(const Hand &ready, const T37 &pick, const PointInfo &info, const RuleInfo &rule,
-           const std::vector<T37> &drids, const std::vector<T37> &urids)
+           const util::Stactor<T37, 5> &drids, const util::Stactor<T37, 5> &urids)
     : mDealerWin(info.selfWind == 1)
     , mRon(true)
     , mExtraRound(info.extraRound)
 {
     initDora(drids, urids, ready, pick);
 
-    if (ready.withPick(pick).step13() == -1) {
+    if (ready.peekPickStep13(pick) == -1) {
         init13(info, ready.closed(), pick);
-    } else if (ready.withPick(pick).step4() == -1) {
+    } else if (ready.peekPickStep4(pick) == -1) {
         init4(info, rule, ready, pick);
     } else {
         // assume (?) 2pk is always bigger than 7-pairs
-        assert(ready.withPick(pick).step7() == -1);
+        assert(ready.peekPickStep7(pick) == -1);
         init7(info, rule, ready.closed());
     }
 }
 
 Form::Form(const Hand &full, const PointInfo &info, const RuleInfo &rule,
-           const std::vector<T37> &drids, const std::vector<T37> &urids)
+           const util::Stactor<T37, 5> &drids, const util::Stactor<T37, 5> &urids)
     : mDealerWin(info.selfWind == 1)
     , mRon(false)
     , mExtraRound(info.extraRound)
@@ -468,7 +468,7 @@ void Form::init7TanyaoOrHonroutou(const TileCount &ready)
         mYakus.set(Yaku::HRT);
 }
 
-void Form::initDora(const std::vector<T37> &drids, const std::vector<T37> &urids,
+void Form::initDora(const util::Stactor<T37, 5> &drids, const util::Stactor<T37, 5> &urids,
                     const Hand &full)
 {
     mDora = drids % full;
@@ -476,7 +476,7 @@ void Form::initDora(const std::vector<T37> &drids, const std::vector<T37> &urids
     mAkadora = full.ctAka5();
 }
 
-void Form::initDora(const std::vector<T37> &drids, const std::vector<T37> &urids,
+void Form::initDora(const util::Stactor<T37, 5> &drids, const util::Stactor<T37, 5> &urids,
                     const Hand &ready, const T37 &last)
 {
     mDora = (drids % ready) + (drids % last);

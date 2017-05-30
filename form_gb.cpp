@@ -11,10 +11,10 @@ namespace saki
 FormGb::FormGb(const Hand &ready, const T37 &pick, const PointInfo &info, bool juezhang)
     : mDianpao(true)
 {
-    if (ready.withPick(pick).step13() == -1) {
+    if (ready.peekPickStep13(pick) == -1) {
         init13(info);
     } else {
-        if (ready.withPick(pick).step4() == -1) {
+        if (ready.peekPickStep4(pick) == -1) {
             std::vector<Explain4> exps = Explain4::make(ready.closed(), ready.barks(),
                                                         pick, mDianpao);
 
@@ -28,7 +28,7 @@ FormGb::FormGb(const Hand &ready, const T37 &pick, const PointInfo &info, bool j
             }
         }
 
-        if (ready.withPick(pick).step7Gb() == -1) {
+        if (ready.peekPickStep7Gb(pick) == -1) {
             Fans fs = calcFansF7(info, ready);
             int tempFan = calcFan(fs);
             if (tempFan > mFan) {
@@ -139,7 +139,7 @@ FormGb::Fans FormGb::calcFansF7(const PointInfo &info, const Hand &hand) const
     Fans res;
 
     // Lianqidui
-    const std::vector<T34> ts = hand.closed().t34s();
+    const auto &ts = hand.closed().t34s13();
     bool lqd = ts[0].suit() == ts.back().suit() && ts[0].val() + 6 == ts.back().val();
     if (lqd)
         res.push_back(Fan::LQD88);
@@ -850,8 +850,7 @@ void FormGb::checkV1F4(FormGb::Fans &res, const Explain4 &exp,
     // Bianzhang
     // Kanzhang
     // Dandiaojiang
-    HandDream wait = hand.hasDrawn() ? hand.withSpin() : HandDream::stay(hand);
-    if (wait.effA().size() == 1) {
+    if (hand.closed().effA(hand.barks().size()).size() == 1) {
         // effA of wait-hand, not full (including drawn) hand
         switch (exp.wait()) {
         case Wait::SIDE:

@@ -4,7 +4,6 @@
 #include "who.h"
 #include "hand.h"
 #include "girl.h"
-#include "ticketfolder.h"
 #include "tablefocus.h"
 
 #include <vector>
@@ -28,20 +27,13 @@ class TableView
 public:
     // not using inheritance in Girl since modes may be unions of skills
     // using enum type is temporal, should use bitset, set by Girl's virtual method
-    enum class Mode { NORMAL, HUIYU_LIMITED };
+    enum class Mode { NORMAL };
 
     explicit TableView(const Table &table, Who viewer, Mode mode);
     TableView(const TableView &copy) = default;
 
-    bool iCan(ActCode act) const;
-    bool iCanOnlySpin() const;
-    bool iForwardAny() const;
-    bool iForwardAll() const;
-    std::vector<Action> myChoices() const;
     Action mySweep() const;
-    const std::vector<T37> &mySwappables() const;
-    const std::vector<T34> &myAnkanables() const;
-    const std::vector<int> &myKakanables() const;
+    const Choices &myChoices() const;
     const Girl &me() const;
     const Hand &myHand() const;
     int myRank() const;
@@ -50,15 +42,15 @@ public:
     Who getDealer() const;
     const TableFocus &getFocus() const;
     const T37 &getFocusTile() const;
-    const std::vector<T37> &getDrids() const;
+    const util::Stactor<T37, 5> &getDrids() const;
     const RuleInfo &getRuleInfo() const;
     int getSelfWind(Who who) const;
     int getRoundWind() const;
     TileCount visibleRemain() const;
     Who findGirl(Girl::Id id) const;
 
-    const std::vector<T37> &getRiver(Who who) const;
-    const std::vector<M37> &getBarks(Who who) const;
+    const util::Stactor<T37, 24> &getRiver(Who who) const;
+    const util::Stactor<M37, 4> &getBarks(Who who) const;
 
     bool genbutsu(Who whose, T34 t) const;
     bool riichiEstablished(Who who) const;

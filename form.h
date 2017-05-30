@@ -48,11 +48,11 @@ public:
     using Yakus = std::bitset<Yaku::NUM_YAKUS>;
 
     Form(const Hand &ready, const T37 &pick, const PointInfo &info, const RuleInfo &rule,
-         const std::vector<T37> &drids = std::vector<T37>(),
-         const std::vector<T37> &urids = std::vector<T37>());
+         const util::Stactor<T37, 5> &drids = util::Stactor<T37, 5>(),
+         const util::Stactor<T37, 5> &urids = util::Stactor<T37, 5>());
     Form(const Hand &full, const PointInfo &info, const RuleInfo &rule,
-         const std::vector<T37> &drids = std::vector<T37>(),
-         const std::vector<T37> &urids = std::vector<T37>());
+         const util::Stactor<T37, 5> &drids = util::Stactor<T37, 5>(),
+         const util::Stactor<T37, 5> &urids = util::Stactor<T37, 5>());
 
     ~Form() = default;
 
@@ -82,9 +82,9 @@ private:
 
     void init7Dye(const TileCount &ready);
     void init7TanyaoOrHonroutou(const TileCount &ready);
-    void initDora(const std::vector<T37> &drids, const std::vector<T37> &urids,
+    void initDora(const util::Stactor<T37, 5> &drids, const util::Stactor<T37, 5> &urids,
                   const Hand &full);
-    void initDora(const std::vector<T37> &drids, const std::vector<T37> &urids,
+    void initDora(const util::Stactor<T37, 5> &drids, const util::Stactor<T37, 5> &urids,
                   const Hand &ready, const T37 &last);
 
     void checkPick(Yakus &ys, const PointInfo &info) const;

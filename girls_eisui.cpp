@@ -45,7 +45,7 @@ void Hatsumi::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         return;
     }
 
-    const std::vector<M37> &barks = table.getHand(mSelf).barks();
+    const auto &barks = table.getHand(mSelf).barks();
     const TileCount &closed = table.getHand(mSelf).closed();
     if (barks.size() < 2)
         return;
@@ -107,14 +107,14 @@ void Hatsumi::nonMonkey(Rand &rand, TileCount &init, Mount &mount,
 
 
 
-void Kasumi::onDice(Rand &rand, const Table &table, TicketFolder &tickets)
+void Kasumi::onDice(Rand &rand, const Table &table, Choices &choices)
 {
     (void) rand;
     (void) table;
 
     if (mZim.able) {
-        mTicketsBackup = tickets;
-        tickets = TicketFolder(ActCode::IRS_CHECK);
+        mChoicesBackup = choices;
+        choices.setCut();
     }
 }
 
@@ -181,7 +181,7 @@ void Kasumi::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     }
 }
 
-TicketFolder Kasumi::forwardAction(const Table &table, Mount &mount, const Action &action)
+Choices Kasumi::forwardAction(const Table &table, Mount &mount, const Action &action)
 {
     (void) table;
     (void) mount;
@@ -191,7 +191,7 @@ TicketFolder Kasumi::forwardAction(const Table &table, Mount &mount, const Actio
     if (mZim.on)
         mZim.able = false; // once on, never off
 
-    return mTicketsBackup;
+    return mChoicesBackup;
 }
 
 const IrsCheckRow &Kasumi::irsCheckRow(int index) const

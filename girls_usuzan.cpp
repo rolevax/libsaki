@@ -9,7 +9,7 @@ namespace saki
 
 
 
-void Sawaya::onDice(Rand &rand, const Table &table, TicketFolder &tickets)
+void Sawaya::onDice(Rand &rand, const Table &table, Choices &choices)
 {
     (void) rand;
     (void) table;
@@ -37,8 +37,8 @@ void Sawaya::onDice(Rand &rand, const Table &table, TicketFolder &tickets)
     }
 
     if (util::any(mClouds, [](const IrsCheckRow &r) { return r.able; })) {
-        mTicketsBackup = tickets;
-        tickets = TicketFolder(ActCode::IRS_CHECK);
+        mChoicesBackup = choices;
+        choices.setCut();
     }
 }
 
@@ -62,7 +62,7 @@ void Sawaya::onMonkey(std::array<Exist, 4> &exists, const Princess &princess)
             exists[mSelf.index()].inc(T34(i), 70);
 }
 
-void Sawaya::onActivate(const Table &table, TicketFolder &tickets)
+void Sawaya::onActivate(const Table &table, Choices &choices)
 {
     const Hand &hand = table.getHand(mSelf);
     mKamuys[Kamuy::PA_KOR].able = !mConsumedPaKor && hand.ready();
@@ -70,9 +70,9 @@ void Sawaya::onActivate(const Table &table, TicketFolder &tickets)
     if (util::none(mKamuys, [](const IrsCheckRow &r) { return r.able; }))
         return;
 
-    if (tickets.can(ActCode::SWAP_OUT) || tickets.can(ActCode::SPIN_OUT)) {
-        mTicketsBackup = tickets;
-        tickets.enable(ActCode::IRS_CLICK);
+    if (choices.can(ActCode::SWAP_OUT) || choices.can(ActCode::SPIN_OUT)) {
+        mChoicesBackup = choices;
+        choices.setExtra(true);
     }
 }
 
@@ -145,11 +145,6 @@ void Sawaya::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
             mount.lightA(T34(i), 120, rinshan);
 }
 
-const std::array<bool, 4> &Sawaya::irsRivalMask() const
-{
-    return mRivalMask;
-}
-
 const IrsCheckRow &Sawaya::irsCheckRow(int index) const
 {
     if (mPredice) {
@@ -167,18 +162,18 @@ int Sawaya::irsCheckCount() const
                     : static_cast<int>(Kamuy::NUM_KAMUY);
 }
 
-TicketFolder Sawaya::forwardAction(const Table &table, Mount &mount, const Action &action)
+Choices Sawaya::forwardAction(const Table &table, Mount &mount, const Action &action)
 {
     assert(action.isIrs());
 
+    Choices cut;
+    cut.setCut();
+
     switch (action.act()) {
     case ActCode::IRS_CLICK:
-        return TicketFolder(ActCode::IRS_CHECK);
+        return cut;
     case ActCode::IRS_CHECK:
         return handleIrsCheck(table, mount, action.mask());
-    case ActCode::IRS_RIVAL:
-        mPaKorTarget = action.rival();
-        return mTicketsBackup;
     default:
         unreached("Sawaya::forwardAction");
         break;
@@ -233,11 +228,9 @@ bool Sawaya::usingRedCloud() const
     return mClouds[Cloud::RED].on;
 }
 
-TicketFolder Sawaya::handleIrsCheck(const Table &table, Mount &mount, unsigned mask)
+Choices Sawaya::handleIrsCheck(const Table &table, Mount &mount, unsigned mask)
 {
     (void) table;
-
-    TicketFolder res = mTicketsBackup; // copy
 
     if (mPredice) {
         for (int i = 0; i < Cloud::NUM_CLOUD; i++) {
@@ -253,8 +246,14 @@ TicketFolder Sawaya::handleIrsCheck(const Table &table, Mount &mount, unsigned m
     } else {
         for (int i = 0; i < Kamuy::NUM_KAMUY; i++) {
             mKamuys[i].on = mask & (0b1 << (Kamuy::NUM_KAMUY - 1 - i));
-            if (mKamuys[i].on) // consume kamuy
+            if (mKamuys[i].on) { // consume kamuy
                 mKamuys[i].able = false;
+                if (i == Kamuy::PA_KOR) {
+                    mKamuys[Kamuy::PA_KOR_R].able = false;
+                    mKamuys[Kamuy::PA_KOR_C].able = false;
+                    mKamuys[Kamuy::PA_KOR_L].able = false;
+                }
+            }
         }
 
         if (mKamuys[Kamuy::AT_KOR].on) {
@@ -272,13 +271,16 @@ TicketFolder Sawaya::handleIrsCheck(const Table &table, Mount &mount, unsigned m
 
         if (mKamuys[Kamuy::PA_KOR].on) {
             mConsumedPaKor = true;
-            for (int w = 0; w < 4; w++)
-                mRivalMask[w] = w != mSelf.index();
-            res = TicketFolder(ActCode::IRS_RIVAL);
+            if (mKamuys[Kamuy::PA_KOR_R].on)
+                mPaKorTarget = mSelf.right();
+            else if (mKamuys[Kamuy::PA_KOR_C].on)
+                mPaKorTarget = mSelf.cross();
+            else if (mKamuys[Kamuy::PA_KOR_L].on)
+                mPaKorTarget = mSelf.left();
         }
     }
 
-    return res;
+    return mChoicesBackup;
 }
 
 

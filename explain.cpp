@@ -26,7 +26,7 @@ Explain4::Explain4(const std::vector<T34> &heads, Wait wait, T34 pair,
     assert(0 <= mO3b && mO3b <= mC3b && mC3b <= mO4b && mO4b <= mC4b && mC4b <= 4);
 }
 
-std::vector<Explain4> Explain4::make(const TileCount &count, const std::vector<M37> &barks,
+std::vector<Explain4> Explain4::make(const TileCount &count, const util::Stactor<M37, 4> &barks,
                                      T34 pick, bool ron)
 {
     std::vector<Explain4> res;

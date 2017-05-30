@@ -178,12 +178,12 @@ bool Mount::affordA(const TileCount &need) const
     return true;
 }
 
-const std::vector<T37> &Mount::getDrids() const
+const util::Stactor<T37, 5> &Mount::getDrids() const
 {
     return mDrids;
 }
 
-const std::vector<T37> &Mount::getUrids() const
+const util::Stactor<T37, 5> &Mount::getUrids() const
 {
     return mUrids;
 }
@@ -268,13 +268,13 @@ void Mount::loadB(const T37 &t, int count)
 
 void Mount::flipIndic(Rand &rand)
 {
-    mDrids.push_back(popFrom(rand, Exit::DORA));
+    mDrids.pushBack(popFrom(rand, Exit::DORA));
 }
 
 void Mount::digIndic(Rand &rand)
 {
     while (mUrids.size() < mDrids.size())
-        mUrids.push_back(popFrom(rand, Exit::URADORA));
+        mUrids.pushBack(popFrom(rand, Exit::URADORA));
 }
 
 const std::unique_ptr<Mount::Erwin> &Mount::prepareSuperpos(Exit exit, std::size_t pos)

@@ -85,10 +85,10 @@ std::string Shino::popUpStr() const
     return oss.str();
 }
 
-void Shino::powerPinfu(const Hand &hand, const std::vector<T37> &r,
+void Shino::powerPinfu(const Hand &hand, const util::Stactor<T37, 24> &r,
                        Mount &mount, int posMk)
 {
-    std::vector<T34> cores;
+    util::Stactor<T34, 34> cores;
     const TileCount &closed = hand.closed();
     for (T34 t : hand.effA()) {
         if (t.isZ())
@@ -97,16 +97,16 @@ void Shino::powerPinfu(const Hand &hand, const std::vector<T37> &r,
         // side
         if (t.val() == 3) {
             if (closed.ct(t) == 0 && closed.ct(t.prev()) > 0 && closed.ct(t.pprev()) > 0)
-                cores.push_back(t);
+                cores.pushBack(t);
         } else if (t.val() == 7) {
             if (closed.ct(t) == 0 && closed.ct(t.next()) > 0 && closed.ct(t.nnext()) > 0)
-                cores.push_back(t);
+                cores.pushBack(t);
         }
 
         // clamp
         if (2 <= t.val() && t.val() <= 8) {
             if (closed.ct(t) == 0 && closed.ct(t.prev()) > 0 && closed.ct(t.next()) > 0)
-                cores.push_back(t);
+                cores.pushBack(t);
         }
     }
 
@@ -115,7 +115,7 @@ void Shino::powerPinfu(const Hand &hand, const std::vector<T37> &r,
         mount.lightA(t, posMk);
 }
 
-void Shino::powerIipei(const Hand &hand, const std::vector<T37> &river,
+void Shino::powerIipei(const Hand &hand, const util::Stactor<T37, 24> &river,
                             Mount &mount, int posMk, int negMk)
 {
     if (!hand.isMenzen())

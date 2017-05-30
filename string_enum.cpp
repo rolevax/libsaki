@@ -13,11 +13,11 @@ namespace saki
 
 std::array<const char*, static_cast<int>(ActCode::NUM_ACTCODE)> actCodes
 {
-    "NOTHING", "PASS", "SWAP_OUT", "SPIN_OUT",
+    "NOTHING", "PASS", "SWAP_OUT", "SPIN_OUT", "SWAP_RIICHI", "SPIN_RIICHI",
     "CHII_AS_LEFT", "CHII_AS_MIDDLE", "CHII_AS_RIGHT",
-    "PON", "DAIMINKAN", "ANKAN", "KAKAN", "RIICHI", "TSUMO",
-    "RON", "RYUUKYOKU", "END_TABLE", "NEXT_ROUND", "DICE",
-    "IRS_CHECK", "IRS_CLICK", "IRS_RIVAL"
+    "PON", "DAIMINKAN", "ANKAN", "KAKAN", "TSUMO", "RON",
+    "RYUUKYOKU", "END_TABLE", "NEXT_ROUND", "DICE",
+    "IRS_CHECK", "IRS_CLICK",
 };
 
 const char *stringOf(ActCode act)

@@ -75,9 +75,9 @@ Girl::Id Girl::getId() const
     return mId;
 }
 
-void Girl::onDice(Rand &rand, const Table &table, TicketFolder &tickets)
+void Girl::onDice(Rand &rand, const Table &table, Choices &choices)
 {
-    (void) rand; (void) table; (void) tickets;
+    (void) rand; (void) table; (void) choices;
 }
 
 void Girl::onMonkey(std::array<Exist, 4> &exists, const Princess &princess)
@@ -90,9 +90,9 @@ bool Girl::checkInit(Who who, const Hand &init, const Princess &princess, int it
     (void) who; (void) init; (void) iter; (void) princess; return true;
 }
 
-void Girl::onActivate(const Table &table, TicketFolder &tickets)
+void Girl::onActivate(const Table &table, Choices &choices)
 {
-    (void) table; (void) tickets;
+    (void) table; (void) choices;
 }
 
 void Girl::onInbox(Who who, const Action &action)
@@ -127,11 +127,6 @@ void Girl::onRoundEnded(const Table &table, RoundResult result,
     (void) table; (void) result; (void) openers; (void) gunner; (void) fs;
 }
 
-const std::array<bool, 4> &Girl::irsRivalMask() const
-{
-    unreached("unoverriden irsRivalMask()");
-}
-
 void Girl::nonMonkey(Rand &rand, TileCount &init, Mount &mount,
                      std::bitset<Girl::NUM_NM_SKILL> &presence,
                      const Princess &princess)
@@ -152,7 +147,7 @@ int Girl::irsCheckCount() const
     return 0;
 }
 
-TicketFolder Girl::forwardAction(const Table &table, Mount &mount, const Action &action)
+Choices Girl::forwardAction(const Table &table, Mount &mount, const Action &action)
 {
     (void) table; (void) mount; (void) action;
     unreached("unoverriden forwardAction()");
@@ -163,22 +158,22 @@ std::string Girl::popUpStr() const
     unreached("unoverriden popUpStr()");
 }
 
-void Girl::eraseRivered(std::vector<T34> &ts, const std::vector<T37> &river)
+void Girl::eraseRivered(util::Stactor<T34, 34> &ts, const util::Stactor<T37, 24> &river)
 {
     // 34/37 does not affect equalty
     auto has = [river](T34 t){ return util::has(river, T37(t.id34())); };
     std::remove_if(ts.begin(), ts.end(), has);
 }
 
-void Girl::eraseRivered(std::bitset<34> &ts, const std::vector<T37> &river)
+void Girl::eraseRivered(std::bitset<34> &ts, const util::Stactor<T37, 24> &river)
 {
     for (const T37 &t: river)
         ts.reset(t.id34());
 }
 
-void Girl::accelerate(Mount &mount, const Hand &hand, const std::vector<T37> &river, int delta)
+void Girl::accelerate(Mount &mount, const Hand &hand, const util::Stactor<T37, 24> &river, int delta)
 {
-    std::vector<T34> effs = hand.effA4();
+    util::Stactor<T34, 34> effs = hand.effA4();
 
     // do not draw dropped tiles
     // in order to enable user-controled advance direction

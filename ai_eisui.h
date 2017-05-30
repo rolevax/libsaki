@@ -14,7 +14,7 @@ class AiHatsumi : public Ai
 {
 public:
     AI_CTORS(AiHatsumi)
-    Action think(const TableView &view, const std::vector<Action> &choices) override;
+    Action think(const TableView &view, Limits &limits) override;
 };
 
 class AiKasumi : public Ai

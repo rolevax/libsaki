@@ -2,9 +2,8 @@
 #define SAKI_TILE_H
 
 #include "assume.h"
+#include "util_stactor.h"
 
-#include <array>
-#include <vector>
 #include <ostream>
 #include <cctype>
 #include <cstring>
@@ -91,6 +90,12 @@ public:
     constexpr explicit T34(int val, Suit suit)
         : mId34(_tid34(val, suit))
     {
+    }
+
+    explicit T34(const char *str)
+        : mId34(_tid34(suitOf(str[1]), str[0] - '0'))
+    {
+        assert(str[2] == '\0');
     }
 
     T34(const T34 &copy) = default;
@@ -314,7 +319,8 @@ inline std::ostream &operator<<(std::ostream &os, T34 t)
     return os << t.str();
 }
 
-inline std::ostream &operator<<(std::ostream &os, const std::vector<T34> &ts)
+template<size_t MAX>
+inline std::ostream &operator<<(std::ostream &os, const util::Stactor<T34, MAX> &ts)
 {
     for (size_t i = 0; i < ts.size(); i++) {
         os << ts[i].val();
@@ -436,7 +442,7 @@ private:
     bool mAka5;
 };
 
-inline int operator%(const std::vector<T37> &inds, const T37 &d)
+inline int operator%(const util::Stactor<T37, 5> &inds, const T37 &d)
 {
     int s = 0;
     for (const T37 &ind : inds)
@@ -449,7 +455,8 @@ inline std::ostream &operator<<(std::ostream &os, const T37 &t)
     return os << t.str();
 }
 
-inline std::ostream &operator<<(std::ostream &os, const std::vector<T37> &ts)
+template<size_t MAX>
+inline std::ostream &operator<<(std::ostream &os, const util::Stactor<T37, MAX> &ts)
 {
     for (size_t i = 0; i < ts.size(); i++) {
         os << (ts[i].isAka5() ? 0 : ts[i].val());

@@ -92,7 +92,7 @@ void Replay::onDiced(const Table &table, int die1, int die2)
 void Replay::onDealt(const Table &table)
 {
     for (int w = 0; w < 4; w++) {
-        const auto &ts = table.getHand(Who(w)).closed().t37s(true);
+        const auto &ts = table.getHand(Who(w)).closed().t37s13(true);
         assert(ts.size() == 13);
         for (int i = 0; i < 13; i++)
             rounds.back().tracks[w].init[i] = ts[i];
@@ -382,7 +382,7 @@ TableSnap Replay::look(int roundId, int turn)
     }
 
     for (int w = 0; w < 4; w++)
-        snap[w].hand = hands[w].t37s(true);
+        snap[w].hand = hands[w].t37s13(true);
 
     if (turn > 0) // exit before consumed all turns, means an abort
         snap.endOfRound = true;
@@ -443,11 +443,11 @@ void Replay::lookChii(TableSnap &snap, TileCount &hand, const InAct &in,
     }
 
     if (in.act == In::CHII_AS_LEFT)
-        snap[who.index()].barks.push_back(M37::chii(pick, t1, t2, 0));
+        snap[who.index()].barks.pushBack(M37::chii(pick, t1, t2, 0));
     else if (in.act == In::CHII_AS_MIDDLE)
-        snap[who.index()].barks.push_back(M37::chii(t1, pick, t2, 1));
+        snap[who.index()].barks.pushBack(M37::chii(t1, pick, t2, 1));
     else // in.act == In::CHII_AS_RIGHT
-        snap[who.index()].barks.push_back(M37::chii(t1, t2, pick, 2));
+        snap[who.index()].barks.pushBack(M37::chii(t1, t2, pick, 2));
 
     hand.inc(t1, -1);
     hand.inc(t2, -1);
@@ -467,11 +467,11 @@ void Replay::lookPon(TableSnap &snap, TileCount &hand, int showAka5,
 
     int openIndex = who.looksAt(lastDiscarder);
     if (openIndex == 0)
-        snap[who.index()].barks.push_back(M37::pon(pick, t1, t2, openIndex));
+        snap[who.index()].barks.pushBack(M37::pon(pick, t1, t2, openIndex));
     else if (openIndex == 1)
-        snap[who.index()].barks.push_back(M37::pon(t1, pick, t2, openIndex));
+        snap[who.index()].barks.pushBack(M37::pon(t1, pick, t2, openIndex));
     else // openIndex == 2
-        snap[who.index()].barks.push_back(M37::pon(t1, t2, pick, openIndex));
+        snap[who.index()].barks.pushBack(M37::pon(t1, t2, pick, openIndex));
 
     hand.inc(t1, -1);
     hand.inc(t2, -1);
@@ -492,11 +492,11 @@ void Replay::lookDaiminkan(TableSnap &snap, TileCount &hand, Who who, Who lastDi
     int lay = who.looksAt(lastDiscarder);
     int w = who.index();
     if (lay == 0)
-        snap[w].barks.push_back(M37::daiminkan(pick, pushes[0], pushes[1], pushes[2], lay));
+        snap[w].barks.pushBack(M37::daiminkan(pick, pushes[0], pushes[1], pushes[2], lay));
     else if (lay == 1)
-        snap[w].barks.push_back(M37::daiminkan(pushes[0], pick, pushes[1], pushes[2], lay));
+        snap[w].barks.pushBack(M37::daiminkan(pushes[0], pick, pushes[1], pushes[2], lay));
     else // lay == 2
-        snap[w].barks.push_back(M37::daiminkan(pushes[0], pushes[1], pick, pushes[2], lay));
+        snap[w].barks.pushBack(M37::daiminkan(pushes[0], pushes[1], pick, pushes[2], lay));
 
     for (const T37 t : pushes)
         hand.inc(t, -1);
@@ -514,7 +514,7 @@ void Replay::lookAnkan(TableSnap &snap, TileCount &hand, T34 t34, Who who)
                 if (i < hand.ct(pushes[i].toAka5()))
                     pushes[i] = pushes[i].toAka5();
         // four in hand
-        snap[w].barks.push_back(M37::ankan(pushes[0], pushes[1], pushes[2], pushes[3]));
+        snap[w].barks.pushBack(M37::ankan(pushes[0], pushes[1], pushes[2], pushes[3]));
         hand.inc(pushes[0], -1);
         hand.inc(pushes[1], -1);
         hand.inc(pushes[2], -1);
@@ -530,7 +530,7 @@ void Replay::lookAnkan(TableSnap &snap, TileCount &hand, T34 t34, Who who)
                 if (i < hand.ct(pushes[i].toAka5()))
                     pushes[i] = pushes[i].toAka5();
 
-        snap[w].barks.push_back(M37::ankan(pushes[0], pushes[1], pushes[2], snap.drawn));
+        snap[w].barks.pushBack(M37::ankan(pushes[0], pushes[1], pushes[2], snap.drawn));
         snap.whoDrawn = Who();
         hand.inc(pushes[0], -1);
         hand.inc(pushes[1], -1);

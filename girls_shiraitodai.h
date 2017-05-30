@@ -2,7 +2,6 @@
 #define SAKI_GIRLS_SHIRAITODAI_H
 
 #include "girl.h"
-#include "ticketfolder.h"
 
 
 
@@ -67,7 +66,7 @@ class Awai : public Girl
 public:
     GIRL_CTORS(Awai)
 
-    void onDice(Rand &rand, const Table &table, TicketFolder &tickets) override;
+    void onDice(Rand &rand, const Table &table, Choices &choices) override;
     bool checkInit(Who who, const Hand &init, const Princess &princess, int iter) override;
     void onMonkey(std::array<Exist, 4> &exists, const Princess &princess) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
@@ -78,7 +77,7 @@ public:
 
     const IrsCheckRow &irsCheckRow(int index) const override;
     int irsCheckCount() const override;
-    TicketFolder forwardAction(const Table &table, Mount &mount, const Action &action) override;
+    Choices forwardAction(const Table &table, Mount &mount, const Action &action) override;
 
 private:
     struct InitSketch
@@ -98,7 +97,7 @@ private:
     static const int ACCEL_MK = 800;
     static const int EJECT_MK = 100;
 
-    TicketFolder mTicketsBackup;
+    Choices mChoicesBackup;
     IrsCheckRow mDaburi { false, false, "AWAI_DABURI", true, false };
     T37 mFirstDraw;
     bool mNeedFirstDraw = false;

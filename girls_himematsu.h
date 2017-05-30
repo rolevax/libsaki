@@ -14,7 +14,7 @@ class Suzu : public Girl
 {
 public:
     GIRL_CTORS(Suzu)
-    void onDice(Rand &rand, const Table &table, TicketFolder &tickets) override;
+    void onDice(Rand &rand, const Table &table, Choices &choices) override;
     void onMonkey(std::array<Exist, 4> &exists, const Princess &princess) override;
     bool checkInit(Who who, const Hand &init, const Princess &princess, int iter) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;

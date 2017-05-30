@@ -31,85 +31,60 @@ void Toki::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     accelerate(mount, table.getHand(mSelf), table.getRiver(mSelf), 25);
 }
 
-void Toki::onActivate(const Table &table, TicketFolder &tickets)
+void Toki::onActivate(const Table &table, Choices &choices)
 {
     (void) table;
 
-    if (mToRiichi)
-        return;
-
-    if (tickets.can(ActCode::DICE)
-            || tickets.can(ActCode::NEXT_ROUND)
-            || tickets.can(ActCode::END_TABLE)
-            || tickets.spinOnly())
+    if (choices.can(ActCode::DICE)
+            || choices.can(ActCode::NEXT_ROUND)
+            || choices.can(ActCode::END_TABLE)
+            || choices.spinOnly())
         return; // not a branch point
 
     if (mCd > 0) {
         mCd--;
     } else {
-        mCleanTickets = tickets;
-        tickets.enable(ActCode::IRS_CLICK);
-        mCrazyTickets = tickets;
-        mCrazyTickets.setForwarding(true);
+        mCleanChoices = choices;
+        choices.setExtra(true);
+        mCrazyChoices = choices;
+        mCrazyChoices.setForwarding(true);
     }
 }
 
 void Toki::onInbox(Who who, const Action &action)
 {
-    // range of care, excluding RIICHI, DICE, and IRS
+    using AC = ActCode;
+
+    // range of care, excluding DICE, and IRS
     static const std::vector<ActCode> CHECK {
-        ActCode::PASS, ActCode::SWAP_OUT, ActCode::SPIN_OUT,
-        ActCode::CHII_AS_LEFT, ActCode::CHII_AS_MIDDLE, ActCode::CHII_AS_RIGHT,
-        ActCode::PON, ActCode::DAIMINKAN, ActCode::ANKAN, ActCode::KAKAN,
-        ActCode::TSUMO, ActCode::RON, ActCode::RYUUKYOKU
+        AC::PASS, AC::SWAP_OUT, AC::SPIN_OUT, AC::SWAP_RIICHI, AC::SPIN_RIICHI,
+        AC::CHII_AS_LEFT, AC::CHII_AS_MIDDLE, AC::CHII_AS_RIGHT,
+        AC::PON, AC::DAIMINKAN, AC::ANKAN, AC::KAKAN, AC::TSUMO, AC::RON, AC::RYUUKYOKU
     };
 
     if (who != mSelf || !mCheckNextAction)
         return;
 
-    if (action.act() == ActCode::RIICHI) {
-        mToRiichi = true;
-    } else if (util::has(CHECK, action.act())) {
+    if (util::has(CHECK, action.act())) {
         mCheckNextAction = false;
 
-        std::pair<ActCode, int> move(action.act(), action.encodeArg());
-        if (mToRiichi) {
-            mToRiichi = false;
-            move.first = ActCode::RIICHI; // special mark
-        }
-
-        auto it = std::find(mRecords.begin(), mRecords.end(), move);
+        auto it = std::find(mRecords.begin(), mRecords.end(), action);
         mCd = 2 * (it - mRecords.begin());
         mRecords.clear();
     }
 }
 
-TicketFolder Toki::forwardAction(const Table &table, Mount &mount, const Action &action)
+Choices Toki::forwardAction(const Table &table, Mount &mount, const Action &action)
 {
     if (action.act() == ActCode::IRS_CLICK) {
         if (mInFuture) { // to exit future
             mInFuture = false;
             mCheckNextAction = true;
-            return mCleanTickets;
+            return mCleanChoices;
         } else { // to enter future
             mInFuture = true;
-            return mCrazyTickets;
+            return mCrazyChoices;
         }
-    } else if (action.act() == ActCode::RIICHI) {
-        TicketFolder tickets;
-        tickets.setForwarding(true);
-
-        bool spinnable;
-        std::vector<T37> swappables;
-        table.getHand(mSelf).declareRiichi(swappables, spinnable);
-
-        if (!swappables.empty())
-            tickets.enableSwapOut(swappables);
-        if (spinnable)
-            tickets.enable(ActCode::SPIN_OUT);
-
-        mToRiichi = true;
-        return tickets;
     }
 
     popUpBy(table, PopUpMode::OO);
@@ -127,24 +102,16 @@ TicketFolder Toki::forwardAction(const Table &table, Mount &mount, const Action 
     TokiMountTracker mountTracker(mount, mSelf);
     std::vector<TableObserver*> observers { &mountTracker };
 
-    Table future(table, operators, observers, mSelf, mCleanTickets);
-    std::pair<ActCode, int> record(action.act(), action.encodeArg());
-
-    if (mToRiichi) {
-        mToRiichi = false;
-        record.first = ActCode::RIICHI; // special mark
-        future.action(mSelf, Action(ActCode::RIICHI));
-    } else {
-        future.start();
-    }
+    Table future(table, operators, observers, mSelf, mCleanChoices);
+    future.start();
 
     // push iff not found
-    if (!util::has(mRecords, record))
-        mRecords.push_back(record);
+    if (!util::has(mRecords, action))
+        mRecords.push_back(action);
 
     mEvents = mountTracker.getEvents();
     popUpBy(table, PopUpMode::FV);
-    return mCrazyTickets;
+    return mCrazyChoices;
 }
 
 std::string Toki::popUpStr() const
@@ -175,7 +142,7 @@ void Sera::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     const Hand &hand = table.getHand(mSelf);
     const PointInfo &info = table.getPointInfo(mSelf);
     const RuleInfo &rule = table.getRuleInfo();
-    const std::vector<T37> &drids = mount.getDrids();
+    const auto &drids = mount.getDrids();
     if (hand.ready()) {
         for (T34 t : hand.effA()) {
             Form f(hand, T37(t.id34()), info, rule, drids);

@@ -24,6 +24,7 @@ public:
         CHII, PON, DAIMINKAN, ANKAN, KAKAN
     };
 
+    M37() = default; // garbage value
     M37(const M37 &copy) = default;
     M37 &operator=(const M37 &assign) = default;
     ~M37() = default;
@@ -58,7 +59,7 @@ public:
     void kakan(const T37 &x)
     {
         assert(mType == Type::PON);
-        mTiles.emplace_back(x);
+        mTiles.pushBack(x);
         mType = Type::KAKAN;
     }
 
@@ -72,7 +73,7 @@ public:
         return mLay;
     }
 
-    const std::vector<T37> &tiles() const
+    const util::Stactor<T37, 4> &tiles() const
     {
         return mTiles;
     }
@@ -117,7 +118,7 @@ private:
 private:
     Type mType;
     int mLay;
-    std::vector<T37> mTiles;
+    util::Stactor<T37, 4> mTiles;
 };
 
 inline int operator%(T34 ind, const M37 &m)

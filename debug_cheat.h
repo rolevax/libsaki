@@ -45,12 +45,12 @@ namespace cheat
 
 
 #ifdef LIBSAKI_CHEAT_ROUND
-const int round = 0;
+const int round = 1;
 const int extra = 0;
-const int dealer = 1;
+const int dealer = 3;
 const bool allLast = false;
 const int deposit = 0;
-const uint32_t state = 70859629;
+const uint32_t state = 1291430400;
 #endif
 
 
@@ -59,14 +59,13 @@ const uint32_t state = 70859629;
 using namespace tiles37;
 
 const std::array<std::vector<T37>, 4> inits = {
-    std::vector<T37> { 1_m, 2_m, 3_m, 4_m, 5_m, 6_m, 7_m, 8_m, 1_f, 1_f, 2_p, 3_p },
     std::vector<T37> {  },
+    std::vector<T37> { 1_m, 2_m, 3_m, 7_m, 8_m, 9_m, 2_p,  3_p, 4_p, 7_p, 8_p, 1_f, 1_f  },
     std::vector<T37> {  },
     std::vector<T37> {  }
 };
 
 const std::vector<T37> wall = {
-    9_m, 1_y, 1_y, 1_y, 1_p, 1_p, 1_p, 1_p
 };
 
 const std::vector<T37> dead = {

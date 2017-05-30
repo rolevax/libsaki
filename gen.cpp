@@ -190,16 +190,16 @@ Gen Gen::genForm4F110Horse(Rand &rand, int selfWind, const RuleInfo &rule, bool 
 
     while (true) {
         TileCount closed;
-        std::vector<M37> barks;
+        util::Stactor<M37, 4> barks;
 
         // must be this pair
         closed.inc(T37(Suit::F, selfWind), 2);
 
         // extactly two ankans
         T37 t(tiles34::YAO13[rand.gen(13)].id34());
-        barks.push_back(M37::ankan(t, t, t, t));
+        barks.pushBack(M37::ankan(t, t, t, t));
         t = T37(tiles34::YAO13[rand.gen(13)].id34());
-        barks.push_back(M37::ankan(t, t, t, t));
+        barks.pushBack(M37::ankan(t, t, t, t));
 
         // monkeyly gen the rest things
         for (int i = 0; i < 2; i++) {
@@ -209,10 +209,10 @@ Gen Gen::genForm4F110Horse(Rand &rand, int selfWind, const RuleInfo &rule, bool 
                 T37 t(rand.gen(34));
 
                 if (rand.gen(100) < 5) { // gen quad (must open)
-                    barks.push_back(M37::daiminkan(t, t, t, t, 0));
+                    barks.pushBack(M37::daiminkan(t, t, t, t, 0));
                 } else { // gen tri
                     if (open)
-                        barks.push_back(M37::pon(t, t, t, 0));
+                        barks.pushBack(M37::pon(t, t, t, 0));
                     else
                         closed.inc(t, 3);
                 }
@@ -222,7 +222,7 @@ Gen Gen::genForm4F110Horse(Rand &rand, int selfWind, const RuleInfo &rule, bool 
                 T37 m(l.next().id34());
                 T37 r(m.next().id34());
                 if (open) {
-                    barks.push_back(M37::chii(l, m, r, 1));
+                    barks.pushBack(M37::chii(l, m, r, 1));
                 } else {
                     closed.inc(l, 1);
                     closed.inc(m, 1);
@@ -232,7 +232,7 @@ Gen Gen::genForm4F110Horse(Rand &rand, int selfWind, const RuleInfo &rule, bool 
         }
 
         // drop one as pick, store as drawn
-        std::vector<T37> ts = closed.t37s();
+        util::Stactor<T37, 13> ts = closed.t37s13();
         int drop = rand.gen(ts.size());
         closed.inc(ts[drop], -1);
         Hand h(closed, barks);
@@ -269,7 +269,7 @@ Hand Gen::genFormal4(Rand &rand, int triCent, int quadCent, int openCent)
 Hand Gen::genWild4(Rand &rand, int triCent, int quadCent, int openCent)
 {
     TileCount closed;
-    std::vector<M37> barks;
+    util::Stactor<M37, 4> barks;
 
     for (int i = 0; i < 4; i++) {
         bool open = rand.gen(100) < openCent;
@@ -279,12 +279,12 @@ Hand Gen::genWild4(Rand &rand, int triCent, int quadCent, int openCent)
 
             if (rand.gen(100) < quadCent) { // gen quad
                 if (open)
-                    barks.push_back(M37::daiminkan(t, t, t, t, 0));
+                    barks.pushBack(M37::daiminkan(t, t, t, t, 0));
                 else
-                    barks.push_back(M37::ankan(t, t, t, t));
+                    barks.pushBack(M37::ankan(t, t, t, t));
             } else { // gen tri
                 if (open)
-                    barks.push_back(M37::pon(t, t, t, 1));
+                    barks.pushBack(M37::pon(t, t, t, 1));
                 else
                     closed.inc(t, 3);
             }
@@ -294,7 +294,7 @@ Hand Gen::genWild4(Rand &rand, int triCent, int quadCent, int openCent)
             T37 m(l.next().id34());
             T37 r(m.next().id34());
             if (open) {
-                barks.push_back(M37::chii(l, m, r, 1));
+                barks.pushBack(M37::chii(l, m, r, 1));
             } else {
                 closed.inc(l, 1);
                 closed.inc(m, 1);
@@ -308,7 +308,7 @@ Hand Gen::genWild4(Rand &rand, int triCent, int quadCent, int openCent)
     closed.inc(t, 2);
 
     // drop one as pick, store as drawn
-    std::vector<T37> ts = closed.t37s();
+    auto ts = closed.t37s13();
     int drop = rand.gen(ts.size());
     closed.inc(ts[drop], -1);
     Hand res(closed, barks);

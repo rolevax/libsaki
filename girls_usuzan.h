@@ -2,7 +2,6 @@
 #define SAKI_GIRLS_USUZAN_H
 
 #include "girl.h"
-#include "ticketfolder.h"
 
 
 
@@ -16,16 +15,15 @@ class Sawaya : public Girl
 public:
     GIRL_CTORS(Sawaya)
 
-    void onDice(Rand &rand, const Table &table, TicketFolder &tickets) override;
+    void onDice(Rand &rand, const Table &table, Choices &choices) override;
     void onMonkey(std::array<Exist, 4> &exists, const Princess &princess) override;
-    void onActivate(const Table &table, TicketFolder &tickets) override;
+    void onActivate(const Table &table, Choices &choices) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
 
-    const std::array<bool, 4> &irsRivalMask() const override;
     const IrsCheckRow &irsCheckRow(int index) const override;
     int irsCheckCount() const override;
 
-    TicketFolder forwardAction(const Table &table, Mount &mount, const Action &action) override;
+    Choices forwardAction(const Table &table, Mount &mount, const Action &action) override;
 
     void nonMonkey(Rand &rand, TileCount &init, Mount &mount,
                    std::bitset<NUM_NM_SKILL> &presence,
@@ -47,16 +45,16 @@ private:
     enum Kamuy
     {
         // *** SYNC order with "mKamuys" ***
-        PA_KOR, AT_KOR, HOYAW, HURI, PAWCI,
+        PA_KOR, PA_KOR_R, PA_KOR_C, PA_KOR_L, AT_KOR, HOYAW, HURI, PAWCI,
         NUM_KAMUY
     };
 
-    TicketFolder handleIrsCheck(const Table &table, Mount &mount, unsigned mask);
+    Choices handleIrsCheck(const Table &table, Mount &mount, unsigned mask);
 
 private:
     std::array<bool, 4> mRivalMask;
     bool mPredice;
-    TicketFolder mTicketsBackup;
+    Choices mChoicesBackup;
     Who mPaKorTarget;
     bool mConsumedPaKor = false;
     bool mConsumedSecondHuri = false;
@@ -75,6 +73,9 @@ private:
     std::array<IrsCheckRow, size_t(Kamuy::NUM_KAMUY)> mKamuys =
             std::array<IrsCheckRow, size_t(Kamuy::NUM_KAMUY)> {
         IrsCheckRow{ false, false, "SAWAYA_K_PA_KOR", true, false },
+        IrsCheckRow{ true, true, "SAWAYA_K_PA_KOR_R", false, true },
+        IrsCheckRow{ true, true, "SAWAYA_K_PA_KOR_C", false, false },
+        IrsCheckRow{ true, true, "SAWAYA_K_PA_KOR_L", false, false },
         IrsCheckRow{ false, false, "SAWAYA_K_AT_KOR", true, false },
         IrsCheckRow{ false, false, "SAWAYA_K_HOYAW", false, false },
         IrsCheckRow{ false, false, "SAWAYA_K_HURI", true, false },

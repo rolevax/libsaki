@@ -16,9 +16,9 @@ namespace saki
 
 const std::array<int, 4> Suzu::POWERS { 80, 130, 230, 330 };
 
-void Suzu::onDice(Rand &rand, const Table &table, TicketFolder &tickets)
+void Suzu::onDice(Rand &rand, const Table &table, Choices &choices)
 {
-    (void) tickets;
+    (void) choices;
 
     if (!mExploded) {
         int remainRound = table.getRuleInfo().roundLimit - table.getRound();
@@ -133,8 +133,8 @@ void Kyouko::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         if (myHand.ready())
             accelerate(mount, myHand, table.getRiver(mSelf), 300);
     } else {
-        std::vector<T34> myEffs = table.getHand(mSelf).effA4(); // exclude 7/13
-        std::vector<T34> herEffs = table.getHand(who).effA();
+        util::Stactor<T34, 34> myEffs = table.getHand(mSelf).effA4(); // exclude 7/13
+        util::Stactor<T34, 34> herEffs = table.getHand(who).effA();
 
         if (mCourse == TANYAO) {
             std::remove_if(myEffs.begin(), myEffs.end(),

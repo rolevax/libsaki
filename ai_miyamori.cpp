@@ -8,21 +8,21 @@ namespace saki
 
 
 
-Action AiToyone::think(const TableView &view, const std::vector<Action> &choices)
+Action AiToyone::think(const TableView &view, Limits &limits)
 {
-    // always riichi when available
-    auto take = [](const Action &act) { return act.act() == ActCode::RIICHI; };
-    auto it = std::find_if(choices.begin(), choices.end(), take);
-    if (it != choices.end())
-        return *it;
+    // as tomibiki is not working so well (until v0.8.3)
+    // also, override 1pt-canceling in defense
+    limits.addNoBark();
 
-    auto pass = [](const Action &action) {
-        // as tomibiki is not working so well
-        // also, override 1pt-canceling in defense
-        return !action.isCpdmk();
-    };
+    // always riichi whenever available
+    if (view.myChoices().canRiichi()) {
+        Action riichi;
+        Ai::testRiichi(view, limits, riichi);
+        assert(riichi.isRiichi());
+        return riichi;
+    }
 
-    return Ai::think(view, filter(choices, pass));
+    return Ai::think(view, limits);
 }
 
 

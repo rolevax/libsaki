@@ -22,9 +22,29 @@ namespace saki
 class Ai : public TableOperator
 {
 public:
+    class Limits
+    {
+    public:
+        bool noBark() const;
+        bool noRiichi() const;
+        bool noAnkan() const;
+        bool noOut(const T37 &t) const;
+
+        void addNoBark();
+        void addNoRiichi();
+        void addNoAnkan();
+        void addNoOutAka5();
+        void addNoOut(T34 t);
+
+    private:
+        bool mNoBark = false;
+        bool mNoRiichi = false;
+        bool mNoAnkan = false;
+        bool mNoOutAka5 = false;
+        std::bitset<34> mNoOut34s;
+    };
+
     static Ai *create(Who who, Girl::Id id);
-    static std::vector<Action> filter(const std::vector<Action> &orig,
-                                      std::function<bool(const Action &)> pass);
 
     virtual ~Ai() = default;
 
@@ -38,28 +58,41 @@ protected:
 
     Action maxHappy(const TableView &view);
     virtual Action forward(const TableView &view);
-
-    /// return value must be an element in 'choices'
-    virtual Action think(const TableView &view, const std::vector<Action> &choices);
+    virtual Action think(const TableView &view, Limits &limits);
 
     Action placeHolder(const TableView &view);
-    Action thinkTrivial(const std::vector<Action> &choices);
 
-private:
-    Action thinkAggress(const std::vector<Action> &choices, const TableView &view);
-    Action thinkDefense(const std::vector<Action> &choices, const TableView &view,
-                        const std::vector<Who> &threats);
-    Action thinkDefenseDiscard(const std::vector<Action> &choices, const TableView &view,
-                               const std::vector<Who> &threats);
-    Action thinkAttack(const std::vector<Action> &choices, const TableView &view);
-    Action thinkAttackDiscard(std::vector<Action> &choices, const TableView &view);
-    Action thinkAttackDiscardWide(std::vector<Action> &choices, const TableView &view);
+    void antiHatsumi(const TableView &view, Limits &limits);
+    void antiToyone(const TableView &view, Limits &limits);
 
-    bool riichi(const TableView &view);
+    Action thinkDrawn(const TableView &view, Limits &limit);
+    Action thinkDrawnAggress(const TableView &view, Limits &limits);
+    Action thinkDrawnAttack(const TableView &view, Limits &limits);
+    Action thinkDrawnDefense(const TableView &view, Limits &limits, const util::Stactor<Who, 3> &threats);
+
+    Action thinkBark(const TableView &view, Limits &limits);
+    Action thinkBarkAttack(const TableView &view, Limits &limits);
+    Action thinkBarkDefense(const TableView &view, Limits &limits, const util::Stactor<Who, 3> &threats);
+
+    template<size_t MAX>
+    Action thinkAttackStep(const TableView &view, const util::Stactor<Action, MAX> &outs);
+    template<size_t MAX>
+    Action thinkAttackEff(const TableView &view, const util::Stactor<Action, MAX> &outs);
+    template<size_t MAX>
+    Action thinkDefenseChance(const TableView &view, const util::Stactor<Action, MAX> &outs,
+                                    const util::Stactor<Who, 3> &threats);
+
+    bool afraid(const TableView &view, util::Stactor<Who, 3> &threats);
+    bool testRiichi(const TableView &view, Limits &limits, Action &riichi);
 
     int chance(const TableView &view, Who tar, T34 t);
     int ruleChance(const TableView &view, Who tar, T34 t);
     int logicChance(const TableView &view, T34 t);
+
+    util::Stactor<Action, 14> listOuts(const Hand &hand, const Limits &limits);
+    util::Stactor<Action, 14> listRiichisAsOut(const Hand &hand, const Choices::ModeDrawn &mode,
+                                               const Limits &limits);
+    util::Stactor<Action, 44> listCp(const Hand &hand, const Choices::ModeBark &mode, const T37 &pick);
 };
 
 

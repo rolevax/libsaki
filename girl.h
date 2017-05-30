@@ -4,6 +4,7 @@
 #include "mount.h"
 #include "who.h"
 #include "tableobserver.h"
+#include "choices.h"
 
 #include <bitset>
 
@@ -28,7 +29,7 @@ namespace saki
 class Princess;
 class Hand;
 class Table;
-class TicketFolder;
+class Choices;
 class Action;
 
 struct IrsCheckRow
@@ -83,10 +84,10 @@ public:
 
     Id getId() const;
 
-    virtual void onDice(Rand &rand, const Table &table, TicketFolder &tickets);
+    virtual void onDice(Rand &rand, const Table &table, Choices &choices);
     virtual void onMonkey(std::array<Exist, 4> &exists, const Princess &princess);
     virtual bool checkInit(Who who, const Hand &init, const Princess &princess, int iter);
-    virtual void onActivate(const Table &table, TicketFolder &tickets);
+    virtual void onActivate(const Table &table, Choices &choices);
     virtual void onInbox(Who who, const Action &action);
     virtual void onDraw(const Table &table, Mount &mount, Who who, bool rinshan);
     virtual void onChooseFirstDealer(Rand &rand, Who tempDealer, int &die1, int &die2);
@@ -96,11 +97,10 @@ public:
                               const std::vector<Who> &openers, Who gunner,
                               const std::vector<Form> &fs);
 
-    virtual const std::array<bool, 4> &irsRivalMask() const;
     virtual const IrsCheckRow &irsCheckRow(int index) const;
     virtual int irsCheckCount() const;
 
-    virtual TicketFolder forwardAction(const Table &table, Mount &mount, const Action &action);
+    virtual Choices forwardAction(const Table &table, Mount &mount, const Action &action);
 
     virtual void nonMonkey(Rand &rand, TileCount &init, Mount &mount,
                            std::bitset<NUM_NM_SKILL> &presence,
@@ -113,9 +113,9 @@ protected:
     Girl(Who who, Id id);
     Girl(const Girl &copy);
 
-    static void eraseRivered(std::vector<T34> &ts, const std::vector<T37> &river);
-    static void eraseRivered(std::bitset<34> &ts, const std::vector<T37> &river);
-    void accelerate(Mount &mount, const Hand &hand, const std::vector<T37> &river, int delta);
+    static void eraseRivered(util::Stactor<T34, 34> &ts, const util::Stactor<T37, 24> &river);
+    static void eraseRivered(std::bitset<34> &ts, const util::Stactor<T37, 24> &river);
+    void accelerate(Mount &mount, const Hand &hand, const util::Stactor<T37, 24> &river, int delta);
 
 protected:
     const Who mSelf;

@@ -3,7 +3,8 @@
 
 #include "tile.h"
 #include "meld.h"
-#include "tilecount.h"
+#include "action.h"
+#include "tile_count.h"
 #include "pointinfo.h"
 
 #include <vector>
@@ -16,75 +17,14 @@ namespace saki
 
 
 
-class Hand;
-class Action;
-
-class HandDream
+class Hand
 {
 public:
     static const int STEP_INF = 14;
 
-    static HandDream stay(const Hand &hand);
-    static HandDream spin(const Hand &hand);
-    static HandDream swap(const Hand &hand, const T37 &out);
-    static HandDream pick(const Hand &hand, const T37 &in);
-
-    bool ready() const;
-    int step() const;
-    int stepGb() const;
-    int step4() const;
-    int step7() const;
-    int step7Gb() const;
-    int step13() const;
-
-    bool hasEffA(T34 t) const;
-    bool hasEffA4(T34 t) const;
-    bool hasEffA7(T34 t) const;
-    bool hasEffA13(T34 t) const;
-
-    std::vector<T34> effA() const;
-    std::vector<T34> effA4() const;
-
-    int doraValueBy(const std::vector<T37> &inds) const;
-    int ctAka5() const;
-
-    int estimate(const RuleInfo &rule, int sw, int rw, const std::vector<T37> &drids) const;
-
-private:
-    /// DRAWN_STAY drawn +1
-    /// DRAWN_SPIN gar 0
-    /// DRAWN_SWAP drawn +1, out -1
-    /// PICK_STAY  gar 0
-    /// PICK_IN    pick +1
-    /// BARK_OUT   out -1
-    /// BARK_STAY ...???
-    enum class Type
-    {
-        DRAWN_STAY, DRAWN_SPIN, DRAWN_SWAP, PICK_STAY, PICK_IN, BARK_STAY, BARK_OUT
-    };
-
-    explicit HandDream(Type type, const Hand &hand, const T37 &tile);
-    explicit HandDream(Type type, const Hand &hand);
-
-    TileCount &enter() const;
-    void leave() const;
-
-private:
-    Type mType;
-    const Hand &mHand;
-    T37 mTile; // either pick or out, not drawn
-    bool mRon;
-    mutable int mDepth = 0;
-};
-
-
-
-class Hand
-{
-public:
     Hand() = default;
     explicit Hand(const TileCount &count);
-    explicit Hand(const TileCount &count, const std::vector<M37> &barks);
+    explicit Hand(const TileCount &count, const util::Stactor<M37, 4> &barks);
 
     ~Hand() = default;
 
@@ -95,7 +35,8 @@ public:
 
     const TileCount &closed() const;
     const T37 &drawn() const;
-    const std::vector<M37> &barks() const;
+    const T37 &outFor(const Action &action) const;
+    const util::Stactor<M37, 4> &barks() const;
 
     bool hasDrawn() const;
     bool isMenzen() const;
@@ -110,12 +51,13 @@ public:
     bool canChiiAsMiddle(T34 t) const;
     bool canChiiAsRight(T34 t) const;
     bool canPon(T34 t) const;
+    bool canCp(T34 pick, const Action &action) const;
     bool canDaiminkan(T34 t) const;
-    bool canAnkan(std::vector<T34> &choices, bool riichi) const;
-    bool canKakan(std::vector<int> &barkIds) const;
+    bool canAnkan(util::Stactor<T34, 3> &choices, bool riichi) const;
+    bool canKakan(util::Stactor<int, 3> &barkIds) const;
     bool canRon(T34 t, const PointInfo &info, const RuleInfo &rule, bool &doujun) const;
     bool canTsumo(const PointInfo &info, const RuleInfo &rule) const;
-    bool canRiichi() const;
+    bool canRiichi(util::Stactor<T37, 13> &swappables, bool &spinnable) const;
 
     bool ready() const;
     int step() const;
@@ -130,45 +72,132 @@ public:
     bool hasEffA7(T34 t) const;
     bool hasEffA13(T34 t) const;
 
-    std::vector<T34> effA() const;
-    std::vector<T34> effA4() const;
+    util::Stactor<T34, 34> effA() const;
+    util::Stactor<T34, 34> effA4() const;
 
-    HandDream withAction(const Action &action) const;
-    HandDream withPick(const T37 &pick) const;
-    HandDream withSwap(const T37 &out) const;
-    HandDream withSpin() const;
+    int estimate(const RuleInfo &rule, int sw, int rw, const util::Stactor<T37, 5> &drids) const;
+
+    int peekPickStep4(T34 pick) const;
+    int peekPickStep7(T34 pick) const;
+    int peekPickStep7Gb(T34 pick) const;
+    int peekPickStep13(T34 pick) const;
+
+    template<typename Ret, typename... Args>
+    Ret peekDiscard(const Action &a, Ret (Hand::*f)(Args...) const, Args&&... args) const
+    {
+        switch (a.act()) {
+        case ActCode::SWAP_OUT:
+            return peekSwap<Ret, Args...>(a.t37(), f, args...);
+        case ActCode::SPIN_OUT:
+            return peekSpin<Ret, Args...>(f, args...);
+        default:
+            unreached("Hand:withAction");
+        }
+    }
+
+    template<typename Ret, typename... Args>
+    Ret peekSwap(const T37 &t, Ret (Hand::*f)(Args...) const, Args... args) const
+    {
+        DeltaSwap guard(const_cast<Hand&>(*this), t);
+        (void) guard;
+        return (this->*f)(args...);
+    }
+
+    template<typename Ret, typename... Args>
+    Ret peekSpin(Ret (Hand::*f)(Args...) const, Args... args) const
+    {
+        DeltaSpin guard(const_cast<Hand&>(*this));
+        (void) guard;
+        return (this->*f)(args...);
+    }
+
+    template<typename Ret, typename... Args>
+    Ret peekCp(const T37 &pick, const Action &action,
+               Ret (Hand::*f)(Args...) const, Args... args) const
+    {
+        assert(action.isCp());
+        DeltaCp guard(const_cast<Hand&>(*this), pick, action, action.t37());
+        (void) guard;
+        return (this->*f)(args...);
+    }
 
     void draw(const T37 &in);
     void swapOut(const T37 &out);
     void spinOut();
-    std::vector<T37> chiiAsLeft(const T37 &pick, bool showAka5);
-    std::vector<T37> chiiAsMiddle(const T37 &pick, bool showAka5);
-    std::vector<T37> chiiAsRight(const T37 &pick, bool showAka5);
-    std::vector<T37> pon(const T37 &pick, int showAka5, int layIndex);
+    void barkOut(const T37 &out);
+    void chiiAsLeft(const T37 &pick, bool showAka5);
+    void chiiAsMiddle(const T37 &pick, bool showAka5);
+    void chiiAsRight(const T37 &pick, bool showAka5);
+    void pon(const T37 &pick, int showAka5, int layIndex);
     void daiminkan(const T37 &pick, int layIndex);
     void ankan(T34 t);
     void kakan(int barkId);
-    void declareRiichi(std::vector<T37> &swappables, bool &spinnable) const;
-
-    friend class HandDream;
 
 private:
+    class DeltaSpin
+    {
+    public:
+        explicit DeltaSpin(Hand &hand);
+        ~DeltaSpin();
+
+        DeltaSpin(const DeltaSpin &copy) = delete;
+        DeltaSpin &operator=(const DeltaSpin &assign) = delete;
+
+    private:
+        Hand &mHand;
+    };
+
+    class DeltaSwap
+    {
+    public:
+        explicit DeltaSwap(Hand &hand, const T37 &out);
+        ~DeltaSwap();
+
+        DeltaSwap(const DeltaSwap &copy) = delete;
+        DeltaSwap &operator=(const DeltaSwap &assign) = delete;
+
+    private:
+        Hand &mHand;
+        const T37 &mOut;
+    };
+
+    class DeltaCp
+    {
+    public:
+        explicit DeltaCp(Hand &hand, const T37 &pick, const Action &a, const T37 &out);
+        ~DeltaCp();
+
+        DeltaCp(const DeltaCp &copy) = delete;
+        DeltaCp &operator=(const DeltaCp &assign) = delete;
+
+    private:
+        Hand &mHand;
+        const T37 &mOut;
+    };
+
     using SwapOk = std::function<bool(T34)>;
 
     bool hasSwappableAfterChii(T34 mat1, T34 mat2, SwapOk ok) const;
+    bool shouldShowAka5(T34 show, bool showAka5) const;
     T37 tryShow(T34 t, bool showAka5);
-    std::vector<T37> makeChoices(SwapOk ok) const;
+    util::Stactor<T37, 13> makeChoices(SwapOk ok) const;
+
+    template<typename Ret, typename... Params, typename... Args>
+    Ret peekStay(Ret (TileCount::*f)(Params...) const, Args... args) const
+    {
+        return mHasDrawn ? mClosed.peekDraw<Ret, Params...>(mDrawn, f, args...)
+                         : (mClosed.*f)(args...);
+    }
 
 private:
-    mutable TileCount mCount;
+    TileCount mClosed;
     T37 mDrawn;
     bool mHasDrawn = false;
-    std::vector<M37> mBarks;
+    util::Stactor<M37, 4> mBarks;
 };
 
 int operator%(T34 ind, const Hand &hand);
-int operator%(const std::vector<T37> &inds, const Hand &hand);
-int operator%(const std::vector<T37> &inds, const HandDream &dream);
+int operator%(const util::Stactor<T37, 5> &inds, const Hand &hand);
 
 
 

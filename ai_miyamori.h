@@ -14,7 +14,7 @@ class AiToyone : public Ai
 {
 public:
     AI_CTORS(AiToyone)
-    Action think(const TableView &view, const std::vector<Action> &choices) override;
+    Action think(const TableView &view, Limits &limits) override;
 };
 
 

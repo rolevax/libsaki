@@ -140,7 +140,7 @@ void TokiEventBarked::print(std::ostream &os, Who toki) const
 
 TokiEventResult::TokiEventResult(RoundResult result,
                                  const std::vector<Who> &openers,
-                                 const std::vector<std::vector<T37>> &closeds)
+                                 const util::Stactor<util::Stactor<T37, 13>, 4> &closeds)
     : mResult(result)
     , mOpeners(openers)
     , mCloseds(closeds)
@@ -149,9 +149,9 @@ TokiEventResult::TokiEventResult(RoundResult result,
 
 TokiEventResult::TokiEventResult(RoundResult result,
                                  const std::vector<Who> &openers,
-                                 const std::vector<std::vector<T37>> &closeds,
+                                 const util::Stactor<util::Stactor<T37, 13>, 4> &closeds,
                                  const T37 &pick,
-                                 const std::vector<T37> &urids)
+                                 const util::Stactor<T37, 5> &urids)
     : mResult(result)
     , mOpeners(openers)
     , mCloseds(closeds)
@@ -216,16 +216,16 @@ void TokiMountTracker::onRoundEnded(const Table &table, RoundResult result,
     (void) gunner;
     (void) fs;
 
-    std::vector<std::vector<T37>> closeds;
+    util::Stactor<util::Stactor<T37, 13>, 4> closeds;
     for (Who w : openers)
-        closeds.emplace_back(table.getHand(w).closed().t37s(true));
+        closeds.pushBack(table.getHand(w).closed().t37s13(true));
 
     if (result == RoundResult::RON || result == RoundResult::TSUMO) {
         bool ron = result == RoundResult::RON;
         const T37 &pick = ron ? table.getFocusTile()
                               : table.getHand(openers[0]).drawn();
 
-        const std::vector<T37> &urids = table.getMount().getUrids();
+        const auto &urids = table.getMount().getUrids();
         for (size_t i = 0; i < urids.size(); i++)
             mReal.pin(Mount::URADORA, i, urids[i]);
 
@@ -243,7 +243,7 @@ const TokiEvents &TokiMountTracker::getEvents() const
 
 
 TokiAutoOp::FourOps TokiAutoOp::create(const std::array<Girl::Id, 4> &ids,
-                                                      const Action &firstAction)
+                                       const Action &firstAction)
 {
     std::array<std::unique_ptr<TableOperator>, 4> res;
 
@@ -260,11 +260,7 @@ TokiAutoOp::FourOps TokiAutoOp::create(const std::array<Girl::Id, 4> &ids,
 TokiAutoOp::TokiAutoOp(Who self, const Action &firstAction)
     : TableOperator(self)
     , mFirstAction(firstAction)
-    , mDiscarded(firstAction.act() == ActCode::SWAP_OUT
-                 || firstAction.act() == ActCode::SPIN_OUT
-                 || firstAction.act() == ActCode::PASS)
 {
-
 }
 
 void TokiAutoOp::onActivated(Table &table)
@@ -281,16 +277,11 @@ Action TokiAutoOp::think(const TableView &view)
         return mFirstAction;
     }
 
-    if (view.iCan(ActCode::PASS))
+    if (view.myChoices().can(ActCode::PASS))
         return Action(ActCode::PASS);
 
-    if (view.iCan(ActCode::TSUMO))
+    if (view.myChoices().can(ActCode::TSUMO))
         return Action(ActCode::TSUMO);
-
-    if (!mDiscarded && view.iCan(ActCode::SWAP_OUT)) { // discard after bark
-        mDiscarded = true;
-        return Action(ActCode::SWAP_OUT, view.mySwappables().at(0));
-    }
 
     return Action(); // halt the future table
 }

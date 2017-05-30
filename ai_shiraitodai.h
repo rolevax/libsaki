@@ -14,7 +14,7 @@ class AiTakami : public Ai
 {
 public:
     AI_CTORS(AiTakami)
-    Action think(const TableView &view, const std::vector<Action> &choices) override;
+    Action think(const TableView &view, Limits &limits) override;
 };
 
 
@@ -23,7 +23,7 @@ class AiSeiko : public Ai
 {
 public:
     AI_CTORS(AiSeiko)
-    Action think(const TableView &view, const std::vector<Action> &choices) override;
+    Action think(const TableView &view, Limits &limits) override;
 };
 
 

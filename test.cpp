@@ -1,5 +1,5 @@
 #include "test.h"
-#include "tilecount.h"
+#include "tile_count.h"
 #include "hand.h"
 #include "form.h"
 #include "form_gb.h"

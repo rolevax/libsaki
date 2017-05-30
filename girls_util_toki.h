@@ -93,12 +93,12 @@ class TokiEventResult : public TokiEvent
 public:
     TokiEventResult(RoundResult result,
                     const std::vector<Who> &openers,
-                    const std::vector<std::vector<T37>> &closeds);
+                    const util::Stactor<util::Stactor<T37, 13>, 4> &closeds);
     TokiEventResult(RoundResult result,
                     const std::vector<Who> &openers,
-                    const std::vector<std::vector<T37>> &closeds,
+                    const util::Stactor<util::Stactor<T37, 13>, 4> &closeds,
                     const T37 &pick,
-                    const std::vector<T37> &urids);
+                    const util::Stactor<T37, 5> &urids);
     explicit TokiEventResult(const TokiEventResult &copy) = default;
     TokiEventResult *clone() const override;
     void print(std::ostream &os, Who toki) const override;
@@ -106,9 +106,9 @@ public:
 private:
     RoundResult mResult;
     std::vector<Who> mOpeners;
-    std::vector<std::vector<T37>> mCloseds;
+    util::Stactor<util::Stactor<T37, 13>, 4> mCloseds;
     T37 mPick;
-    std::vector<T37> mUrids;
+    util::Stactor<T37, 5> mUrids;
 };
 
 class TokiMountTracker : public TableObserver
@@ -158,7 +158,6 @@ private:
 private:
     bool mFirst = true;
     Action mFirstAction;
-    bool mDiscarded;
 };
 
 

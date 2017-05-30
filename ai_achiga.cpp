@@ -8,25 +8,19 @@ namespace saki
 
 
 
-Action AiKuro::think(const TableView &view, const std::vector<Action> &choices)
+Action AiKuro::think(const TableView &view, Limits &limits)
 {
-    // menzen + dama + no-ankan
-    // --> filter-out cpdmk, ankan, riichi, discard-dora
-    auto pass = [&view](const Action &action) {
-        if (action.isCpdmk()
-                || action.act() == ActCode::ANKAN
-                || action.act() == ActCode::RIICHI) {
-            return false;
-        } else if (action.isDiscard()) {
-            const T37 &tile = action.act() == ActCode::SWAP_OUT ? action.tile()
-                                                                : view.myHand().drawn();
-            return view.getDrids() % tile == 0 && !tile.isAka5();
-        } else {
-            return true;
-        }
-    };
+    // dama, no-ankan
+    limits.addNoBark();
+    limits.addNoRiichi();
+    limits.addNoAnkan();
 
-    return Ai::think(view, filter(choices, pass));
+    // keep dora
+    limits.addNoOutAka5();
+    for (T34 id : view.getDrids())
+        limits.addNoOut(id.dora());
+
+    return Ai::think(view, limits);
 }
 
 

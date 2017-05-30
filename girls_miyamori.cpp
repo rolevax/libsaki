@@ -1,6 +1,6 @@
 #include "girls_miyamori.h"
 #include "table.h"
-#include "tilecount.h"
+#include "tile_count.h"
 #include "util.h"
 
 
@@ -10,11 +10,11 @@ namespace saki
 
 
 
-void Toyone::onDice(Rand &rand, const Table &table, TicketFolder &tickets)
+void Toyone::onDice(Rand &rand, const Table &table, Choices &choices)
 {
     (void) rand;
     (void) table;
-    (void) tickets;
+    (void) choices;
 
     mFirstRiichi = Who();
 }
@@ -57,8 +57,8 @@ void Toyone::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
 
     // push pon-material to rivals to enforce tomobiki
     if (!myHand.isMenzen() && who != mSelf) {
-        std::vector<T34> myEffs = myHand.effA4();
-        std::vector<T34> herEffs = table.getHand(who).effA();
+        util::Stactor<T34, 34> myEffs = myHand.effA4();
+        util::Stactor<T34, 34> herEffs = table.getHand(who).effA();
 
         for (T34 t : myEffs)
             if (myHand.canPon(t))

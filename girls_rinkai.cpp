@@ -40,6 +40,50 @@ void Huiyu::skill(Mount &mount, const Hand &hand, const PointInfo &info)
             mount.lightA(t, 200);
 }
 
+void Huiyu::onActivate(const Table &table, Choices &choices)
+{
+    auto filterDrawn = [&]() {
+        Choices::ModeDrawn drawn = choices.drawn();
+
+        if (drawn.tsumo) {
+            const Hand &hand = table.getHand(mSelf);
+            bool juezhang = table.riverRemain(hand.drawn()) == 0;
+            FormGb f(hand, table.getPointInfo(mSelf), juezhang);
+            if (f.fan() < 8)
+                drawn.tsumo = false;
+        }
+
+        drawn.spinRiichi = false;
+        drawn.swapRiichis.clear();
+
+        choices.setDrawn(drawn);
+    };
+
+    auto filterBark = [&]() {
+        const T37 &pick = table.getFocusTile();
+        bool juezhang = table.riverRemain(pick) == 0;
+        FormGb f(table.getHand(mSelf), pick, table.getPointInfo(mSelf), juezhang);
+        if (f.fan() < 8) {
+            Choices::ModeBark bark = choices.bark();
+            if (bark.ron) {
+                bark.ron = false;
+                choices.setBark(bark);
+            }
+        }
+    };
+
+    switch (choices.mode()) {
+    case Choices::Mode::DRAWN:
+        filterDrawn();
+        break;
+    case Choices::Mode::BARK:
+        filterBark();
+        break;
+    default:
+        break;
+    }
+}
+
 void Huiyu::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
 {
     if (who != mSelf || rinshan)
@@ -261,8 +305,10 @@ int Huiyu::tbd(std::bitset<34> &reqs, const TileCount &total)
 {
     using namespace tiles34;
 
-    const std::vector<T34> tumbler {
-        1_p, 2_p, 3_p, 4_p, 5_p, 8_p, 9_p, 2_s, 4_s, 5_s, 6_s, 8_s, 9_s, 1_y
+    const std::array<T34, 14> tumbler {
+        1_p, 2_p, 3_p, 4_p, 5_p,
+        8_p, 9_p, 2_s, 4_s, 5_s,
+        6_s, 8_s, 9_s, 1_y
     };
 
     for (T34 t : tumbler)

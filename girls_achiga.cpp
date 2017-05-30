@@ -190,7 +190,7 @@ void Ako::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         }
     }
 
-    const std::vector<T37> &drids = mount.getDrids();
+    const auto &drids = mount.getDrids();
     accelerate(mount, hand, table.getRiver(mSelf), 15);
     if (hand.ctAka5() + drids % hand < 1) {
         for (const T37 &t : drids)

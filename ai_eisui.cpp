@@ -7,37 +7,38 @@ namespace saki
 
 
 
-Action AiHatsumi::think(const TableView &view, const std::vector<Action> &choices)
+Action AiHatsumi::think(const TableView &view, Limits &limits)
 {
-    // pick dmk-F
-    auto take = [&view](const Action &action) {
-        return action.act() == ActCode::DAIMINKAN
-                && view.getFocusTile().suit() == Suit::F;
-    };
+    if (view.getSelfWind(mSelf) == 4) {
+        using namespace tiles34;
 
-    auto it = std::find_if(choices.begin(), choices.end(), take);
-    if (it != choices.end())
-        return *it;
-
-    // filter-out discard-F
-    auto pass = [&view](const Action &action) {
-        if (action.isDiscard()) {
-            const T37 &tile = action.act() == ActCode::SWAP_OUT ? action.tile()
-                                                                : view.myHand().drawn();
-            return tile.suit() != Suit::F;
-        } else {
-            return true;
+        switch  (view.myChoices().mode()) {
+        case Choices::Mode::DRAWN:
+            limits.addNoOut(1_f);
+            limits.addNoOut(2_f);
+            limits.addNoOut(3_f);
+            limits.addNoOut(4_f);
+            break;
+        case Choices::Mode::BARK:
+            if (view.myChoices().can(ActCode::DAIMINKAN)) {
+                const T37 &pick = view.getFocusTile();
+                if (pick == 1_f || pick == 4_f)
+                    return Action(ActCode::DAIMINKAN);
+            }
+            break;
+        default:
+            break;
         }
-    };
+    }
 
-    return Ai::think(view, filter(choices, pass));
+    return Ai::think(view, limits);
 }
 
 
 
 Action AiKasumi::forward(const TableView &view)
 {
-    if (view.iCan(ActCode::IRS_CHECK)) {
+    if (view.myChoices().can(ActCode::IRS_CHECK)) {
         int remRound = view.getRuleInfo().roundLimit - view.getRound();
         unsigned mask = remRound < 5 && view.myRank() != 1 ? 0b1 : 0b0;
         return Action(ActCode::IRS_CHECK, mask);

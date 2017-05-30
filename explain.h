@@ -31,7 +31,7 @@ public:
     explicit Explain4(const std::vector<T34> &heads, Wait wait, T34 pair,
                       int o3Ct, int c3Ct, int o4Ct, int c4Ct);
 
-    static std::vector<Explain4> make(const TileCount &count, const std::vector<M37> &barks,
+    static std::vector<Explain4> make(const TileCount &count, const util::Stactor<M37, 4> &barks,
                                       T34 pick, bool ron);
 
     const std::array<T34, 4> &heads() const;

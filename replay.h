@@ -13,8 +13,8 @@ namespace saki
 
 struct PlayerSnap
 {
-    std::vector<T37> hand;
-    std::vector<M37> barks;
+    util::Stactor<T37, 13> hand;
+    util::Stactor<M37, 4> barks;
     std::vector<T37> river;
     int riichiPos = -1;
     bool riichiBar = false;

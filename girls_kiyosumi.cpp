@@ -28,7 +28,7 @@ void Yuuki::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         return;
 
     const Hand &hand = table.getHand(mSelf);
-    const std::vector<T37> &river = table.getRiver(mSelf);
+    const auto &river = table.getRiver(mSelf);
 
     if (table.getRound() == 0 && table.getExtraRound() < 3)
         accelerate(mount, hand, river, 150);

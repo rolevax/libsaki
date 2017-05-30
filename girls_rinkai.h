@@ -17,7 +17,10 @@ class Huiyu : public Girl
 {
 public:
     GIRL_CTORS(Huiyu)
+
     static void skill(Mount &mount, const Hand &hand, const PointInfo &info);
+
+    void onActivate(const Table &table, Choices &choices) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
 
 private:
