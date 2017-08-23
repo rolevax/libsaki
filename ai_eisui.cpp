@@ -24,6 +24,10 @@ Action AiHatsumi::think(const TableView &view, Limits &limits)
                 const T37 &pick = view.getFocusTile();
                 if (pick == 1_f || pick == 4_f)
                     return Action(ActCode::DAIMINKAN);
+            } else if (view.myChoices().can(ActCode::PON)) {
+                const T37 &pick = view.getFocusTile();
+                if (pick == 1_f || pick == 4_f)
+                    return Action(ActCode::PON);
             }
             break;
         default:
