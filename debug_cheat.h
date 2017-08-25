@@ -59,8 +59,8 @@ const uint32_t state = 1291430400;
 using namespace tiles37;
 
 const std::array<std::vector<T37>, 4> inits = {
-    std::vector<T37> {  },
-    std::vector<T37> { 1_m, 2_m, 3_m, 7_m, 8_m, 9_m, 2_p,  3_p, 4_p, 7_p, 8_p, 1_f, 1_f  },
+    std::vector<T37> {  1_p, 2_p, 3_p, 1_s, 2_s, 3_s, 7_s, 8_s, 9_s, 2_p, 3_p, 5_p, 5_p   },
+    std::vector<T37> {},
     std::vector<T37> {  },
     std::vector<T37> {  }
 };

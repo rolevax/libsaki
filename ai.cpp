@@ -81,21 +81,29 @@ Ai *Ai::create(Who who, Girl::Id id)
     }
 }
 
+Action Ai::thinkStdDrawnAttack(const TableView &view)
+{
+    Ai ai(view.self());
+    Limits limits;
+
+    return ai.thinkDrawnAttack(view, limits);
+}
+
 void Ai::onActivated(Table &table)
 {
-    TableView view(table.getView(mSelf));
+    std::unique_ptr<TableView> view(table.getView(mSelf));
 
     Action decision;
 
 #ifdef LIBSAKI_CHEAT_AI
-    decision = placeHolder(view);
+    decision = placeHolder(*view);
 #else
-    if (view.myChoices().forwardAny())
-        decision = forward(view);
+    if (view->myChoices().forwardAny())
+        decision = forward(*view);
 
     if (decision.act() == ActCode::NOTHING) {
         Limits limits;
-        decision = think(view, limits);
+        decision = think(*view, limits);
     }
 #endif
 
@@ -141,7 +149,7 @@ Action Ai::think(const TableView &view, Limits &limits)
 
 Action Ai::placeHolder(const TableView &view)
 {
-    return view.mySweep();
+    return view.myChoices().sweep();
 }
 
 void Ai::antiHatsumi(const TableView &view, Ai::Limits &limits)

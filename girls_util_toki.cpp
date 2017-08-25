@@ -265,7 +265,8 @@ TokiAutoOp::TokiAutoOp(Who self, const Action &firstAction)
 
 void TokiAutoOp::onActivated(Table &table)
 {
-    Action decision = think(table.getView(mSelf));
+    std::unique_ptr<TableView> view = table.getView(mSelf);
+    Action decision = think(*view);
     if (decision.act() != ActCode::NOTHING)
         table.action(mSelf, decision);
 }

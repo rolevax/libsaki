@@ -27,6 +27,7 @@ Girl *Girl::create(Who who, int id_)
     switch (id) {
     case Id::DOGE:              return new Girl(who, id);
     case Id::MIYANAGA_TERU:     return new Teru(who, id);
+    case Id::HIROSE_SUMIRE:     return new Sumire(who, id);
     case Id::SHIBUYA_TAKAMI:    return new Takami(who, id);
     case Id::MATANO_SEIKO:      return new Seiko(who, id);
     case Id::OOHOSHI_AWAI:      return new Awai(who, id);

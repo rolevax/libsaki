@@ -160,9 +160,22 @@ bool Action::operator==(const Action &that) const
 
 Action Action::toRiichi() const
 {
+    if (isRiichi())
+        return *this;
+
     assert(isDiscard());
     return mAct == ActCode::SPIN_OUT ? Action(ActCode::SPIN_RIICHI)
                                      : Action(ActCode::SWAP_RIICHI, mT37);
+}
+
+Action Action::toDiscard() const
+{
+    if (isDiscard())
+        return *this;
+
+    assert(isRiichi());
+    return mAct == ActCode::SPIN_RIICHI ? Action(ActCode::SPIN_OUT)
+                                        : Action(ActCode::SWAP_OUT, mT37);
 }
 
 

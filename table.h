@@ -5,9 +5,9 @@
 #include "choices.h"
 #include "mount.h"
 #include "girl.h"
-#include "tableview.h"
-#include "tableoperator.h"
-#include "tableobserver.h"
+#include "table_view.h"
+#include "table_operator.h"
+#include "table_observer.h"
 #include "tile_count.h"
 #include "rand.h"
 
@@ -130,7 +130,7 @@ public:
     const Hand &getHand(Who who) const;
     const util::Stactor<T37, 24> &getRiver(Who who) const;
     const Girl &getGirl(Who who) const;
-    TableView getView(Who who) const;
+    std::unique_ptr<TableView> getView(Who who) const;
     const Furiten &getFuriten(Who who) const;
     const std::array<int, 4> &getPoints() const;
     int getRound() const;

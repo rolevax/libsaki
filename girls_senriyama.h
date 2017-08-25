@@ -2,7 +2,7 @@
 #define SAKI_GIRLS_SENRIYAMA_H
 
 #include "girl.h"
-#include "tableobserver.h"
+#include "table_observer.h"
 #include "girls_util_toki.h"
 
 #include <sstream>

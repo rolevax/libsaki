@@ -3,7 +3,7 @@
 
 #include "action.h"
 #include "meld.h"
-#include "tableobserver.h"
+#include "table_observer.h"
 #include "form_gb.h"
 
 

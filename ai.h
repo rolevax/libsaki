@@ -45,6 +45,7 @@ public:
     };
 
     static Ai *create(Who who, Girl::Id id);
+    static Action thinkStdDrawnAttack(const TableView &view);
 
     virtual ~Ai() = default;
 

@@ -1,8 +1,8 @@
 #ifndef SAKI_GIRLS_UTIL_TOKI_H
 #define SAKI_GIRLS_UTIL_TOKI_H
 
-#include "tableobserver.h"
-#include "tableoperator.h"
+#include "table_observer.h"
+#include "table_operator.h"
 #include "girl.h"
 
 

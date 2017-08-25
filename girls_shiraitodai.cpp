@@ -1,9 +1,12 @@
 #include "girls_shiraitodai.h"
 #include "princess.h"
 #include "table.h"
+#include "table_view_hand.h"
+#include "ai.h"
 #include "util.h"
 
 #include <algorithm>
+#include "sstream"
 
 
 
@@ -61,6 +64,325 @@ void Teru::nonMonkey(Rand &rand, TileCount &init, Mount &mount,
     // TODO implement
 }
 
+
+
+void Sumire::onDice(Rand &rand, const Table &table, Choices &choices)
+{
+    (void) rand;
+    (void) table;
+    (void) choices;
+
+    mTarget = Who();
+}
+
+bool Sumire::checkInit(Who who, const Hand &init, const Princess &princess, int iter)
+{
+    (void) princess;
+
+    if (who != mSelf || iter > 100)
+        return true;
+
+    int sw = princess.getTable().getSelfWind(mSelf);
+    int rw = princess.getTable().getRoundWind();
+    if (iter < 5)
+        for (T34 z : tiles34::Z7)
+            if (z.isYakuhai(sw, rw) && init.closed().ct(z) >= 2)
+                return true;
+
+    const auto &ts = init.closed().t34s13();
+    auto isYao = [](T34 t) { return t.isYao(); };
+    return std::count_if(ts.begin(), ts.end(), isYao) <= 3;
+}
+
+void Sumire::onActivate(const Table &table, Choices &choices)
+{
+    if (aimable(table)) {
+        mChoicesBackup = choices;
+        choices.setExtra(true);
+    }
+}
+
+void Sumire::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
+{
+    if (who == mSelf)
+        handleDrawSelf(table, mount, rinshan);
+    else if (mTarget.somebody() && who == mTarget)
+        handleDrawTarget(table, mount, rinshan);
+}
+
+const IrsCheckRow &Sumire::irsCheckRow(int index) const
+{
+    static const std::array<IrsCheckRow, 4> ROWS = std::array<IrsCheckRow, 4> {
+        IrsCheckRow{ false, false, "SUMIRE_A", true, false },
+        IrsCheckRow{ true, true, "SUMIRE_A_R", false, true },
+        IrsCheckRow{ true, true, "SUMIRE_A_C", false, false },
+        IrsCheckRow{ true, true, "SUMIRE_A_L", false, false },
+    };
+
+    return ROWS[index];
+}
+
+int Sumire::irsCheckCount() const
+{
+    return 4;
+}
+
+Choices Sumire::forwardAction(const Table &table, Mount &mount, const Action &action)
+{
+    assert(action.isIrs());
+
+    Choices cut;
+    cut.setCut();
+
+    switch (action.act()) {
+    case ActCode::IRS_CLICK:
+        return cut;
+    case ActCode::IRS_CHECK:
+        return handleIrsCheck(action.mask(), table, mount);
+    default:
+        unreached("Sumire::forwardAction");
+    }
+}
+
+std::string Sumire::popUpStr() const
+{
+    std::ostringstream oss;
+    oss << ">> " << mWant << " <<";
+    return oss.str();
+}
+
+void Sumire::handleDrawSelf(const Table &table, Mount &mount, bool rinshan)
+{
+    const Hand &hand = table.getHand(mSelf);
+    if (mTarget.nobody()) {
+        if (!hand.ready())
+            shapeYaku(table, mount, rinshan);
+        return;
+    }
+
+    auto recoverReady = [&]() {
+        for (int ti = 0; ti < 34; ti++) {
+            T34 t(ti);
+            auto equal = [t](const T37 &r) { return t == r; };
+            const auto &river = table.getRiver(mSelf);
+            bool need = t != mWant && hand.hasEffA(t) && util::none(river, equal);
+            mount.lightA(t, need ? 100 : -40, rinshan);
+        }
+    };
+
+    const TileCount &closed = hand.closed();
+    if (mWant.isYao()) {
+        // isoride
+        if (closed.ct(mWant) == 0) {
+            util::p("drag", mWant, "remain", mount.remainA(mWant));
+            for (int ti = 0; ti < 34; ti++) {
+                T34 t(ti);
+                mount.lightA(t, -40, rinshan);
+                mount.lightB(t, t == mWant ? 100 : -40, rinshan);
+            }
+        } else if (hand.step() > 0) {
+            recoverReady();
+        }
+    } else {
+        // clamp
+        if (closed.ct(mWant.prev()) == 0) {
+            util::p("drag", mWant.prev(), "remain", mount.remainA(mWant.prev()));
+            for (int ti = 0; ti < 34; ti++) {
+                T34 t(ti);
+                mount.lightA(t, -40, rinshan);
+                mount.lightB(t, t | mWant ? 100 : -40, rinshan);
+            }
+        } else if (closed.ct(mWant.next()) == 0) {
+            util::p("drag", mWant.next(), "remain", mount.remainA(mWant.next()));
+            for (int ti = 0; ti < 34; ti++) {
+                T34 t(ti);
+                mount.lightA(t, -40, rinshan);
+                mount.lightB(t, mWant | t ? 100 : -40, rinshan);
+            }
+        } else {
+            recoverReady();
+        }
+    }
+}
+
+void Sumire::handleDrawTarget(const Table &table, Mount &mount, bool rinshan)
+{
+    if (shootable(table)) {
+        // feed
+        if (mShootTrial == 0) {
+            for (int ti = 0; ti < 34; ti++) {
+                T34 t(ti);
+                mount.lightA(t, -500, rinshan);
+                mount.lightB(t, t == mFeed ? 100 : -100, rinshan);
+            }
+
+            mShootTrial++;
+        } else if (mShootTrial == 1) {
+            // TODO re-aim logic
+            mShootTrial++;
+        }
+    } else {
+        // block
+        for (int ti = 0; ti < 34; ti++) {
+            T34 t(ti);
+            if (table.getHand(mTarget).hasEffA(t))
+                mount.lightA(t, -40, rinshan);
+        }
+    }
+}
+
+Choices Sumire::handleIrsCheck(unsigned mask, const Table &table, Mount &mount)
+{
+    if ((mask & 0b1000) != 0) {
+        if ((mask & 0b0100) != 0)
+            mTarget = mSelf.right();
+        else if ((mask & 0b0010) != 0)
+            mTarget = mSelf.cross();
+        else if ((mask & 0b0001) != 0)
+            mTarget = mSelf.left();
+    }
+
+    if (mTarget.somebody())
+        pickBullet(table, mount);
+
+    return mChoicesBackup;
+}
+
+bool Sumire::aimable(const Table &table)
+{
+    if (mTarget.somebody())
+        return false;
+
+    for (int w = 0; w < 4; w++) {
+        Who who(w);
+        const Hand &hand = table.getHand(who);
+
+        if (who == mSelf) {
+            bool dama = hand.isMenzen() && hand.ready()
+                    && !table.riichiEstablished(mSelf);
+            if (!dama)
+                return false;
+        } else {
+            if (hand.ready())
+                return false; // must be the first readyer
+        }
+    }
+
+    return true;
+}
+
+bool Sumire::shootable(const Table &table)
+{
+    if (mTarget.nobody())
+        return false;
+
+    const Hand &myHand = table.getHand(mSelf);
+    bool dama = myHand.isMenzen() && myHand.ready()
+            && !table.riichiEstablished(mSelf);
+    if (!dama)
+        return false;
+
+    return myHand.hasEffA(mWant);
+}
+
+void Sumire::pickBullet(const Table &table, Mount &mount)
+{
+    int maxHappy = 0;
+    mWant = table.getHand(mSelf).effA().front();
+
+    const Hand &taragetHand = table.getHand(mTarget);
+    const Hand &myHand = table.getHand(mSelf);
+
+    auto niceMount = [&myHand, &mount](const T37 feed) {
+        if (mount.remainA(feed) == 0)
+            return false;
+
+        T34 feed34(feed);
+        if (feed34.isYao()) {
+            int got = myHand.closed().ct(feed34);
+            int fetchPlusFeed = mount.remainA(feed34);
+            return got + fetchPlusFeed >= 2; // can form a pair
+        } else {
+            bool gotL = myHand.closed().ct(feed34.prev()) > 0;
+            bool gotR = myHand.closed().ct(feed34.next()) > 0;
+
+            // consider only black tiles to kill all headache
+            bool canGetL = mount.remainA(T37(feed34.prev().id34())) > 0;
+            bool canGetR = mount.remainA(T37(feed34.next().id34())) > 0;
+
+            return (gotL || canGetL) && (gotR || canGetR);
+        }
+    };
+
+    for (const T37 &feed : tiles37::ORDER37) {
+        if (!niceMount(feed))
+            continue;
+
+        Hand dream = taragetHand; // copy
+        dream.draw(feed);
+        TableViewHand view(table, dream, mTarget);
+
+        Action act = Ai::thinkStdDrawnAttack(view);
+        if (act.isDiscard() || act.isRiichi()) {
+            act = act.toDiscard();
+            int step = dream.peekDiscard(act, &Hand::step);
+            auto effA = dream.peekDiscard(act, &Hand::effA);
+            int effACt = table.visibleRemain(mTarget).ct(effA);
+            int doraCt = mount.getDrids() % dream + dream.ctAka5();
+            int happy = 100 * (13 - step) + 3 * effACt + doraCt;
+            if (happy > maxHappy) {
+                mWant = act.act() == ActCode::SWAP_OUT ? act.t37() : dream.drawn();
+                mFeed = feed;
+                maxHappy = happy;
+            }
+        }
+    }
+
+    if (maxHappy > 0) {
+        util::p("aim success, want", mWant, "feed", mFeed);
+        mount.loadB(mFeed, 1);
+
+        // reserve isorider or clamper
+        if (mWant.isYao()) { // isoride
+            if (myHand.closed().ct(mWant) == 0)
+                mount.loadB(T37(mWant.id34()), 1);
+        } else { // clamp
+            if (myHand.closed().ct(mWant.prev()) == 0)
+                mount.loadB(T37(mWant.prev().id34()), 1);
+
+            if (myHand.closed().ct(mWant.next()) == 0)
+                mount.loadB(T37(mWant.next().id34()), 1);
+        }
+
+        table.popUp(mSelf);
+    }
+}
+
+void Sumire::shapeYaku(const Table &table, Mount &mount, bool rinshan)
+{
+    const Hand &hand = table.getHand(mSelf);
+
+    if (!hand.isMenzen())
+        return;
+
+    // yakuhai
+    int sw = table.getSelfWind(mSelf);
+    int rw = table.getRoundWind();
+    for (T34 z : tiles34::Z7) {
+        if (z.isYakuhai(sw, rw) && hand.closed().ct(z) == 2) {
+            mount.lightA(z, 500, rinshan);
+            return;
+        }
+    }
+
+    // tanyao
+    if (hand.closed().sum() - hand.closed().ctYao() <= 2)
+        for (int v = 3; v <= 7; v++)
+            for (Suit s : { Suit::M, Suit::P, Suit::S })
+                mount.lightA(T34(s, v), 100, rinshan);
+
+    // TODO 3sk and 1pk (?)
+}
 
 
 

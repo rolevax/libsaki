@@ -14,6 +14,7 @@ class Teru : public Girl
 {
 public:
     GIRL_CTORS(Teru)
+
     void onMonkey(std::array<Exist, 4> &exists, const Princess &princess) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
     void onRoundEnded(const Table &table, RoundResult result,
@@ -31,10 +32,49 @@ private:
 
 
 
+class Sumire : public Girl
+{
+public:
+    GIRL_CTORS(Sumire)
+
+    void onDice(Rand &rand, const Table &table, Choices &choices) override;
+    bool checkInit(Who who, const Hand &init, const Princess &princess, int iter) override;
+    void onActivate(const Table &table, Choices &choices) override;
+    void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
+
+    const IrsCheckRow &irsCheckRow(int index) const override;
+    int irsCheckCount() const override;
+
+    Choices forwardAction(const Table &table, Mount &mount, const Action &action) override;
+
+    std::string popUpStr() const override;
+
+private:
+    void handleDrawSelf(const Table &table, Mount &mount, bool rinshan);
+    void handleDrawTarget(const Table &table, Mount &mount, bool rinshan);
+    Choices handleIrsCheck(unsigned mask, const Table &table, Mount &mount);
+
+    bool aimable(const Table &table);
+    bool shootable(const Table &table);
+    void pickBullet(const Table &table, Mount &mount);
+
+    void shapeYaku(const Table &table, Mount &mount, bool rinshan);
+
+private:
+    Choices mChoicesBackup;
+    Who mTarget;
+    T34 mWant;
+    T37 mFeed;
+    int mShootTrial;
+};
+
+
+
 class Takami : public Girl
 {
 public:
     GIRL_CTORS(Takami)
+
     void onDiscarded(const Table &table, Who who) override;
     void nonMonkey(Rand &rand, TileCount &init, Mount &mount,
                    std::bitset<NUM_NM_SKILL> &presence,
@@ -51,6 +91,7 @@ class Seiko : public Girl
 {
 public:
     GIRL_CTORS(Seiko)
+
     bool checkInit(Who who, const Hand &init, const Princess &princess, int iter) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
 

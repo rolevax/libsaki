@@ -1,5 +1,6 @@
 #include "table.h"
 #include "princess.h"
+#include "table_view_real.h"
 #include "util.h"
 #include "debug_cheat.h"
 
@@ -196,11 +197,10 @@ const util::Stactor<T37, 24> &Table::getRiver(Who who) const
     return mRivers[who.index()];
 }
 
-TableView Table::getView(Who who) const
+std::unique_ptr<TableView> Table::getView(Who who) const
 {
-    TableView::Mode mode = TableView::Mode::NORMAL;
-    // add various view-mode in the future
-    return TableView(*this, who, mode);
+    // use polymorphic views in the future
+    return std::unique_ptr<TableView>(new TableViewReal(*this, who));
 }
 
 const Furiten &Table::getFuriten(Who who) const

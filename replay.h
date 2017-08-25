@@ -1,7 +1,7 @@
 #ifndef SAKI_REPLAY_H
 #define SAKI_REPLAY_H
 
-#include "tableobserver.h"
+#include "table_observer.h"
 #include "girl.h"
 
 

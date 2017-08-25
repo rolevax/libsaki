@@ -3,7 +3,7 @@
 
 #include "mount.h"
 #include "who.h"
-#include "tableobserver.h"
+#include "table_observer.h"
 #include "choices.h"
 
 #include <bitset>

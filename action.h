@@ -62,6 +62,7 @@ public:
     bool operator==(const Action &that) const;
 
     Action toRiichi() const;
+    Action toDiscard() const;
 
 private:
     ActCode mAct;
