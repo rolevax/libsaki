@@ -429,28 +429,31 @@ util::Stactor<Action, 14> Ai::listRiichisAsOut(const Hand &hand, const Choices::
     return res;
 }
 
-util::Stactor<Action, 44> Ai::listCp(const Hand &hand, const Choices::ModeBark &mode, const T37 &pick)
+util::Stactor<Action, 44> Ai::listCp(const Hand &hand, const Choices::ModeBark &mode,
+                                     const T37 &pick, bool noChii)
 {
     util::Stactor<Action, 44> res;
 
     for (const T37 &out : tiles37::ORDER37) {
         if (hand.closed().ct(out) >= 1) {
-            if (mode.chiiL) {
-                Action act(ActCode::CHII_AS_LEFT, 2, out);
-                if (hand.canCp(pick, act))
-                    res.pushBack(act);
-            }
+            if (!noChii) {
+                if (mode.chiiL) {
+                    Action act(ActCode::CHII_AS_LEFT, 2, out);
+                    if (hand.canCp(pick, act))
+                        res.pushBack(act);
+                }
 
-            if (mode.chiiM) {
-                Action act(ActCode::CHII_AS_MIDDLE, 2, out);
-                if (hand.canCp(pick, act))
-                    res.pushBack(act);
-            }
+                if (mode.chiiM) {
+                    Action act(ActCode::CHII_AS_MIDDLE, 2, out);
+                    if (hand.canCp(pick, act))
+                        res.pushBack(act);
+                }
 
-            if (mode.chiiR) {
-                Action act(ActCode::CHII_AS_RIGHT, 2, out);
-                if (hand.canCp(pick, act))
-                    res.pushBack(act);
+                if (mode.chiiR) {
+                    Action act(ActCode::CHII_AS_RIGHT, 2, out);
+                    if (hand.canCp(pick, act))
+                        res.pushBack(act);
+                }
             }
 
             if (mode.pon) {

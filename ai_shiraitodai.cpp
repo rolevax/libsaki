@@ -50,9 +50,15 @@ Action AiSeiko::think(const TableView &view, Limits &limits)
 
     if (choices.mode() == Choices::Mode::BARK) {
         using AC = ActCode;
-        for (AC ac : { AC::RON, AC::DAIMINKAN, AC::PON })
+        for (AC ac : { AC::RON, AC::DAIMINKAN })
             if (choices.can(ac))
                 return Action(ac);
+
+        if (choices.can(AC::PON)) {
+            auto list = listCp(view.myHand(), view.myChoices().bark(),
+                               view.getFocusTile(), true);
+            return Ai::thinkAttackStep(view, list);
+        }
 
         return Action(ActCode::PASS);
     }

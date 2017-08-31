@@ -92,7 +92,8 @@ protected:
     util::Stactor<Action, 14> listOuts(const TableView &view, const Limits &limits);
     util::Stactor<Action, 14> listRiichisAsOut(const Hand &hand, const Choices::ModeDrawn &mode,
                                                const Limits &limits);
-    util::Stactor<Action, 44> listCp(const Hand &hand, const Choices::ModeBark &mode, const T37 &pick);
+    util::Stactor<Action, 44> listCp(const Hand &hand, const Choices::ModeBark &mode,
+                                     const T37 &pick, bool noChii = false);
 };
 
 

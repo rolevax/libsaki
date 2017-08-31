@@ -27,7 +27,7 @@ Action AiHatsumi::think(const TableView &view, Limits &limits)
             } else if (view.myChoices().can(ActCode::PON)) {
                 const T37 &pick = view.getFocusTile();
                 if (pick == 1_f || pick == 4_f) {
-                    auto list = listCp(view.myHand(), view.myChoices().bark(), pick);
+                    auto list = listCp(view.myHand(), view.myChoices().bark(), pick, true);
                     return Ai::thinkAttackStep(view, list);
                 }
             }
