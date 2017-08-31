@@ -195,7 +195,7 @@ Action Ai::thinkDrawnAttack(const TableView &view, Limits &limits)
             if (!view.myHand().hasEffA(t))
                 return Action(AC::ANKAN, t);
 
-    auto outs = listOuts(view.myHand(), limits);
+    auto outs = listOuts(view, limits);
     return outs.empty() ? placeHolder(view) : thinkAttackStep(view, outs);
 }
 
@@ -206,7 +206,7 @@ Action Ai::thinkDrawnDefense(const TableView &view, Limits &limits, const util::
     if (view.myChoices().can(AC::RYUUKYOKU))
         return Action(AC::RYUUKYOKU);
 
-    auto outs = listOuts(view.myHand(), limits);
+    auto outs = listOuts(view, limits);
     return outs.empty() ? placeHolder(view) : thinkDefenseChance(view, outs, threats);
 }
 
@@ -396,17 +396,19 @@ int Ai::logicChance(const TableView &view, T34 t)
     return view.visibleRemain().ct(waiters);
 }
 
-util::Stactor<Action, 14> Ai::listOuts(const Hand &hand, const Limits &limits)
+util::Stactor<Action, 14> Ai::listOuts(const TableView &view, const Limits &limits)
 {
     util::Stactor<Action, 14> res;
+    const Hand &hand = view.myHand();
 
     assert(hand.hasDrawn());
     if (!limits.noOut(hand.drawn()))
         res.pushBack(Action(ActCode::SPIN_OUT));
 
-    for (const T37 &t : hand.closed().t37s13())
-        if (!limits.noOut(t))
-            res.pushBack(Action(ActCode::SWAP_OUT, t));
+    if (!view.riichiEstablished(mSelf))
+        for (const T37 &t : hand.closed().t37s13())
+            if (!limits.noOut(t))
+                res.pushBack(Action(ActCode::SWAP_OUT, t));
 
     return res;
 }
