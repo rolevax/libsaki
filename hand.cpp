@@ -97,7 +97,7 @@ bool Hand::over4() const
     if (hasDrawn()) {
         sum[mDrawn.id34()]++;
         if (sum[mDrawn.id34()] > 4)
-            return false;
+            return true;
     }
 
     return false;
