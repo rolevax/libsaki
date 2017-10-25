@@ -68,18 +68,18 @@ protected:
     Action thinkDrawn(const TableView &view, Limits &limit);
     Action thinkDrawnAggress(const TableView &view, Limits &limits);
     Action thinkDrawnAttack(const TableView &view, Limits &limits);
-    Action thinkDrawnDefense(const TableView &view, Limits &limits, const util::Stactor<Who, 3> &threats);
+    Action thinkDrawnDefend(const TableView &view, Limits &limits, const util::Stactor<Who, 3> &threats);
 
     Action thinkBark(const TableView &view, Limits &limits);
     Action thinkBarkAttack(const TableView &view, Limits &limits);
-    Action thinkBarkDefense(const TableView &view, Limits &limits, const util::Stactor<Who, 3> &threats);
+    Action thinkBarkDefend(const TableView &view, Limits &limits, const util::Stactor<Who, 3> &threats);
 
     template<size_t MAX>
     Action thinkAttackStep(const TableView &view, const util::Stactor<Action, MAX> &outs);
     template<size_t MAX>
     Action thinkAttackEff(const TableView &view, const util::Stactor<Action, MAX> &outs);
     template<size_t MAX>
-    Action thinkDefenseChance(const TableView &view, const util::Stactor<Action, MAX> &outs,
+    Action thinkDefendChance(const TableView &view, const util::Stactor<Action, MAX> &outs,
                                     const util::Stactor<Who, 3> &threats);
 
     bool afraid(const TableView &view, util::Stactor<Who, 3> &threats);

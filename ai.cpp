@@ -177,7 +177,7 @@ Action Ai::thinkDrawn(const TableView &view, Limits &limit)
 Action Ai::thinkDrawnAggress(const TableView &view, Limits &limits)
 {
     util::Stactor<Who, 3> threats;
-    return afraid(view, threats) ? thinkDrawnDefense(view, limits, threats) : thinkDrawnAttack(view, limits);
+    return afraid(view, threats) ? thinkDrawnDefend(view, limits, threats) : thinkDrawnAttack(view, limits);
 }
 
 Action Ai::thinkDrawnAttack(const TableView &view, Limits &limits)
@@ -199,7 +199,7 @@ Action Ai::thinkDrawnAttack(const TableView &view, Limits &limits)
     return outs.empty() ? placeHolder(view) : thinkAttackStep(view, outs);
 }
 
-Action Ai::thinkDrawnDefense(const TableView &view, Limits &limits, const util::Stactor<Who, 3> &threats)
+Action Ai::thinkDrawnDefend(const TableView &view, Limits &limits, const util::Stactor<Who, 3> &threats)
 {
     using AC = ActCode;
 
@@ -207,7 +207,7 @@ Action Ai::thinkDrawnDefense(const TableView &view, Limits &limits, const util::
         return Action(AC::RYUUKYOKU);
 
     auto outs = listOuts(view, limits);
-    return outs.empty() ? placeHolder(view) : thinkDefenseChance(view, outs, threats);
+    return outs.empty() ? placeHolder(view) : thinkDefendChance(view, outs, threats);
 }
 
 Action Ai::thinkBark(const TableView &view, Limits &limits)
@@ -216,7 +216,7 @@ Action Ai::thinkBark(const TableView &view, Limits &limits)
         return Action(ActCode::RON);
 
     util::Stactor<Who, 3> threats;
-    return afraid(view, threats) ? thinkBarkDefense(view, limits, threats) : thinkBarkAttack(view, limits);
+    return afraid(view, threats) ? thinkBarkDefend(view, limits, threats) : thinkBarkAttack(view, limits);
 }
 
 Action Ai::thinkBarkAttack(const TableView &view, Limits &limits)
@@ -240,7 +240,7 @@ Action Ai::thinkBarkAttack(const TableView &view, Limits &limits)
     return Action(AC::PASS);
 }
 
-Action Ai::thinkBarkDefense(const TableView &view, Limits &limits,
+Action Ai::thinkBarkDefend(const TableView &view, Limits &limits,
                             const util::Stactor<Who, 3> &threats)
 {
     if (limits.noBark())
@@ -250,7 +250,7 @@ Action Ai::thinkBarkDefense(const TableView &view, Limits &limits,
         const Hand &hand = view.myHand();
         const Choices::ModeBark &mode = view.myChoices().bark();
         const T37 &pick = view.getFocusTile();
-        return thinkDefenseChance(view, listCp(hand, mode, pick), threats);
+        return thinkDefendChance(view, listCp(hand, mode, pick), threats);
     }
 
     return Action(ActCode::PASS);
@@ -297,7 +297,7 @@ Action Ai::thinkAttackEff(const TableView &view, const util::Stactor<Action, MAX
 }
 
 template<size_t MAX>
-Action Ai::thinkDefenseChance(const TableView &view, const util::Stactor<Action, MAX> &outs,
+Action Ai::thinkDefendChance(const TableView &view, const util::Stactor<Action, MAX> &outs,
                                     const util::Stactor<Who, 3> &threats)
 {
     assert(!outs.empty());
