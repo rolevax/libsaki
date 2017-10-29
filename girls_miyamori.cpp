@@ -29,16 +29,14 @@ void Toyone::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     if (mFirstRiichi.somebody() && mFirstRiichi != mSelf) { // senbu
         if (who == mSelf) {
             if (myHand.isMenzen() && !myHand.ready()) {
-                for (int ti = 0; ti < 34; ti++) {
-                    T34 t(ti);
+                for (T34 t : tiles34::ALL34) {
                     int mk = myHand.hasEffA(t) ? 1400 : -100;
                     mount.lightA(t, mk);
                     mount.lightB(t, mk / 10);
                 }
             }
         } else if (who == mFirstRiichi && table.riichiEstablished(mSelf)) {
-            for (int ti = 0; ti < 34; ti++) {
-                T34 t(ti);
+            for (T34 t : tiles34::ALL34) {
                 int mk = myHand.hasEffA(t) ? 1400 : -100;
                 mount.lightA(t, mk);
                 mount.lightB(t, mk / 10);
@@ -47,8 +45,7 @@ void Toyone::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     }
 
     if (who == mSelf && myHand.barks().size() == 4) { // tomobiki
-        for (int ti = 0; ti < 34; ti++) {
-            T34 t(ti);
+        for (T34 t : tiles34::ALL34) {
             int mk = myHand.hasEffA(t) ? 1000 : -100;
             mount.lightA(t, mk);
             mount.lightB(t, mk / 10);

@@ -63,8 +63,7 @@ void Hatsumi::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     int ctN = closed.ct(4_f);
 
     if (hasE && hasN && (std::min(ctS, 3) + std::min(ctW, 3) < 5)) {
-        for (int ti = 0; ti < 34; ti++) {
-            T34 t(ti);
+        for (T34 t : tiles34::ALL34) {
             mount.lightA(t, -50);
             mount.lightB(t, isSW(t) ? 1000 : -50);
         }
@@ -137,8 +136,7 @@ void Kasumi::onMonkey(std::array<Exist, 4> &exists, const Princess &princess)
         return;
 
     for (int w = 0; w < 4; w++) {
-        for (int ti = 0; ti < 34; ti++) {
-            T34 t(ti);
+        for (T34 t : tiles34::ALL34) {
             // isNum && (rivals' 1-lack || self's 2-lack)
             if (t.isNum()
                     && ((t.suit() == mZimSuit && Who(w) != mSelf)

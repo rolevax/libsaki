@@ -41,10 +41,8 @@ void Exist::inc(T34 t, int delta)
 
 void Exist::addBaseMk(const TileCount &stoch)
 {
-    for (int ti = 0; ti < 34; ti++) {
-        T37 t(ti);
+    for (T34 t : tiles34::ALL34)
         inc(t, stoch.ct(t) * BASE_MK);
-    }
 
     for (Suit s : { Suit::M, Suit::P, Suit::S }) {
         T37 t(s, 0);

@@ -203,8 +203,8 @@ FormGb::Fans FormGb::calcFansF7(const PointInfo &info, const Hand &hand) const
 
     // Siguiyi
     if (!util::has(res, Fan::YSSTS48))
-        for (int ti = 0; ti < 34; ti++)
-            if (hand.closed().ct(T34(ti)) >= 3) // 4 or 3+pick
+        for (T34 t : tiles34::ALL34)
+            if (hand.closed().ct(t) >= 3) // 4 or 3+pick
                 res.push_back(Fan::SGY2);
 
     // Queyimen
@@ -706,8 +706,8 @@ void FormGb::checkV2F4(FormGb::Fans &res, const Explain4 &exp,
             for (const T37 &t : m.tiles())
                 noGang.inc(t, 1);
     noGang.inc(pick, 1);
-    for (int ti = 0; ti < 34; ti++)
-        if (noGang.ct(T34(ti)) == 4)
+    for (T34 t : tiles34::ALL34)
+        if (noGang.ct(t) == 4)
             res.push_back(Fan::SGY2);
 
     // Shuangtongke

@@ -233,8 +233,7 @@ void Princess::fixIndicator(Indic which, const std::array<bool, 34> &exceptId34s
     mImageIndics[static_cast<int>(which)] = indic;
     mHasImageIndics[static_cast<int>(which)] = true;
 
-    for (int ti = 0; ti < 34; ti++) {
-        T34 t(ti);
+    for (T34 t : tiles34::ALL34) {
         // TODO de-magic the '100's and parametize them
         mMount.power(exit, pos, t, -100, false);
         mMount.power(exit, pos, t, t == indic ? 100 : -100, true);
@@ -248,9 +247,8 @@ T34 Princess::pickIndicator(const std::array<bool, 34> &ex34s, bool wall)
 
     std::vector<T34> indicatable;
 
-    for (int ti = 0; ti < 34; ti++) {
-        T34 t(ti);
-        if (!ex34s[ti]
+    for (T34 t : tiles34::ALL34) {
+        if (!ex34s[t.id34()]
                 && mMount.remainA(t) > 0
                 && (!wall || mMount.remainA(t.dora()) == 4)) {
             indicatable.push_back(t);

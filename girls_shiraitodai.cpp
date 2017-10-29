@@ -161,8 +161,7 @@ void Sumire::handleDrawSelf(const Table &table, Mount &mount, bool rinshan)
     }
 
     auto recoverReady = [&]() {
-        for (int ti = 0; ti < 34; ti++) {
-            T34 t(ti);
+        for (T34 t : tiles34::ALL34) {
             auto equal = [t](const T37 &r) { return t == r; };
             const auto &river = table.getRiver(mSelf);
             bool need = t != mWant && hand.hasEffA(t) && util::none(river, equal);
@@ -174,8 +173,7 @@ void Sumire::handleDrawSelf(const Table &table, Mount &mount, bool rinshan)
     if (mWant.isYao()) {
         // isoride
         if (closed.ct(mWant) == 0) {
-            for (int ti = 0; ti < 34; ti++) {
-                T34 t(ti);
+            for (T34 t : tiles34::ALL34) {
                 mount.lightA(t, -40, rinshan);
                 mount.lightB(t, t == mWant ? 100 : -40, rinshan);
             }
@@ -185,14 +183,12 @@ void Sumire::handleDrawSelf(const Table &table, Mount &mount, bool rinshan)
     } else {
         // clamp
         if (closed.ct(mWant.prev()) == 0) {
-            for (int ti = 0; ti < 34; ti++) {
-                T34 t(ti);
+            for (T34 t : tiles34::ALL34) {
                 mount.lightA(t, -40, rinshan);
                 mount.lightB(t, t | mWant ? 100 : -40, rinshan);
             }
         } else if (closed.ct(mWant.next()) == 0) {
-            for (int ti = 0; ti < 34; ti++) {
-                T34 t(ti);
+            for (T34 t : tiles34::ALL34) {
                 mount.lightA(t, -40, rinshan);
                 mount.lightB(t, mWant | t ? 100 : -40, rinshan);
             }
@@ -207,8 +203,7 @@ void Sumire::handleDrawTarget(const Table &table, Mount &mount, bool rinshan)
     if (shootable(table)) {
         // feed
         if (mShootTrial == 0) {
-            for (int ti = 0; ti < 34; ti++) {
-                T34 t(ti);
+            for (T34 t : tiles34::ALL34) {
                 mount.lightA(t, -500, rinshan);
                 mount.lightB(t, t == mFeed ? 100 : -100, rinshan);
             }
@@ -220,11 +215,9 @@ void Sumire::handleDrawTarget(const Table &table, Mount &mount, bool rinshan)
         }
     } else {
         // block
-        for (int ti = 0; ti < 34; ti++) {
-            T34 t(ti);
+        for (T34 t : tiles34::ALL34)
             if (table.getHand(mTarget).hasEffA(t))
                 mount.lightA(t, -40, rinshan);
-        }
     }
 }
 
@@ -437,8 +430,8 @@ bool Seiko::checkInit(Who who, const Hand &init, const Princess &princess, int i
         return true;
 
     // no triplet
-    for (int ti = 0; ti < 34; ti++)
-        if (init.closed().ct(T34(ti)) >= 3)
+    for (T34 t : tiles34::ALL34)
+        if (init.closed().ct(t) >= 3)
             return false;
 
     int yaoPairCt = std::count_if(tiles34::YAO13.begin(), tiles34::YAO13.end(),
@@ -466,8 +459,7 @@ void Seiko::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         accelerate(mount, hand, table.getRiver(mSelf), ACCEL_MK);
     } else if (!hand.ready()) {
         int needPair = 4 - fishCt;
-        for (int ti = 0; ti < 34; ti++) {
-            T34 t(ti);
+        for (T34 t : tiles34::ALL34) {
             if (closed.ct(t) == 2) {
                 needPair--;
                 mount.lightA(t, -PAIR_MK);
@@ -560,8 +552,7 @@ void Awai::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
                 && mount.wallRemain() <= lastCorner(table.getDice(), 4 - mount.deadRemain())) {
             // after kan and corner, for every player,
             // make wait-tile appear in mount continuously
-            for (int ti = 0; ti < 34; ti++) {
-                T34 t(ti);
+            for (T34 t : tiles34::ALL34) {
                 mount.lightA(t, -EJECT_MK);
                 mount.lightB(t, util::has(mLastWaits, t) ? ACCEL_MK : -EJECT_MK);
             }
@@ -571,8 +562,7 @@ void Awai::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
             int rem = mount.wallRemain();
             if (tail < rem && rem <= tail + 4) {
                 // before last corner, extract kan-material
-                for (int ti = 0; ti < 34; ti++) {
-                    T34 t(ti);
+                for (T34 t : tiles34::ALL34) {
                     mount.lightA(t, -EJECT_MK);
                     mount.lightB(t, t == mKanura ? DRAG_MK : -EJECT_MK);
                 }
@@ -581,9 +571,9 @@ void Awai::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
                 accelerate(mount, table.getHand(mSelf), util::Stactor<T37, 24>(), -EJECT_MK);
                 // don't get the kan-material which is not kanura
                 // (awai can have 2 closed triplets in init hand)
-                for (int ti = 0; ti < 34; ti++)
-                    if (table.getHand(mSelf).closed().ct(T34(ti)) == 3)
-                        mount.lightA(T34(ti), -EJECT_MK);
+                for (T34 t : tiles34::ALL34)
+                    if (table.getHand(mSelf).closed().ct(t) == 3)
+                        mount.lightA(t, -EJECT_MK);
             }
         }
     }

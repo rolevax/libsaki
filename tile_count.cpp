@@ -247,9 +247,9 @@ util::Stactor<T34, 34> TileCount::effA(int barkCt) const
 {
     util::Stactor<T34, 34> res;
 
-    for (int ti = 0; ti < 34; ti++)
-        if (hasEffA(barkCt, T34(ti)))
-            res.pushBack(T34(ti));
+    for (T34 t : tiles34::ALL34)
+        if (hasEffA(barkCt, t))
+            res.pushBack(t);
 
     return res;
 }
@@ -269,9 +269,9 @@ util::Stactor<T34, 13> TileCount::t34s13() const
 {
     util::Stactor<T34, 13> res;
 
-    for (int ti = 0; ti < 34; ti++)
-        if (mCounts[ti] > 0)
-            res.pushBack(T34(ti));
+    for (T34 t : tiles34::ALL34)
+        if (ct(t) > 0)
+            res.pushBack(t);
 
     return res;
 }

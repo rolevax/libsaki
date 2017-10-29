@@ -53,8 +53,8 @@ bool Suzu::checkInit(Who who, const Hand &init, const Princess &princess, int it
         return true;
 
     // no quad
-    for (int ti = 0; ti < 34; ti++)
-        if (init.closed().ct(T34(ti)) == 4)
+    for (T34 t : tiles34::ALL34)
+        if (init.closed().ct(t) == 4)
             return false;
 
     return true;

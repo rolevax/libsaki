@@ -513,6 +513,54 @@ const std::array<T34, 7> Z7
     1_f, 2_f, 3_f, 4_f, 1_y, 2_y, 3_y
 };
 
+class All34
+{
+    class All34Iter
+    {
+    public:
+        constexpr explicit All34Iter(int c) : mCurr(c) {}
+        All34Iter(const All34Iter &copy) = default;
+        All34Iter &operator=(const All34Iter &assign) = default;
+
+        T34 operator*()
+        {
+            return T34(mCurr);
+        }
+
+        All34Iter &operator++() noexcept
+        {
+            ++mCurr;
+            return *this;
+        }
+
+        bool operator==(All34Iter that) const noexcept
+        {
+            return mCurr == that.mCurr;
+        }
+
+        bool operator!=(All34Iter that) const noexcept
+        {
+            return !(*this == that);
+        }
+
+    private:
+        int mCurr;
+    };
+
+public:
+    constexpr All34Iter begin()
+    {
+        return All34Iter(0);
+    }
+
+    constexpr All34Iter end()
+    {
+        return All34Iter(34);
+    }
+};
+
+constexpr All34 ALL34;
+
 
 
 } // namespace tiles34
@@ -564,6 +612,7 @@ const std::array<T37, 37> ORDER37
 
 
 } // namespace saki
+
 
 
 #endif // SAKI_TILE_H

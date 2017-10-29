@@ -79,9 +79,9 @@ bool Hand::over4() const
 {
     std::array<int, 34> sum;
 
-    for (int ti = 0; ti < 34; ti++) {
-        sum[ti] = mClosed.ct(T34(ti));
-        if (sum[ti] > 4)
+    for (T34 t : tiles34::ALL34) {
+        sum[t.id34()] = mClosed.ct(t);
+        if (sum[t.id34()] > 4)
             return true;
     }
 
@@ -239,8 +239,7 @@ bool Hand::canAnkan(util::Stactor<T34, 3> &choices, bool riichi) const
     assert(mHasDrawn);
     assert(choices.empty());
 
-    for (int ti = 0; ti < 34; ti++) {
-        T34 t(ti);
+    for (T34 t : tiles34::ALL34) {
         switch (mClosed.ct(t)) {
         case 3:
             if (t == mDrawn && (!riichi || mClosed.onlyInTriplet(t, mBarks.size())))
@@ -546,8 +545,7 @@ void Hand::kakan(int barkId)
 
 bool Hand::hasSwappableAfterChii(T34 mat1, T34 mat2, SwapOk ok) const
 {
-    for (int ti = 0; ti < 34; ti++) {
-        T34 out(ti);
+    for (T34 out : tiles34::ALL34) {
         int ct = mClosed.ct(out);
         // storage >= 1
         // not banned as eat-swap

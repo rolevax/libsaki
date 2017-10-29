@@ -81,8 +81,7 @@ void Sawaya::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     if (who == mPaKorTarget) {
         // pa-kor-kamuy, crazily give cannons
         const Hand &hand = table.getHand(mSelf);
-        for (int ti = 0; ti < 34; ti++) {
-            T34 t(ti);
+        for (T34 t : tiles34::ALL34) {
             int mk = hand.hasEffA(t) ? 1000 : -50;
             mount.lightA(t, mk, rinshan);
             mount.lightB(t, mk, rinshan);
@@ -92,17 +91,15 @@ void Sawaya::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
 
     if (mKamuys[Kamuy::AT_KOR].on) {
         if (who == mSelf) {
-            for (int ti = 0; ti < 34; ti++) {
+            for (T34 t : tiles34::ALL34) {
                 using namespace tiles34;
-                T34 t(ti);
                 // drag M or 3Y
                 int mk = t.suit() == Suit::M || t == 3_y ? 1000 : -50;
                 mount.lightA(t, mk, rinshan);
             }
         } else { // rivals' hand
             const Hand &hand = table.getHand(who);
-            for (int ti = 0; ti < 34; ti++) {
-                T34 t(ti);
+            for (T34 t : tiles34::ALL34) {
                 // drag useless M
                 int mk = t.suit() == Suit::M && !hand.hasEffA(t) ? 1000 : -50;
                 mount.lightA(t, mk, rinshan);
@@ -260,8 +257,7 @@ Choices Sawaya::handleIrsCheck(const Table &table, Mount &mount, unsigned mask)
             // make dora red
             // too many Superposition does not matter
             for (int pos = 0; pos < 5; pos++) {
-                for (int ti = 0; ti < 34; ti++) {
-                    T34 t(ti);
+                for (T34 t : tiles34::ALL34) {
                     int mk = t.suit() == Suit::M ? 1000 : -50;
                     mount.power(Mount::DORA, pos, t, mk, false);
                     mount.power(Mount::URADORA, pos, t, mk, false);

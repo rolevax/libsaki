@@ -22,10 +22,10 @@ bool Shino::checkInit(Who who, const Hand &init, const Princess &princess, int i
         return true;
 
     int pairCt = 0;
-    for (int ti = 0; ti < 34; ti++) {
-        if (init.closed().ct(T34(ti)) >= 3)
+    for (T34 t : tiles34::ALL34) {
+        if (init.closed().ct(t) >= 3)
             return false; // no triplet
-        if (init.closed().ct(T34(ti)) == 2)
+        if (init.closed().ct(t) == 2)
             pairCt++;
     }
 
@@ -151,8 +151,8 @@ void Shino::powerIipei(const Hand &hand, const util::Stactor<T37, 24> &river,
     }
 
     eraseRivered(drags, river);
-    for (int ti = 0; ti < 34; ti++)
-        mount.lightA(T34(ti), drags.test(ti) ? posMk : negMk);
+    for (T34 t : tiles34::ALL34)
+        mount.lightA(t, drags.test(t.id34()) ? posMk : negMk);
 }
 
 bool Shino::power3sk(const Hand &hand, Mount &mount, int posMk, int negMk)
@@ -186,8 +186,8 @@ bool Shino::power3sk(const Hand &hand, Mount &mount, int posMk, int negMk)
         }
     }
 
-    for (int ti = 0; ti < 34; ti++)
-        mount.lightA(T34(ti), powerSsk.test(ti) ? posMk : negMk);
+    for (T34 t : tiles34::ALL34)
+        mount.lightA(t, powerSsk.test(t.id34()) ? posMk : negMk);
 
     return maxSum == 9;
 }
@@ -236,8 +236,7 @@ void Kyouka::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
 
     const TileCount &closed = table.getHand(mSelf).closed();
 
-    for (int ti = 0; ti < 34; ti++) {
-        T34 t(ti);
+    for (T34 t : tiles34::ALL34) {
         int ct = closed.ct(t);
         const std::array<int, 5> deltas { 0, 40, 140, 0, 0 };
         mount.lightA(t, deltas[ct]);

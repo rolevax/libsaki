@@ -114,8 +114,8 @@ bool Huiyu::expand(Mount &mount, const TileCount &total)
 
     assert(minDist >= 0);
     if (0 < minDist && minDist < 14)
-        for (int ti = 0; ti < 34; ti++)
-            mount.lightA(T34(ti), minReqs.test(ti) ? 100 : -10);
+        for (T34 t : tiles34::ALL34)
+            mount.lightA(t, minReqs.test(t.id34()) ? 100 : -10);
 
     return minDist == 0;
 }

@@ -51,8 +51,7 @@ void AiToki::readLog(const AiView &view, const SkillExpr &expr)
         assert(0 <= barkCt && barkCt <= 4);
         TileCount count(hand);
         assert(count.ready(barkCt));
-        for (int ti = 0; ti < 34; ti++) {
-            Tile t(ti);
+        for (T34 t : tiles34::ALL34) {
             if (count.hasEffA(t, barkCt))
                 safes[t.id34()] = false;
         }
