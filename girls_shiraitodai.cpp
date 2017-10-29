@@ -174,7 +174,6 @@ void Sumire::handleDrawSelf(const Table &table, Mount &mount, bool rinshan)
     if (mWant.isYao()) {
         // isoride
         if (closed.ct(mWant) == 0) {
-            util::p("drag", mWant, "remain", mount.remainA(mWant));
             for (int ti = 0; ti < 34; ti++) {
                 T34 t(ti);
                 mount.lightA(t, -40, rinshan);
@@ -186,14 +185,12 @@ void Sumire::handleDrawSelf(const Table &table, Mount &mount, bool rinshan)
     } else {
         // clamp
         if (closed.ct(mWant.prev()) == 0) {
-            util::p("drag", mWant.prev(), "remain", mount.remainA(mWant.prev()));
             for (int ti = 0; ti < 34; ti++) {
                 T34 t(ti);
                 mount.lightA(t, -40, rinshan);
                 mount.lightB(t, t | mWant ? 100 : -40, rinshan);
             }
         } else if (closed.ct(mWant.next()) == 0) {
-            util::p("drag", mWant.next(), "remain", mount.remainA(mWant.next()));
             for (int ti = 0; ti < 34; ti++) {
                 T34 t(ti);
                 mount.lightA(t, -40, rinshan);
@@ -339,7 +336,6 @@ void Sumire::pickBullet(const Table &table, Mount &mount)
     }
 
     if (maxHappy > 0) {
-        util::p("aim success, want", mWant, "feed", mFeed);
         mount.loadB(mFeed, 1);
 
         // reserve isorider or clamper
