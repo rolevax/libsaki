@@ -64,7 +64,9 @@ protected:
     void antiHatsumi(const TableView &view, Limits &limits);
     void antiToyone(const TableView &view, Limits &limits);
 
-    Action thinkDrawn(const TableView &view, Limits &limit);
+    Action thinkChoices(const TableView &view, Limits &limits);
+
+    Action thinkDrawn(const TableView &view, Limits &limits);
     Action thinkDrawnAggress(const TableView &view, Limits &limits);
     Action thinkDrawnAttack(const TableView &view, Limits &limits);
     Action thinkDrawnDefend(const TableView &view, Limits &limits, const util::Stactor<Who, 3> &threats);
