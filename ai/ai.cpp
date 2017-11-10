@@ -5,6 +5,7 @@
 #include "ai_miyamori.h"
 #include "ai_senriyama.h"
 #include "ai_eisui.h"
+#include "ai_kiyosumi.h"
 #include "ai_usuzan.h"
 #include "../util/debug_cheat.h"
 #include "../util/misc.h"
@@ -76,6 +77,7 @@ Ai *Ai::create(Who who, Girl::Id id)
     case Girl::Id::USUZUMI_HATSUMI:     return new AiHatsumi(who);
     case Girl::Id::IWATO_KASUMI:        return new AiKasumi(who);
     case Girl::Id::ANETAI_TOYONE:       return new AiToyone(who);
+    case Girl::Id::HARAMURA_NODOKA:     return new AiNodoka(who);
     case Girl::Id::SHISHIHARA_SAWAYA:   return new AiSawaya(who);
     default:                            return new Ai(who);
     }
@@ -127,24 +129,7 @@ Action Ai::think(const TableView &view, Limits &limits)
     antiHatsumi(view, limits);
     antiToyone(view, limits);
 
-    const Choices &choices = view.myChoices();
-
-    switch (choices.mode()) {
-    case Choices::Mode::WATCH:
-        unreached("Ai::think: unexpected watch mode");
-    case Choices::Mode::CUT:
-        unreached("Ai::think: unhandled cut mode");
-    case Choices::Mode::DICE:
-        return Action(ActCode::DICE);
-    case Choices::Mode::DRAWN:
-        return thinkDrawn(view, limits);
-    case Choices::Mode::BARK:
-        return thinkBark(view, limits);
-    case Choices::Mode::END:
-        return Action(choices.can(ActCode::END_TABLE) ? ActCode::END_TABLE : ActCode::NEXT_ROUND);
-    default:
-        unreached("Ai::think: illegal mode");
-    }
+    return thinkChoices(view, limits);
 }
 
 Action Ai::placeHolder(const TableView &view)
@@ -172,6 +157,28 @@ void Ai::antiToyone(const TableView &view, Ai::Limits &limits)
     Who toyone = view.findGirl(Girl::Id::ANETAI_TOYONE);
     if (toyone.somebody() && toyone != mSelf && view.isMenzen(toyone))
         limits.addNoRiichi();
+}
+
+Action Ai::thinkChoices(const TableView &view, Ai::Limits &limits)
+{
+    const Choices &choices = view.myChoices();
+
+    switch (choices.mode()) {
+    case Choices::Mode::WATCH:
+        unreached("Ai::think: unexpected watch mode");
+    case Choices::Mode::CUT:
+        unreached("Ai::think: unhandled cut mode");
+    case Choices::Mode::DICE:
+        return Action(ActCode::DICE);
+    case Choices::Mode::DRAWN:
+        return thinkDrawn(view, limits);
+    case Choices::Mode::BARK:
+        return thinkBark(view, limits);
+    case Choices::Mode::END:
+        return Action(choices.can(ActCode::END_TABLE) ? ActCode::END_TABLE : ActCode::NEXT_ROUND);
+    default:
+        unreached("Ai::thinkChoices: illegal mode");
+    }
 }
 
 Action Ai::thinkDrawn(const TableView &view, Limits &limit)
