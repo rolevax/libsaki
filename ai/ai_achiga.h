@@ -14,8 +14,6 @@ class AiKuro : public Ai
 {
 public:
     AI_CTORS(AiKuro)
-
-protected:
     Action think(const TableView &view, Limits &limits) override;
 };
 

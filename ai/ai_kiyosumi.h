@@ -24,3 +24,5 @@ public:
 
 
 #endif // SAKI_AI_KIYOSUMI_H
+
+

@@ -14,10 +14,6 @@ namespace saki
 class Gen
 {
 public:
-    /*
-    static Gen genForm4Point(int point, int selfWind, int roundWind,
-                             const Rule &rule, bool ron);
-                             */
     static Gen genForm4FuHan(util::Rand &rand, int fu, int han, int selfWind, int roundWind,
                              const Rule &rule, bool ron);
     static Gen genForm4Mangan(util::Rand &rand, int han, int selfWind, int roundWind,
