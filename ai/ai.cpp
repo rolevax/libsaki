@@ -6,6 +6,7 @@
 #include "ai_senriyama.h"
 #include "ai_eisui.h"
 #include "ai_usuzan.h"
+#include "ai_kiyosumi.h"
 #include "../util/debug_cheat.h"
 #include "../util/misc.h"
 
@@ -77,6 +78,7 @@ Ai *Ai::create(Who who, Girl::Id id)
     case Girl::Id::IWATO_KASUMI:        return new AiKasumi(who);
     case Girl::Id::ANETAI_TOYONE:       return new AiToyone(who);
     case Girl::Id::SHISHIHARA_SAWAYA:   return new AiSawaya(who);
+    case Girl::Id::HARAMURA_NODOKA:     return new AiNodoka(who);
     default:                            return new Ai(who);
     }
 }
