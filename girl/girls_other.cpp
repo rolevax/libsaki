@@ -42,14 +42,14 @@ void Yui::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         return;
     const int s4 = hand.step4();
     const int s7 = hand.step7();
-    int mk = 400;
+    int mk = 350;
 
     if (s4 <= 0 || (s4 <= 3 && s7 > s4 + 1))
         return;
     if (s4 <= 3 && s7 > s4)
-        mk = 150;
+        mk = 100;
     else if (s4 == 1 && s7 <= 2)
-        mk = 80;
+        mk = 50;
     for (T34 t : tiles34::ALL34)
         if (hand.hasEffA7(t))
             mount.lightA(t, mk, false);
@@ -64,7 +64,7 @@ bool Yui::checkInit(Who who, const Hand &init, const Princess &princess, int ite
     const int s4 = init.step4();
     const int s7 = init.step7();
 
-    return s4 <= 3 || s7 <= 3 || s7 < s4;
+    return s4 <= 3 || s7 <= 3 || s7 <= s4;
 }
 
 
