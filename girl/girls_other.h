@@ -33,6 +33,8 @@ class Yui : public Girl
 public:
     GIRL_CTORS(Yui)
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
+    bool checkInit(Who who, const Hand &init, const Princess &princess, int iter) override;
+
 };
 
 
