@@ -26,6 +26,7 @@ void testAll();
 
 void testUtil();
 void testTileCount();
+void testParse();
 void testHand();
 void testForm();
 void testFormGb();

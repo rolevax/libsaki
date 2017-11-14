@@ -1,7 +1,7 @@
 #ifndef SAKI_TILECOUNT_H
 #define SAKI_TILECOUNT_H
 
-#include "../unit/tile.h"
+#include "parsed.h"
 
 #include <vector>
 #include <initializer_list>
@@ -30,7 +30,6 @@ public:
     TileCount();
     explicit TileCount(AkadoraCount fillMode);
     explicit TileCount(std::initializer_list<T37> t37s);
-//    explicit TileCount(std::vector<T37> t37s);
 
     TileCount(const TileCount &copy) = default;
     TileCount &operator=(const TileCount &assign) = default;
@@ -75,6 +74,8 @@ public:
 
     bool dislike4(T34 t) const;
 
+    std::vector<Parsed> parse4() const;
+
     std::vector<Explain4Closed> explain4(T34 pick) const;
     bool onlyInTriplet(T34 pick, int barkCt) const;
 
@@ -106,9 +107,21 @@ private:
         int mDelta;
     };
 
+    class NonEmptyGuard
+    {
+    public:
+        explicit NonEmptyGuard(std::vector<Parsed> &p);
+        ~NonEmptyGuard();
+
+    private:
+        std::vector<Parsed> &mParseds;
+    };
+
     std::array<int, 34> &mutableCounts() const;
     int cutMeld(int i, int maxCut) const;
+    std::vector<Parsed> cutMeldOut(int i, int maxCut) const;
     int cutSubmeld(int i, int maxCut) const;
+    std::vector<Parsed> cutSubmeldOut(int i, int maxCut) const;
     bool decomposeBirdless4(Explain4Closed &exp, const std::array<int, 34> &mCounts) const;
 
 private:

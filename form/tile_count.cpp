@@ -54,17 +54,6 @@ TileCount::TileCount(std::initializer_list<T37> t37s)
         inc(t, 1);
 }
 
-/*
-TileCount::TileCount(std::vector<T37> t37s)
-{
-    c.fill(0);
-    mAka5s.fill(0);
-
-    for (const T37 &t : t37s)
-        inc(t, 1);
-}
-*/
-
 int TileCount::ct(T34 t) const
 {
     return mCounts[t.id34()];
@@ -317,6 +306,47 @@ bool TileCount::dislike4(T34 t) const
     return true; // nobody likes this tile
 }
 
+std::vector<Parsed> TileCount::parse4() const
+{
+    std::vector<Parsed> reses;
+
+    int barkCt = 0; // dummy
+    int maxCut = 4 - barkCt;
+    int min = 8;
+
+    auto update = [&](bool hasBirdHead, T34 h = T34()) {
+        auto subreses = cutMeldOut(0, maxCut);
+        int comin = (hasBirdHead ? 7 : 8) - subreses[0].work() - 2 * barkCt;
+
+        if (comin <= min) {
+            if (comin < min) {
+                min = comin;
+                reses.clear();
+            }
+
+            if (hasBirdHead)
+                for (Parsed &p : subreses)
+                    p.append(C34(C34::Type::PAIR, h));
+
+            reses.insert(reses.end(), subreses.begin(), subreses.end());
+        }
+    };
+
+    // having-birdhead cases
+    for (T34 h : tiles34::ALL34) {
+        if (ct(h) >= 2) {
+            T34Delta guard(mutableCounts(), h, -2);
+            (void) guard;
+            update(true, h);
+        }
+    }
+
+    // birdhead-less case
+    update(false);
+
+    return reses;
+}
+
 std::vector<TileCount::Explain4Closed> TileCount::explain4(T34 pick) const
 {
     // no assertion. the result will be illegal if the input is illegal
@@ -525,6 +555,60 @@ int TileCount::cutMeld(int id34, int maxCut) const
     return maxWork;
 }
 
+std::vector<Parsed> TileCount::cutMeldOut(int id34, int maxCut) const
+{
+    std::vector<Parsed> reses;
+    NonEmptyGuard guard(reses);
+    (void) guard;
+
+    while (id34 < 34 && mCounts[id34] == 0)
+        id34++;
+
+    if (id34 >= 34)
+        return cutSubmeldOut(0, maxCut);
+
+    const T34 t(id34);
+    int maxWork = 0;
+
+    auto updateWork = [&](C34::Type type, bool cut) {
+        auto subreses = cutMeldOut(id34 + !cut, maxCut - cut);
+        int work = (cut ? 2 : 0) + subreses[0].work();
+
+        if (work >= maxWork) {
+            if (work > maxWork) {
+                maxWork = work;
+                reses.clear();
+            }
+
+            if (cut)
+                for (Parsed &p : subreses)
+                    p.append(C34(type, t));
+
+            reses.insert(reses.end(), subreses.begin(), subreses.end());
+        }
+    };
+
+    if (maxCut > 0) {
+        if (ct(t) >= 3) {
+            T34Delta guard(mutableCounts(), t, -3);
+            (void) guard;
+            updateWork(C34::Type::TRI, true);
+        }
+
+        if (t.isNum() && t.val() <= 7 && ct(t.next()) > 0  && ct(t.nnext()) > 0) {
+            T34Delta guard1(mutableCounts(), t, -1);
+            T34Delta guard2(mutableCounts(), t.next(), -1);
+            T34Delta guard3(mutableCounts(), t.nnext(), -1);
+            (void) guard1; (void) guard2; (void) guard3;
+            updateWork(C34::Type::SEQ, true);
+        }
+    }
+
+    updateWork(C34::Type::FREE, false);
+
+    return reses;
+}
+
 /// \brief cut-out submeld from the count and get the max work-delta
 /// \param i beginning tild id37
 /// \param maxCut max number of submeld to cut
@@ -576,6 +660,65 @@ int TileCount::cutSubmeld(int id34, int maxCut) const
     return maxWork;
 }
 
+std::vector<Parsed> TileCount::cutSubmeldOut(int id34, int maxCut) const
+{
+    std::vector<Parsed> reses;
+    NonEmptyGuard guard(reses);
+    (void) guard;
+
+    while (id34 < 34 && mCounts[id34] == 0)
+        id34++;
+
+    if (id34 >= 34)
+        return reses;
+
+    int maxWork = 0;
+    const T34 t(id34);
+
+    auto updateWork = [&](C34::Type type, bool cut) {
+        auto subreses = cutSubmeldOut(id34 + !cut, maxCut - cut);
+        int work = cut + subreses[0].work();
+
+        if (work >= maxWork) {
+            if (work > maxWork) {
+                maxWork = work;
+                reses.clear();
+            }
+
+            for (Parsed &p : subreses)
+                p.append(C34(type, t));
+
+            reses.insert(reses.end(), subreses.begin(), subreses.end());
+        }
+    };
+
+    if (maxCut > 0) {
+        if (ct(t) >= 2) {
+            T34Delta guard(mutableCounts(), t, -2);
+            (void) guard;
+            updateWork(C34::Type::PAIR, true);
+        }
+
+        if (t.isNum() && t.val() <= 8 && ct(t.next()) > 0) {
+            T34Delta guard1(mutableCounts(), t, -1);
+            T34Delta guard2(mutableCounts(), t.next(), -1);
+            (void) guard1; (void) guard2;
+            updateWork(t.val() == 1 || t.val() == 8 ? C34::Type::SIDE : C34::Type::BIFACE, true);
+        }
+
+        if (t.isNum() && t.val() <= 7 && ct(t.nnext()) > 0) {
+            T34Delta guard1(mutableCounts(), T34(id34), -1);
+            T34Delta guard2(mutableCounts(), T34(id34 + 2), -1);
+            (void) guard1; (void) guard2;
+            updateWork(C34::Type::CLAMP, true);
+        }
+    }
+
+    updateWork(C34::Type::FREE, false);
+
+    return reses;
+}
+
 bool TileCount::decomposeBirdless4(Explain4Closed &exp,
                                    const std::array<int, 34> &c) const
 {
@@ -622,6 +765,19 @@ TileCount::T34Delta::T34Delta(std::array<int, 34> &c, T34 t, int delta)
 TileCount::T34Delta::~T34Delta()
 {
     mCount[mTile.id34()] -= mDelta;
+}
+
+
+
+TileCount::NonEmptyGuard::NonEmptyGuard(std::vector<Parsed> &p)
+    : mParseds(p)
+{
+}
+
+TileCount::NonEmptyGuard::~NonEmptyGuard()
+{
+    if (mParseds.empty())
+        mParseds.push_back(Parsed());
 }
 
 
