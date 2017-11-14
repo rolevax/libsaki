@@ -32,6 +32,22 @@ void Uta::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
 
 
 
+void Rio::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
+{
+    (void) rinshan;
+
+    if (who != mSelf)
+        return;
+
+    const TableEnv &env = table.getEnv();
+    int hour24 = env.hour24();
+
+    if (5 <= hour24 && hour24 <= 9)
+        accelerate(mount, table.getHand(mSelf), table.getRiver(mSelf), 130);
+}
+
+
+
 void Yui::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
 {
     if (who != mSelf || rinshan)

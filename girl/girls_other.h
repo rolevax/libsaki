@@ -28,6 +28,16 @@ public:
 
 
 
+class Rio : public Girl
+{
+public:
+    GIRL_CTORS(Rio)
+    void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
+
+};
+
+
+
 class Yui : public Girl
 {
 public:

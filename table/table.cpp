@@ -16,11 +16,12 @@ namespace saki
 
 
 TablePrivate::TablePrivate(const std::array<int, 4> &points,
-                           Rule rule, Who tempDealer)
+                           Rule rule, Who tempDealer, const TableEnv &env)
     : mMount(rule.akadora)
     , mRule(rule)
     , mPoints(points)
     , mInitDealer(tempDealer)
+    , mEnv(env)
 {
 }
 
@@ -30,8 +31,8 @@ Table::Table(const std::array<int, 4> &points,
              const std::array<int, 4> &girlIds,
              const std::array<TableOperator*, 4> &operators,
              const std::vector<TableObserver*> &observers,
-             Rule rule, Who tempDealer)
-    : TablePrivate(points, rule, tempDealer)
+             Rule rule, Who tempDealer, const TableEnv &env)
+    : TablePrivate(points, rule, tempDealer, env)
     , mOperators(operators)
     , mObservers(observers)
 {
@@ -354,6 +355,11 @@ const Choices &Table::getChoices(Who who) const
 const Mount &Table::getMount() const
 {
     return mMount;
+}
+
+const TableEnv &Table::getEnv() const
+{
+    return mEnv;
 }
 
 void Table::popUp(Who who) const

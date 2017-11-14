@@ -3,6 +3,7 @@
 #include "../form/form.h"
 #include "../form/form_gb.h"
 #include "../table/table.h"
+#include "../table/table_env_stub.h"
 #include "../ai/ai.h"
 #include "../util/string_enum.h"
 #include "../util/misc.h"
@@ -115,7 +116,9 @@ void testTable()
             ops[w] = ais[w].get();
         }
 
-        Table table(points, girlIds, ops, obs, rule, Who(0));
+
+        TableEnvStub env;
+        Table table(points, girlIds, ops, obs, rule, Who(0), env);
         table.start();
     }
 }

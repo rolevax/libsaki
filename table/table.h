@@ -4,6 +4,7 @@
 #include "choices.h"
 #include "kan_ctx.h"
 #include "mount.h"
+#include "table_env.h"
 #include "table_view.h"
 #include "table_operator.h"
 #include "table_observer.h"
@@ -36,7 +37,7 @@ class TablePrivate
 {
 protected:
     TablePrivate(const std::array<int, 4> &points,
-                 Rule rule, Who tempDealer);
+                 Rule rule, Who tempDealer, const TableEnv &env);
     explicit TablePrivate(const TablePrivate &copy) = default;
     TablePrivate &operator=(const TablePrivate &assign) = delete;
     ~TablePrivate() = default;
@@ -74,6 +75,8 @@ protected:
 
     std::bitset<4> mIppatsuFlags;
     std::array<std::bitset<34>, 4> mGenbutsuFlags;
+
+    const TableEnv &mEnv;
 };
 
 
@@ -85,7 +88,7 @@ public:
                    const std::array<int, 4> &girlIds,
                    const std::array<TableOperator*, 4> &operators,
                    const std::vector<TableObserver*> &observers,
-                   Rule rule, Who tempDealer);
+                   Rule rule, Who tempDealer, const TableEnv &env);
 
     explicit Table(const Table &orig,
                    const std::array<TableOperator*, 4> &operators,
@@ -130,6 +133,7 @@ public:
     FormCtx getFormCtx(Who who) const;
     const Choices &getChoices(Who who) const;
     const Mount &getMount() const;
+    const TableEnv &getEnv() const;
 
     void popUp(Who who) const;
 

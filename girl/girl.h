@@ -68,7 +68,8 @@ public:
 
         // Others
         INAMURA_KYOUKA = 990001, SHIRATSUKI_SHINO = 990002, HONDOU_YUE = 990003,
-            MIHOROGI_UTA = 990011, KAJINO_YUI = 990024
+            MIHOROGI_UTA = 990011, TAKUWA_RIO = 990014,
+        KAJINO_YUI = 990024
     };
 
     enum NmSkill

@@ -50,6 +50,7 @@ Girl *Girl::create(Who who, int id_)
     case Id::SHIRATSUKI_SHINO:  return new Shino(who, id);
     case Id::HONDOU_YUE:        return new Yue(who, id);
     case Id::MIHOROGI_UTA:      return new Uta(who, id);
+    case Id::TAKUWA_RIO:        return new Rio(who, id);
     case Id::KAJINO_YUI:        return new Yui(who, id);
     default:
         unreached("unimplemented girl");
