@@ -306,11 +306,10 @@ bool TileCount::dislike4(T34 t) const
     return true; // nobody likes this tile
 }
 
-std::vector<Parsed> TileCount::parse4() const
+std::vector<Parsed> TileCount::parse4(int barkCt) const
 {
     std::vector<Parsed> reses;
 
-    int barkCt = 0; // dummy
     int maxCut = 4 - barkCt;
     int min = 8;
 
@@ -328,7 +327,11 @@ std::vector<Parsed> TileCount::parse4() const
                 for (Parsed &p : subreses)
                     p.append(C34(C34::Type::PAIR, h));
 
-            reses.insert(reses.end(), subreses.begin(), subreses.end());
+            for (Parsed &p : subreses) {
+                p.sort();
+                if (std::find(reses.begin(), reses.end(), p) == reses.end())
+                    reses.push_back(p);
+            }
         }
     };
 

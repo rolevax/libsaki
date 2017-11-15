@@ -59,6 +59,27 @@ public:
         }
     }
 
+    bool operator==(const C34 &that) const
+    {
+        return mType == that.mType && mHead == that.mHead;
+    }
+
+    bool operator!=(const C34 &that) const
+    {
+        return !(*this == that);
+    }
+
+    bool operator<(const C34 &that) const
+    {
+        if (mType != that.mType) {
+            int a = static_cast<int>(mType);
+            int b = static_cast<int>(that.mType);
+            return a < b;
+        }
+
+        return mHead < that.mHead;
+    }
+
 private:
     Type mType;
     T34 mHead;

@@ -18,7 +18,10 @@ public:
     const util::Stactor<C34, 14> &heads() const;
     int work() const;
 
+    bool operator==(const Parsed &that) const;
+
     void append(C34 head);
+    void sort();
 
 private:
     util::Stactor<C34, 14> mHeads;

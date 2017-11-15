@@ -75,7 +75,7 @@ void testParse()
     using namespace tiles37;
     TileCount tc { 1_m, 2_m, 4_m, 2_p, 2_p, 3_p, 3_s, 3_s, 3_s, 4_f, 4_f, 4_f, 1_y };
 
-    auto parseds = tc.parse4();
+    auto parseds = tc.parse4(0);
 
     for (const auto &p : parseds)
         util::p(p, 8 - p.work());
