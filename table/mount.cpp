@@ -436,6 +436,14 @@ T37 Mount::popScientific(util::Rand &rand)
 
 
 
+int operator%(const util::Stactor<T37, 5> &indics, T34 t)
+{
+    auto aux = [t](int s, const T37 &id) { return s + id % t; };
+    return std::accumulate(indics.begin(), indics.end(), 0, aux);
+}
+
+
+
 } // namespace saki
 
 

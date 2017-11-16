@@ -52,6 +52,9 @@ public:
     using Iterator = typename ArrayType::iterator;
     using ConstIterator = typename ArrayType::const_iterator;
 
+    /// enable std funcs
+    using value_type = T;
+
     T &operator[](size_t i)
 	{
 		assert(i < mSize);
@@ -94,7 +97,6 @@ public:
         return mArray.begin();
     }
 
-    // FIXIT: should define own iterator type that updates mSize when inserted
     Iterator end() noexcept
 	{
 		return mArray.begin() + mSize;
@@ -144,6 +146,24 @@ public:
     {
         assert(mSize + 1 <= MAX);
         mArray[mSize++] = elem;
+    }
+
+    void pushBack(const Range<T> &range)
+    {
+        for (const T &v : range)
+            pushBack(v);
+    }
+
+    /// alias to enable std::back_inserter
+    void push_back(const T &elem)
+    {
+        pushBack(elem);
+    }
+
+    /// alias to enable std::back_inserter
+    void push_back(T &&elem)
+    {
+        pushBack(elem);
     }
 
     void popBack()

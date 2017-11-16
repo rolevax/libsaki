@@ -27,6 +27,14 @@ public:
         : mType(type)
         , mHead(head)
     {
+#ifndef NDEBUG
+        int v = head.val();
+        bool num = head.isNum();
+        assert((type != Type::SEQ || (num && v <= 7))
+               && (type != Type::BIFACE || (num && 2 <= v && v <= 7))
+               && (type != Type::CLAMP || (num && v <= 7))
+               && (type != Type::SIDE || (num && (v == 1 || v == 8))));
+#endif
     }
 
     C34(const C34 &copy) = default;
@@ -57,6 +65,66 @@ public:
         default:
             return 0;
         }
+    }
+
+    util::Stactor<T34, 3> t34s() const
+    {
+        // save typing
+        using S = util::Stactor<T34, 3>;
+        const T34 h = mHead;
+
+        switch (mType) {
+        case Type::SEQ:
+            return S { h, h.next(), h.nnext() };
+        case Type::TRI:
+            return S { h, h, h };
+        case Type::BIFACE:
+            return S { h, h.next() };
+        case Type::CLAMP:
+            return S { h, h.nnext() };
+        case Type::SIDE:
+            return S { h, h.next() };
+        case Type::PAIR:
+            return S { h, h };
+        case Type::FREE:
+            return S { h };
+        default:
+            unreached("illegal c34 type");
+        }
+    }
+
+    bool has(T34 t) const
+    {
+        const auto &ts = t34s();
+        return std::find(ts.begin(), ts.end(), t) != ts.end();
+    }
+
+    bool is3() const
+    {
+        return mType == Type::SEQ || mType == Type::TRI;
+    }
+
+    bool is2() const
+    {
+        return isSeq2() || mType == Type::PAIR;
+    }
+
+    bool isSeq2() const
+    {
+        return mType == Type::BIFACE || mType == Type::CLAMP || mType == Type::SIDE;
+    }
+
+    util::Stactor<T34, 3> tilesTo(const C34 &that) const
+    {
+        return tilesTo(that.t34s());
+    }
+
+    util::Stactor<T34, 3> tilesTo(const util::Stactor<T34, 3> &tar) const
+    {
+        util::Stactor<T34, 3> res;
+        auto need = [this](T34 t) { return !has(t); };
+        std::copy_if(tar.begin(), tar.end(), std::back_inserter(res), need);
+        return res;
     }
 
     bool operator==(const C34 &that) const

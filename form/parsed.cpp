@@ -19,6 +19,32 @@ int Parsed::work() const
     return std::accumulate(mHeads.begin(), mHeads.end(), 0, aux);
 }
 
+util::Stactor<T34, 9> Parsed::claim3sk() const
+{
+    using namespace tiles34;
+
+    // default value if no number tile in hand
+    util::Stactor<T34, 9> res {
+        6_m, 7_m, 8_m,
+        6_p, 7_p, 8_p,
+        6_s, 7_s, 8_s
+    };
+
+    for (int begin = 1; begin <= 7; begin++) {
+        std::array<C34, 3> tars {
+            C34(C34::Type::SEQ, T34(Suit::M, begin)),
+            C34(C34::Type::SEQ, T34(Suit::P, begin)),
+            C34(C34::Type::SEQ, T34(Suit::S, begin))
+        };
+
+        auto cand = minTilesTo(tars);
+        if (cand.size() < res.size())
+            res = cand;
+    }
+
+    return res;
+}
+
 /// \brief ordered equal, not set equal
 bool Parsed::operator==(const Parsed &that) const
 {
@@ -36,6 +62,23 @@ void Parsed::append(C34 head)
 void Parsed::sort()
 {
     std::sort(mHeads.begin(), mHeads.end());
+}
+
+util::Stactor<T34, 9> Parsed::minTilesTo(const std::array<C34, 3> &cs) const
+{
+    util::Stactor<T34, 9> res;
+    for (const C34 &c : cs)
+        res.pushBack(minTilesTo(c).range());
+    return res;
+}
+
+util::Stactor<T34, 3> Parsed::minTilesTo(const C34 &c) const
+{
+    auto comp = [&c](const C34 &a, const C34 &b) {
+        return a.tilesTo(c).size() < b.tilesTo(c).size();
+    };
+
+    return std::min_element(mHeads.begin(), mHeads.end(), comp)->tilesTo(c);
 }
 
 

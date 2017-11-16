@@ -1,6 +1,5 @@
 #include "tile_count.h"
-
-#include <algorithm>
+#include "../util/misc.h"
 
 
 
@@ -329,7 +328,7 @@ std::vector<Parsed> TileCount::parse4(int barkCt) const
 
             for (Parsed &p : subreses) {
                 p.sort();
-                if (std::find(reses.begin(), reses.end(), p) == reses.end())
+                if (!util::has(reses, p))
                     reses.push_back(p);
             }
         }

@@ -378,6 +378,11 @@ util::Stactor<T34, 34> Hand::effA4() const
     return peekStay(&TileCount::effA4, mBarks.size());
 }
 
+std::vector<Parsed> Hand::parse4() const
+{
+    return peekStay(&TileCount::parse4, mBarks.size());
+}
+
 // rough estimation (theoritically not precise)
 // condition: menzen + dama + ron
 int Hand::estimate(const Rule &rule, int sw, int rw, const util::Stactor<T37, 5> &drids) const

@@ -135,6 +135,8 @@ private:
     std::array<ErwinQueue, NUM_EXITS> mErwinQueues;
 };
 
+int operator%(const util::Stactor<T37, 5> &indics, T34 t);
+
 
 
 } // namespace saki
