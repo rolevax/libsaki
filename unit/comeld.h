@@ -3,6 +3,8 @@
 
 #include "tile.h"
 
+#include <algorithm>
+
 
 
 namespace saki
