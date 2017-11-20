@@ -148,8 +148,19 @@ void Yui::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     const int turn = table.getRiver(mSelf).size();
     const int s7 = hand.step7();
 
-    if (turn >= 6 && s7 <= 2)
-        accelerate(mount, hand, table.getRiver(mSelf), 200);
+    auto morePairs = [&hand, &mount](int mk) {
+        for (T34 t : tiles34::ALL34)
+            if (hand.closed().ct(t) == 1)
+                mount.lightA(t, mk);
+    };
+
+    if (turn < 6 && s7 >= 3)
+        morePairs(70);
+
+    if (turn >= 6 && s7 <= 2) {
+        accelerate(mount, hand, table.getRiver(mSelf), 100);
+        morePairs(100);
+    }
 }
 
 

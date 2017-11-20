@@ -8,7 +8,7 @@ namespace saki
 
 
 
-static const char *VERSION = "0.9.0-alpha2";
+static const char *VERSION = "0.9.0-alpha3";
 
 
 
