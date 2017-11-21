@@ -31,7 +31,7 @@ void Uta::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     if (!hand.isMenzen())
         return;
 
-    if (table.getRiver(mSelf).size() < 6) {
+    if (table.getRiver(mSelf).size() < 5) {
         if (hand.step() <= 1)
             for (T34 t : hand.effA())
                 mount.lightA(t, -40); // slow down
@@ -46,17 +46,18 @@ void Uta::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
                 int ronHan = f.han();
                 int tsumoHan = ronHan + 1;
                 bool strong = tsumoHan >= 6;
-                bool greedy = tsumoHan >= 7 && table.riichiEstablished(mSelf);
-                mount.lightA(t, strong && !greedy ? 300 : -50);
+                bool greedy = ronHan >= 7 && table.riichiEstablished(mSelf);
+                mount.lightA(t, strong && !greedy ? 400 : -50);
             }
         } else {
+            const River &river = table.getRiver(mSelf);
             if (!tryPowerDye(hand, mount))
-                power3sk(hand, mount);
+                power3sk(hand, river, mount);
         }
     }
 }
 
-void Uta::power3sk(const Hand &hand, Mount &mount)
+void Uta::power3sk(const Hand &hand, const River &river, Mount &mount)
 {
     const auto parseds = hand.parse4();
 
@@ -77,16 +78,14 @@ void Uta::power3sk(const Hand &hand, Mount &mount)
 
     auto needs = std::min_element(parseds.begin(), parseds.end(), comp)->claim3sk();
     for (T34 t : needs)
-        mount.lightA(t, 100);
+        if (util::none(river, [t](const T37 &r) { return t == r; }))
+            mount.lightA(t, 500);
 
     const auto &drids = mount.getDrids();
-    if (hand.ctAka5() + drids % hand < 3) {
-        for (const T37 &t : drids)
-            mount.lightA(t.dora(), 80);
-        mount.lightA(T37(Suit::M, 0), 30);
-        mount.lightA(T37(Suit::P, 0), 30);
-        mount.lightA(T37(Suit::S, 0), 30);
-    }
+    if (hand.ctAka5() + drids % hand < 3)
+        for (const T37 &ind : drids)
+            if (util::none(river, [&ind](const T37 &r) { return ind % r; }))
+                mount.lightA(ind.dora(), 100);
 }
 
 bool Uta::tryPowerDye(const Hand &hand, Mount &mount)
@@ -105,7 +104,7 @@ bool Uta::tryPowerDye(const Hand &hand, Mount &mount)
     std::transform(mps.begin(), mps.end(), sums.begin(), sum);
 
     auto it = std::max_element(sums.begin(), sums.end());
-    if (*it < 9)
+    if (*it + closed.ctZ() < 9)
         return false;
 
     Suit s = mps[it - sums.begin()];

@@ -15,6 +15,9 @@ namespace saki
 
 
 
+// 24 is the theoritical maximum
+using River = util::Stactor<T37, 24>;
+
 class Table;
 class Player;
 

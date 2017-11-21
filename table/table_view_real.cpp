@@ -85,7 +85,7 @@ Who TableViewReal::findGirl(Girl::Id id) const
     return mTable.findGirl(id);
 }
 
-const util::Stactor<T37, 24> &TableViewReal::getRiver(Who who) const
+const River &TableViewReal::getRiver(Who who) const
 {
     return mTable.getRiver(who);
 }

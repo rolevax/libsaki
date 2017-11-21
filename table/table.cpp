@@ -134,7 +134,7 @@ const Hand &Table::getHand(Who who) const
     return mHands[who.index()];
 }
 
-const util::Stactor<T37, 24> &Table::getRiver(Who who) const
+const River &Table::getRiver(Who who) const
 {
     return mRivers[who.index()];
 }
@@ -938,7 +938,7 @@ bool Table::checkDeathWinds() const
     if (!noBarkYet())
         return false;
 
-    auto notOne = [](const util::Stactor<T37, 24> &r) { return r.size() != 1; };
+    auto notOne = [](const River &r) { return r.size() != 1; };
     if (util::any(mRivers, notOne))
         return false;
 

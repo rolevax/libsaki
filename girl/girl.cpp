@@ -162,20 +162,20 @@ std::string Girl::popUpStr() const
     unreached("unoverriden popUpStr()");
 }
 
-void Girl::eraseRivered(util::Stactor<T34, 34> &ts, const util::Stactor<T37, 24> &river)
+void Girl::eraseRivered(util::Stactor<T34, 34> &ts, const River &river)
 {
     // 34/37 does not affect equalty
     auto has = [river](T34 t){ return util::has(river, T37(t.id34())); };
     std::remove_if(ts.begin(), ts.end(), has);
 }
 
-void Girl::eraseRivered(std::bitset<34> &ts, const util::Stactor<T37, 24> &river)
+void Girl::eraseRivered(std::bitset<34> &ts, const River &river)
 {
     for (const T37 &t: river)
         ts.reset(t.id34());
 }
 
-void Girl::accelerate(Mount &mount, const Hand &hand, const util::Stactor<T37, 24> &river, int delta)
+void Girl::accelerate(Mount &mount, const Hand &hand, const River &river, int delta)
 {
     util::Stactor<T34, 34> effs = hand.effA4();
 

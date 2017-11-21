@@ -54,7 +54,7 @@ protected:
     std::array<int, 4> mLayPositions;
     std::array<Furiten, 4> mFuritens;
     std::array<Hand, 4> mHands;
-    std::array<util::Stactor<T37, 24>, 4> mRivers;
+    std::array<River, 4> mRivers;
     std::array<std::bitset<24>, 4> mPickeds;
     std::array<Choices, 4> mChoicess;
     std::array<Action, 4> mActionInbox;
@@ -103,7 +103,7 @@ public:
     bool check(Who who, const Action &action) const;
 
     const Hand &getHand(Who who) const;
-    const util::Stactor<T37, 24> &getRiver(Who who) const;
+    const River &getRiver(Who who) const;
     const Girl &getGirl(Who who) const;
     std::unique_ptr<TableView> getView(Who who) const;
     const Furiten &getFuriten(Who who) const;

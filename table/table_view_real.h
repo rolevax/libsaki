@@ -37,7 +37,7 @@ public:
     TileCount visibleRemain() const override;
     Who findGirl(Girl::Id id) const override;
 
-    const util::Stactor<T37, 24> &getRiver(Who who) const override;
+    const River &getRiver(Who who) const override;
     const util::Stactor<M37, 4> &getBarks(Who who) const override;
 
     bool genbutsu(Who whose, T34 t) const override;

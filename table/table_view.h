@@ -45,7 +45,7 @@ public:
     virtual TileCount visibleRemain() const = 0;
     virtual Who findGirl(Girl::Id id) const = 0;
 
-    virtual const util::Stactor<T37, 24> &getRiver(Who who) const = 0;
+    virtual const River &getRiver(Who who) const = 0;
     virtual const util::Stactor<M37, 4> &getBarks(Who who) const = 0;
 
     virtual bool genbutsu(Who whose, T34 t) const = 0;

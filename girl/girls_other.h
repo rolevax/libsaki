@@ -26,7 +26,7 @@ public:
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
 
 private:
-    void power3sk(const Hand &hand, Mount &mount);
+    void power3sk(const Hand &hand, const River &river, Mount &mount);
     bool tryPowerDye(const Hand &hand, Mount &mount);
 };
 

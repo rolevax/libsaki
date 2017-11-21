@@ -567,7 +567,7 @@ void Awai::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
                 }
             } else {
                 // don't tsumo too early
-                accelerate(mount, table.getHand(mSelf), util::Stactor<T37, 24>(), -EJECT_MK);
+                accelerate(mount, table.getHand(mSelf), River(), -EJECT_MK);
                 // don't get the kan-material which is not kanura
                 // (awai can have 2 closed triplets in init hand)
                 for (T34 t : tiles34::ALL34)

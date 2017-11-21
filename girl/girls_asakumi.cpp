@@ -84,8 +84,7 @@ std::string Shino::popUpStr() const
     return oss.str();
 }
 
-void Shino::powerPinfu(const Hand &hand, const util::Stactor<T37, 24> &r,
-                       Mount &mount, int posMk)
+void Shino::powerPinfu(const Hand &hand, const River &r, Mount &mount, int posMk)
 {
     util::Stactor<T34, 34> cores;
     const TileCount &closed = hand.closed();
@@ -114,8 +113,7 @@ void Shino::powerPinfu(const Hand &hand, const util::Stactor<T37, 24> &r,
         mount.lightA(t, posMk);
 }
 
-void Shino::powerIipei(const Hand &hand, const util::Stactor<T37, 24> &river,
-                            Mount &mount, int posMk, int negMk)
+void Shino::powerIipei(const Hand &hand, const River &river, Mount &mount, int posMk, int negMk)
 {
     if (!hand.isMenzen())
         return;

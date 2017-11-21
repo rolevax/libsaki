@@ -114,9 +114,9 @@ protected:
     Girl(Who who, Id id);
     Girl(const Girl &copy);
 
-    static void eraseRivered(util::Stactor<T34, 34> &ts, const util::Stactor<T37, 24> &river);
-    static void eraseRivered(std::bitset<34> &ts, const util::Stactor<T37, 24> &river);
-    void accelerate(Mount &mount, const Hand &hand, const util::Stactor<T37, 24> &river, int delta);
+    static void eraseRivered(util::Stactor<T34, 34> &ts, const River &river);
+    static void eraseRivered(std::bitset<34> &ts, const River &river);
+    void accelerate(Mount &mount, const Hand &hand, const River &river, int delta);
 
 protected:
     const Who mSelf;
