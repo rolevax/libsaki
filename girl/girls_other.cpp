@@ -31,10 +31,9 @@ void Uta::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     if (!hand.isMenzen())
         return;
 
-    if (table.getRiver(mSelf).size() < 5) {
-        if (hand.step() <= 1)
-            for (T34 t : hand.effA())
-                mount.lightA(t, -40); // slow down
+    if (table.getRiver(mSelf).size() < 5 && hand.step() <= 1) {
+        for (T34 t : hand.effA())
+            mount.lightA(t, -40); // slow down
     } else {
         if (hand.ready()) {
             const FormCtx &ctx = table.getFormCtx(mSelf);
@@ -61,9 +60,18 @@ void Uta::power3sk(const Hand &hand, const River &river, Mount &mount)
 {
     const auto parseds = hand.parse4();
 
-    auto comp = [](const Parsed &a, const Parsed &b) {
+    auto inRiver = [&river](T34 t) {
+        return util::any(river, [t](const T37 &r) { return t == r; });
+    };
+
+    auto comp = [&inRiver](const Parsed &a, const Parsed &b) {
         auto needA = a.claim3sk();
         auto needB = b.claim3sk();
+
+        bool hateA = util::any(needA, inRiver);
+        bool hateB = util::any(needB, inRiver);
+        if (hateA != hateB)
+            return hateB;
 
         if (needA.size() < needB.size())
             return true;
@@ -80,6 +88,9 @@ void Uta::power3sk(const Hand &hand, const River &river, Mount &mount)
     for (T34 t : needs)
         if (util::none(river, [t](const T37 &r) { return t == r; }))
             mount.lightA(t, 500);
+
+    if (needs.empty() && river.size() >= 9)
+        accelerate(mount, hand, river, 100);
 
     const auto &drids = mount.getDrids();
     if (hand.ctAka5() + drids % hand < 3)
