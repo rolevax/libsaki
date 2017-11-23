@@ -211,7 +211,7 @@ Action Ai::thinkDrawnAttack(const TableView &view, Limits &limits)
                 return Action(AC::ANKAN, t);
 
     auto outs = listOuts(view, limits);
-    return outs.empty() ? placeHolder(view) : thinkAttackStep(view, outs);
+    return outs.empty() ? placeHolder(view) : thinkAttackStep(view, outs.range());
 }
 
 Action Ai::thinkDrawnDefend(const TableView &view, Limits &limits, const util::Stactor<Who, 3> &threats)
@@ -222,7 +222,7 @@ Action Ai::thinkDrawnDefend(const TableView &view, Limits &limits, const util::S
         return Action(AC::RYUUKYOKU);
 
     auto outs = listOuts(view, limits);
-    return outs.empty() ? placeHolder(view) : thinkDefendChance(view, outs, threats);
+    return outs.empty() ? placeHolder(view) : thinkDefendChance(view, outs.range(), threats);
 }
 
 Action Ai::thinkBark(const TableView &view, Limits &limits)
@@ -250,7 +250,7 @@ Action Ai::thinkBarkAttack(const TableView &view, Limits &limits)
     int rw = view.getRoundWind();
 
     if (hand.hasEffA(pick) && (barked || pick.isYakuhai(sw, rw)))
-        return thinkAttackStep(view, listCp(hand, mode, pick));
+        return thinkAttackStep(view, listCp(hand, mode, pick).range());
 
     return Action(AC::PASS);
 }
@@ -265,14 +265,13 @@ Action Ai::thinkBarkDefend(const TableView &view, Limits &limits,
         const Hand &hand = view.myHand();
         const Choices::ModeBark &mode = view.myChoices().bark();
         const T37 &pick = view.getFocusTile();
-        return thinkDefendChance(view, listCp(hand, mode, pick), threats);
+        return thinkDefendChance(view, listCp(hand, mode, pick).range(), threats);
     }
 
     return Action(ActCode::PASS);
 }
 
-template<size_t MAX>
-Action Ai::thinkAttackStep(const TableView &view, const util::Stactor<Action, MAX> &outs)
+Action Ai::thinkAttackStep(const TableView &view, const util::Range<Action> &outs)
 {
     assert(!outs.empty());
     assert(util::all(outs, [](const Action &a) { return a.isDiscard() || a.isCp(); }));
@@ -283,15 +282,14 @@ Action Ai::thinkAttackStep(const TableView &view, const util::Stactor<Action, MA
         return 2 + (13 - step);
     };
 
-    auto minSteps = outs.maxs(stepHappy, 0);
+    auto minSteps = util::Stactor<Action, 44>::allMaxs(outs, stepHappy, 0);
     if (minSteps.size() == 1)
         return minSteps[0];
 
-    return thinkAttackEff(view, minSteps);
+    return thinkAttackEff(view, minSteps.range());
 }
 
-template<size_t MAX>
-Action Ai::thinkAttackEff(const TableView &view, const util::Stactor<Action, MAX> &outs)
+Action Ai::thinkAttackEff(const TableView &view, const util::Range<Action> &outs)
 {
     assert(!outs.empty());
     assert(util::all(outs, [](const Action &a) { return a.isDiscard() || a.isCp(); }));
@@ -307,12 +305,11 @@ Action Ai::thinkAttackEff(const TableView &view, const util::Stactor<Action, MAX
         return 2 + 10 * remainEffA + floatTrash;
     };
 
-    auto maxHappys = outs.maxs(happy, 0);
+    auto maxHappys = util::Stactor<Action, 44>::allMaxs(outs, happy, 0);
     return maxHappys[0];
 }
 
-template<size_t MAX>
-Action Ai::thinkDefendChance(const TableView &view, const util::Stactor<Action, MAX> &outs,
+Action Ai::thinkDefendChance(const TableView &view, const util::Range<Action> &outs,
                                     const util::Stactor<Who, 3> &threats)
 {
     assert(!outs.empty());
@@ -327,7 +324,7 @@ Action Ai::thinkDefendChance(const TableView &view, const util::Stactor<Action, 
         return 100 * safe + 10 * (view.getDrids() % out + out.isAka5()) + (34 - out.id34());
     };
 
-    auto maxHappys = outs.maxs(happy, 0);
+    auto maxHappys = util::Stactor<Action, 44>::allMaxs(outs, happy, 0);
     assert(!maxHappys.empty());
     return maxHappys[0];
 }
@@ -369,7 +366,7 @@ bool Ai::testRiichi(const TableView &view, Limits &limits, Action &riichi)
     if (outs.empty())
         return false;
 
-    Action act = thinkAttackEff(view, outs);
+    Action act = thinkAttackEff(view, outs.range());
     int est = view.myHand().peekDiscard(act, &Hand::estimate, view.getRule(),
                                        view.getSelfWind(mSelf), view.getRoundWind(), view.getDrids());
 

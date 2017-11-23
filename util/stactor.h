@@ -22,8 +22,9 @@ class Range
 {
 public:
     explicit Range(const T *begin, const T *end) : mBegin(begin) , mEnd(end) {}
-    const T *begin() const { return mBegin; }
-    const T *end() const { return mEnd; }
+    const T *begin() const noexcept { return mBegin; }
+    const T *end() const noexcept { return mEnd; }
+    bool empty() const noexcept { return mBegin == mEnd; }
 
 private:
     const T *mBegin;
@@ -45,6 +46,30 @@ public:
     {
         for (const auto &e : inits)
             pushBack(e);
+    }
+
+    // FIXIT
+    // not good to place this func as static member
+    // extract it to somewhere else
+    static Stactor<T, MAX> allMaxs(const Range<T> &range,
+                                   std::function<int(const T&)> measure, int floor)
+    {
+        int max = floor;
+        Stactor<T, MAX> res;
+
+        for (const auto &a : range) {
+            int comax = measure(a);
+
+            if (comax > max) {
+                max = comax;
+                res.clear();
+            }
+
+            if (comax == max)
+                res.pushBack(a);
+        }
+
+        return res;
     }
 
 	using ArrayType = std::array<T, MAX>;
@@ -189,26 +214,6 @@ public:
         for (size_t i = 0; i < mSize; i++)
             if (pred(mArray[i]))
                 exile(i--); // stay
-    }
-
-    Stactor<T, MAX> maxs(std::function<int(const T&)> measure, int floor) const
-    {
-        int max = floor;
-        Stactor<T, MAX> res;
-
-        for (const auto &a : *this) {
-            int comax = measure(a);
-
-            if (comax > max) {
-                max = comax;
-                res.clear();
-            }
-
-            if (comax == max)
-                res.pushBack(a);
-        }
-
-        return res;
     }
 
 private:

@@ -59,7 +59,7 @@ Action AiSeiko::think(const TableView &view, Limits &limits)
         if (choices.can(AC::PON)) {
             auto list = listCp(view.myHand(), view.myChoices().bark(),
                                view.getFocusTile(), true);
-            return Ai::thinkAttackStep(view, list);
+            return Ai::thinkAttackStep(view, list.range());
         }
 
         return Action(ActCode::PASS);
