@@ -112,10 +112,8 @@ std::array<Hand, 4> Princess::monkey(std::array<TileCount, 4> &inits)
     for (auto &g : mGirls)
         g->onMonkey(exists, *this);
 
-    // there should not be any check condition in checkInit()
-    // that is relied on enough remaining certain tiles in mount
-    // because one is checked after another girl's init hand is
-    // fully confirmed
+    // checkInit() should never rely on a moutain remaining status
+    // because hands are checked sequentially but not globally
     for (int w = 0; w < 4; w++) {
         for (int iter = 0; true; iter++) {
             Mount mount(mMount);
@@ -212,7 +210,7 @@ void Princess::doraMatters()
             // (needed by at least awai)
             // use id34() instread of id37() to ensure uniqueness
             // note that a fixed indicator might equal to a non-fixed
-            // scientific indicator. don't know whether this will cause bug...
+            // scientific indicator.
             for (int j = i; j < 4; j++)
                 ex34ss[j][mImageIndics[i].id34()] = true;
         }

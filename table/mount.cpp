@@ -40,13 +40,11 @@ void Exist::inc(T34 t, int delta)
 void Exist::addBaseMk(const TileCount &stoch)
 {
     for (T34 t : tiles34::ALL34)
-        inc(t, stoch.ct(t) * BASE_MK);
+        inc(t, stoch.ct(T37(t.id34())) * BASE_MK);
 
-    for (Suit s : { Suit::M, Suit::P, Suit::S }) {
-        T37 t(s, 0);
+    using namespace tiles37;
+    for (const T37 &t : { 0_m, 0_p, 0_s })
         inc(t, stoch.ct(t) * BASE_MK);
-    }
-
 }
 
 Exist::Polar Exist::polarize(const TileCount &stoch) const
