@@ -145,10 +145,16 @@ void Ai::antiHatsumi(const TableView &view, Ai::Limits &limits)
 
     const auto &barks = view.getBarks(hatsumi);
     using namespace tiles34;
-    if (barks.size() == 1 && (barks[0][0] == 1_f || barks[0][0] == 4_f)) {
-        T34 another(Suit::F, 5 - barks[0][0].val());
-        limits.addNoOut(another);
-        limits.addNoRiichi();
+    if (barks.size() >0 ) {
+        for(int i=0;i<barks.size();i++)
+        {
+            if((barks[i][0] == 1_f || barks[i][0] == 4_f))
+            {
+                T34 another(Suit::F, 5 - barks[i][0].val());
+                limits.addNoOut(another);
+                limits.addNoRiichi();
+            }
+        }
     }
 }
 
