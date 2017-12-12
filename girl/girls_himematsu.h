@@ -23,7 +23,7 @@ public:
 
 private:
     static const std::array<int, 4> POWERS;
-    static const int Z_POWER = 80;
+    static const int Z_POWER = 40;
 
     bool mExploded = false;
 };
