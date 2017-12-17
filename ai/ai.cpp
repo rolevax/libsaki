@@ -147,13 +147,15 @@ void Ai::antiHatsumi(const TableView &view, Ai::Limits &limits)
     using namespace tiles34;
     if (barks.size() > 0 && barks.size() < 3)
     {
-        for(int i = 0; i < barks.size(); i++)
+        if ((barks[0][0] == 1_f || barks[0][0] == 4_f) && (barks[1][0] == 1_f || barks[1][0] == 4_f))
+            break;
+        for (int i = 0; i < barks.size(); i++)
         {
-            if((barks[i][0] == 1_f || barks[i][0] == 4_f))
+            if (barks[i][0] == 1_f || barks[i][0] == 4_f)
             {
                 T34 another(Suit::F, 5 - barks[i][0].val());
-                limits.addNoOut(another);
                 limits.addNoRiichi();
+                limits.addNoOut(another);
             }
         }
     }
