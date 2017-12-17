@@ -148,7 +148,10 @@ void Ai::antiHatsumi(const TableView &view, Ai::Limits &limits)
     if (barks.size() > 0 && barks.size() < 3)
     {
         if ((barks[0][0] == 1_f || barks[0][0] == 4_f) && (barks[1][0] == 1_f || barks[1][0] == 4_f))
+        {
+            imits.addNoRiichi();
             break;
+        }
         for (int i = 0; i < barks.size(); i++)
         {
             if (barks[i][0] == 1_f || barks[i][0] == 4_f)
