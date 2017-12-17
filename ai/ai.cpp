@@ -147,7 +147,7 @@ void Ai::antiHatsumi(const TableView &view, Ai::Limits &limits)
     using namespace tiles34;
     if (barks.size() > 0 && barks.size() < 3)
     {
-        for(int i = 0;i < barks.size();i++)
+        for(int i = 0; i < barks.size(); i++)
         {
             if((barks[i][0] == 1_f || barks[i][0] == 4_f))
             {
