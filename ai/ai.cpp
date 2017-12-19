@@ -144,26 +144,17 @@ void Ai::antiHatsumi(const TableView &view, Ai::Limits &limits)
         return;
 
     const auto &barks = view.getBarks(hatsumi);
-    using namespace tiles34;
-    if (barks.size() > 0 && barks.size() < 3)
-    {
-        if (bark.size() == 2)
-        {
-            if ((barks[1][0] == 1_f || barks[1][0] == 4_f) && (barks[0][0] == 1_f || barks[0][0] == 4_f))
-            {
-               limits.addNoRiichi();
-                return ;
-            }
-        }
-        for (int i = 0; i < barks.size(); i++)
-        {
-            if (barks[i][0] == 1_f || barks[i][0] == 4_f)
-            {
-                T34 another(Suit::F, 5 - barks[i][0].val());
-                limits.addNoRiichi();
-                limits.addNoOut(another);
-            }
-        }
+    if (barks.size() == 1 || barks.size() == 2) {
+        using namespace tiles34;
+
+        bool hasE = util::any(barks, [](const M37 &m) { return m[0] == 1_f; });
+        bool hasN = util::any(barks, [](const M37 &m) { return m[0] == 4_f; });
+
+        if (hasE || hasN)
+            limits.addNoRiichi();
+
+        if (hasE != hasN)
+            limits.addNoOut(hasE ? 4_f : 1_f);
     }
 }
 
