@@ -45,5 +45,3 @@ private:
 
 
 #endif // SAKI_RAND_H
-
-

@@ -16,5 +16,3 @@ Action AiToki::forward(const TableView &view)
 
 
 } // namespace saki
-
-

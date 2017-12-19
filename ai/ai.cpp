@@ -36,6 +36,7 @@ bool Ai::Limits::noOut(const T37 &t) const
 {
     if (mNoOutAka5 && t.isAka5())
         return true;
+
     return mNoOut34s[t.id34()];
 }
 
@@ -107,6 +108,7 @@ void Ai::onActivated(Table &table)
         Limits limits;
         decision = think(*view, limits);
     }
+
 #endif
 
     assert(decision.act() != ActCode::NOTHING);
@@ -262,7 +264,7 @@ Action Ai::thinkBarkAttack(const TableView &view, Limits &limits)
 }
 
 Action Ai::thinkBarkDefend(const TableView &view, Limits &limits,
-                            const util::Stactor<Who, 3> &threats)
+                           const util::Stactor<Who, 3> &threats)
 {
     if (limits.noBark())
         return Action(ActCode::PASS);
@@ -282,11 +284,13 @@ Action Ai::thinkAttackStep(const TableView &view, const util::Range<Action> &out
     assert(!outs.empty());
     assert(util::all(outs, [](const Action &a) { return a.isDiscard() || a.isCp(); }));
 
+    // *INDENT-OFF*
     auto stepHappy = [&](const Action &action) {
         int step = action.isDiscard() ? view.myHand().peekDiscard(action, &Hand::step)
                                       : view.myHand().peekCp(view.getFocusTile(), action, &Hand::step);
         return 2 + (13 - step);
     };
+    // *INDENT-ON*
 
     auto minSteps = util::Stactor<Action, 44>::allMaxs(outs, stepHappy, 0);
     if (minSteps.size() == 1)
@@ -300,6 +304,7 @@ Action Ai::thinkAttackEff(const TableView &view, const util::Range<Action> &outs
     assert(!outs.empty());
     assert(util::all(outs, [](const Action &a) { return a.isDiscard() || a.isCp(); }));
 
+    // *INDENT-OFF*
     auto happy = [&](const Action &action) {
         const T37 &out = view.myHand().outFor(action);
         auto effA = action.isDiscard() ? view.myHand().peekDiscard(action, &Hand::effA)
@@ -310,17 +315,19 @@ Action Ai::thinkAttackEff(const TableView &view, const util::Range<Action> &outs
 
         return 2 + 10 * remainEffA + floatTrash;
     };
+    // *INDENT-ON*
 
     auto maxHappys = util::Stactor<Action, 44>::allMaxs(outs, happy, 0);
     return maxHappys[0];
 }
 
 Action Ai::thinkDefendChance(const TableView &view, const util::Range<Action> &outs,
-                                    const util::Stactor<Who, 3> &threats)
+                             const util::Stactor<Who, 3> &threats)
 {
     assert(!outs.empty());
     assert(util::all(outs, [](const Action &a) { return a.isDiscard() || a.isCp(); }));
 
+    // *INDENT-OFF*
     auto happy = [&](const Action &action) {
         const T37 &out = view.myHand().outFor(action);
         int cc = 0;
@@ -329,6 +336,7 @@ Action Ai::thinkDefendChance(const TableView &view, const util::Range<Action> &o
         int safe = 20 - cc;
         return 100 * safe + 10 * (view.getDrids() % out + out.isAka5()) + (34 - out.id34());
     };
+    // *INDENT-ON*
 
     auto maxHappys = util::Stactor<Action, 44>::allMaxs(outs, happy, 0);
     assert(!maxHappys.empty());
@@ -344,11 +352,12 @@ bool Ai::afraid(const TableView &view, util::Stactor<Who, 3> &threats)
             Who who(w);
             if (who == mSelf)
                 continue;
+
             int riverCt = view.getRiver(who).size();
             int barkCt = view.getBarks(who).size();
             if (view.riichiEstablished(who)
-                    || (riverCt > 5 && barkCt >= 2)
-                    || (riverCt > 12 && barkCt >= 1))
+                || (riverCt > 5 && barkCt >= 2)
+                || (riverCt > 12 && barkCt >= 1))
                 threats.pushBack(who);
         }
 
@@ -374,7 +383,7 @@ bool Ai::testRiichi(const TableView &view, Limits &limits, Action &riichi)
 
     Action act = thinkAttackEff(view, outs.range());
     int est = view.myHand().peekDiscard(act, &Hand::estimate, view.getRule(),
-                                       view.getSelfWind(mSelf), view.getRoundWind(), view.getDrids());
+                                        view.getSelfWind(mSelf), view.getRoundWind(), view.getDrids());
 
     riichi = act.toRiichi();
     return est < 7000;
@@ -403,10 +412,13 @@ int Ai::logicChance(const TableView &view, T34 t)
     if (t.isNum()) { // all possible neighbors
         if (t.val() > 1)
             waiters.pushBack(t.prev());
+
         if (t.val() > 2)
             waiters.pushBack(t.pprev());
+
         if (t.val() < 8)
             waiters.pushBack(t.nnext());
+
         if (t.val() < 9)
             waiters.pushBack(t.next());
     }
@@ -488,5 +500,3 @@ util::Stactor<Action, 44> Ai::listCp(const Hand &hand, const Choices::ModeBark &
 
 
 } // namespace saki
-
-

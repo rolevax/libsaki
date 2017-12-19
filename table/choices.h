@@ -83,6 +83,7 @@ private:
         ModeBark mModeBark;
         ModeEnd mModeEnd;
     };
+
 };
 
 
@@ -92,5 +93,3 @@ private:
 
 
 #endif // SAKI_CHOICES_H
-
-

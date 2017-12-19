@@ -13,10 +13,8 @@ namespace saki
 
 
 
-///
-/// \brief A proxy accesser to prevent human or AI from knowing too
-///        much information, and also to impl tickets filters
-///
+// A proxy accesser to prevent human or AI from knowing too
+// much information, and also to impl tickets filters
 class TableView
 {
 public:
@@ -65,5 +63,3 @@ protected:
 
 
 #endif // SAKI_TABLE_VIEW_H
-
-

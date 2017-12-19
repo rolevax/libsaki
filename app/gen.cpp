@@ -53,8 +53,8 @@ Gen Gen::genForm4Mangan(util::Rand &rand, int han, int selfWind, int roundWind,
     while (true) {
         Gen res = genForm4(rand, tri, quad, open, selfWind, roundWind, rule, ron);
         if (res.form.han() == han
-                && res.form.gain() >= 8000
-                && !res.form.isPrototypalYakuman()) {
+            && res.form.gain() >= 8000
+            && !res.form.isPrototypalYakuman()) {
             return res;
         }
     }
@@ -263,6 +263,7 @@ void Gen::genInfo(util::Rand &rand, FormCtx &ctx, T34 pick, const Hand &h, bool 
         ctx.riichi = 1;
         if (rand.gen(100) < DABURU_CENT)
             ctx.riichi = 2;
+
         if (rand.gen(100) < IPPATSU_CENT)
             ctx.ippatsu = true;
     }
@@ -270,6 +271,7 @@ void Gen::genInfo(util::Rand &rand, FormCtx &ctx, T34 pick, const Hand &h, bool 
     if (!ctx.ippatsu) {
         bool hasKan = util::any(h.barks(), [](const M37 &m) { return m.isKan(); });
 
+        // *INDENT-OFF*
         if (!ron && hasKan && rand.gen(100) < RINSHAN_CENT)
             ctx.duringKan = true;
         else if (!ron && ctx.riichi != 2 && rand.gen(100) < HAITEI_CENT)
@@ -278,11 +280,10 @@ void Gen::genInfo(util::Rand &rand, FormCtx &ctx, T34 pick, const Hand &h, bool 
             ctx.emptyMount = true;
         else if (ron && h.ct(pick) == 1 && rand.gen(100) < CHANKAN_CENT)
             ctx.duringKan = true; // '== 1' since haven't spin-out
+        // *INDENT-ON*
     }
 }
 
 
 
 } // namespace saki
-
-

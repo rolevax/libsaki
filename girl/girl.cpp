@@ -45,7 +45,7 @@ Girl *Girl::create(Who who, int id_)
     case Id::UESHIGE_SUZU:      return new Suzu(who, id);
     case Id::SUEHARA_KYOUKO:    return new Kyouko(who, id);
     case Id::SHISHIHARA_SAWAYA: return new Sawaya(who, id);
-    case Id::HAO_HUIYU: 		return new Huiyu(who, id);
+    case Id::HAO_HUIYU:         return new Huiyu(who, id);
     case Id::INAMURA_KYOUKA:    return new Kyouka(who, id);
     case Id::SHIRATSUKI_SHINO:  return new Shino(who, id);
     case Id::HONDOU_YUE:        return new Yue(who, id);
@@ -165,7 +165,7 @@ std::string Girl::popUpStr() const
 void Girl::eraseRivered(util::Stactor<T34, 34> &ts, const River &river)
 {
     // 34/37 does not affect equalty
-    auto has = [river](T34 t){ return util::has(river, T37(t.id34())); };
+    auto has = [river](T34 t) { return util::has(river, T37(t.id34())); };
     std::remove_if(ts.begin(), ts.end(), has);
 }
 
@@ -190,5 +190,3 @@ void Girl::accelerate(Mount &mount, const Hand &hand, const River &river, int de
 
 
 } // namespace saki
-
-

@@ -15,5 +15,3 @@ Action AiNodoka::think(const TableView &view, Limits &limits)
 
 
 } // namespace saki
-
-

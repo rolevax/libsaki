@@ -58,6 +58,7 @@ bool Choices::can(ActCode act) const
         default:
             return false;
         }
+
     case Mode::BARK:
         switch (act) {
         case AC::PASS:
@@ -77,6 +78,7 @@ bool Choices::can(ActCode act) const
         default:
             return false;
         }
+
     case Mode::END:
         switch (act) {
         case AC::NEXT_ROUND:
@@ -86,6 +88,7 @@ bool Choices::can(ActCode act) const
         default:
             return false;
         }
+
     default:
         unreached("Choices::can");
     }
@@ -109,14 +112,14 @@ bool Choices::forwardAny() const
 bool Choices::spinOnly() const
 {
     return mMode == Mode::DRAWN
-            && !forwardAny()
-            && !mModeDrawn.swapOut
-            && !mModeDrawn.spinRiichi
-            && !mModeDrawn.tsumo
-            && !mModeDrawn.kskp
-            && mModeDrawn.ankans.empty()
-            && mModeDrawn.kakans.empty()
-            && mModeDrawn.swapRiichis.empty();
+           && !forwardAny()
+           && !mModeDrawn.swapOut
+           && !mModeDrawn.spinRiichi
+           && !mModeDrawn.tsumo
+           && !mModeDrawn.kskp
+           && mModeDrawn.ankans.empty()
+           && mModeDrawn.kakans.empty()
+           && mModeDrawn.swapRiichis.empty();
 }
 
 Action Choices::sweep() const
@@ -200,5 +203,3 @@ void Choices::setForwarding(bool v)
 
 
 }  // namespace saki
-
-

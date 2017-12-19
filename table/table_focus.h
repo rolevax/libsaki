@@ -55,5 +55,3 @@ private:
 
 
 #endif // SAKI_TABLEFOCUS_H
-
-

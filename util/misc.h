@@ -33,7 +33,7 @@ struct Identity
 ///
 template<template<typename...> class V, typename T, typename... Rest>
 inline bool all(const V<T, Rest...> &v,
-                typename Identity<std::function<bool(const T&)>>::type f)
+                typename Identity<std::function<bool(const T &)>>::type f)
 {
     return std::all_of(v.begin(), v.end(), f);
 }
@@ -45,7 +45,7 @@ inline bool all(const V<T, Rest...> &v,
 ///
 template<template<typename T, std::size_t N> class V, typename T, std::size_t N>
 inline bool all(const V<T, N> &v,
-                typename Identity<std::function<bool(const T&)>>::type f)
+                typename Identity<std::function<bool(const T &)>>::type f)
 {
     return std::all_of(v.begin(), v.end(), f);
 }
@@ -66,7 +66,7 @@ inline bool all(Iter begin, Iter end, Pred f)
 ///
 template<template<typename...> class V, class T, typename... Rest>
 inline bool any(const V<T, Rest...> &v,
-                typename Identity<std::function<bool(const T&)>>::type f)
+                typename Identity<std::function<bool(const T &)>>::type f)
 {
     return std::any_of(v.begin(), v.end(), f);
 }
@@ -78,7 +78,7 @@ inline bool any(const V<T, Rest...> &v,
 ///
 template<template<typename T, std::size_t N> class V, typename T, std::size_t N>
 inline bool any(const V<T, N> &v,
-                typename Identity<std::function<bool(const T&)>>::type f)
+                typename Identity<std::function<bool(const T &)>>::type f)
 {
     return std::any_of(v.begin(), v.end(), f);
 }
@@ -99,7 +99,7 @@ inline bool any(Iter begin, Iter end, Pred f)
 ///
 template<template<typename...> class V, typename T, typename... Rest>
 inline bool none(const V<T, Rest...> &v,
-                typename Identity<std::function<bool(const T&)>>::type f)
+                 typename Identity<std::function<bool(const T &)>>::type f)
 {
     return std::none_of(v.begin(), v.end(), f);
 }
@@ -111,7 +111,7 @@ inline bool none(const V<T, Rest...> &v,
 ///
 template<template<typename T, std::size_t N> class V, typename T, std::size_t N>
 inline bool none(const V<T, N> &v,
-                typename Identity<std::function<bool(const T&)>>::type f)
+                 typename Identity<std::function<bool(const T &)>>::type f)
 {
     return std::none_of(v.begin(), v.end(), f);
 }
@@ -191,7 +191,7 @@ inline V maxs(V inputs, F measure, int floor)
 ///
 /// @brief alias for 'std::cout << arg << std::endl;', just save typing
 ///
-template <typename T>
+template<typename T>
 inline void p(T arg)
 {
     std::cout << arg << std::endl;
@@ -219,5 +219,3 @@ inline void p(T t, Args... args)
 
 
 #endif // SAKI_UTIL_H
-
-

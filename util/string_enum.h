@@ -39,5 +39,3 @@ const char *stringOf(Fan f);
 
 
 #endif // SAKI_STRING_ENUM_H
-
-

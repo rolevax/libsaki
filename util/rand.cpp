@@ -57,5 +57,3 @@ void Rand::set(uint32_t state)
 
 
 } // namespace saki
-
-

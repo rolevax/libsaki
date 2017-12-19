@@ -34,6 +34,7 @@ void Uta::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     if (table.getRiver(mSelf).size() < 5 && hand.step() <= 1) {
         for (T34 t : hand.effA())
             mount.lightA(t, -40); // slow down
+
     } else {
         if (hand.ready()) {
             const FormCtx &ctx = table.getFormCtx(mSelf);
@@ -60,6 +61,7 @@ void Uta::power3sk(const Hand &hand, const River &river, Mount &mount)
 {
     const auto parseds = hand.parse4();
 
+    // *INDENT-OFF*
     auto inRiver = [&river](T34 t) {
         return util::any(river, [t](const T37 &r) { return t == r; });
     };
@@ -83,6 +85,7 @@ void Uta::power3sk(const Hand &hand, const River &river, Mount &mount)
 
         return false;
     };
+    // *INDENT-ON*
 
     auto needs = std::min_element(parseds.begin(), parseds.end(), comp)->claim3sk();
     for (T34 t : needs)
@@ -103,12 +106,15 @@ bool Uta::tryPowerDye(const Hand &hand, Mount &mount)
 {
     const TileCount &closed = hand.closed();
 
+    // *INDENT-OFF*
     auto sum = [&closed](Suit s) {
         int sum = 0;
         for (int v = 1; v <= 9; v++)
             sum += closed.ct(T34(s, v));
+
         return sum;
     };
+    // *INDENT-ON*
 
     std::array<Suit, 3> mps { Suit::M, Suit::P, Suit::S };
     std::array<int, 3> sums;
@@ -158,11 +164,13 @@ void Yui::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     const int turn = table.getRiver(mSelf).size();
     const int s7 = hand.step7();
 
+    // *INDENT-OFF*
     auto morePairs = [&hand, &mount](int mk) {
         for (T34 t : tiles34::ALL34)
             if (hand.closed().ct(t) == 1)
                 mount.lightA(t, mk);
     };
+    // *INDENT-ON*
 
     if (turn < 6 && s7 >= 3)
         morePairs(70);
@@ -172,9 +180,4 @@ void Yui::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         morePairs(100);
     }
 }
-
-
-
 } // namespace saki
-
-

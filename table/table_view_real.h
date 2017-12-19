@@ -57,5 +57,3 @@ private:
 
 
 #endif // SAKI_TABLE_VIEW_REAL_H
-
-

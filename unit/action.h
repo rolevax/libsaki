@@ -39,8 +39,8 @@ public:
         assert(!argIsOneT37()
                && !isCp()
                && mAct != ActCode::ANKAN
-                && mAct != ActCode::KAKAN
-                && mAct != ActCode::IRS_CHECK);
+               && mAct != ActCode::KAKAN
+               && mAct != ActCode::IRS_CHECK);
     }
 
     explicit Action(ActCode act, int arg)
@@ -141,16 +141,16 @@ public:
     bool isChii() const
     {
         return mAct == ActCode::CHII_AS_LEFT
-                || mAct == ActCode::CHII_AS_MIDDLE
-                || mAct == ActCode::CHII_AS_RIGHT;
+               || mAct == ActCode::CHII_AS_MIDDLE
+               || mAct == ActCode::CHII_AS_RIGHT;
     }
 
     bool isCp() const
     {
         return mAct == ActCode::CHII_AS_LEFT
-                || mAct == ActCode::CHII_AS_MIDDLE
-                || mAct == ActCode::CHII_AS_RIGHT
-                || mAct == ActCode::PON;
+               || mAct == ActCode::CHII_AS_MIDDLE
+               || mAct == ActCode::CHII_AS_RIGHT
+               || mAct == ActCode::PON;
     }
 
     bool isCpdmk() const
@@ -170,8 +170,10 @@ public:
 
         if (argIsOneT37())
             return mT37 == that.mT37;
+
         if (isCp())
             return mArg == that.mArg && mT37 == that.mT37;
+
         if (argIsOneIntegral())
             return mArg == that.mArg;
 
@@ -221,5 +223,3 @@ private:
 
 
 #endif // SAKI_ACTION_H
-
-

@@ -93,6 +93,7 @@ void FormGb::init13(const FormCtx &ctx)
     checkPick(mFans, ctx);
     if (!mDianpao)
         mFans.push_back(Fan::ZM1);
+
     mFan = calcFan(mFans);
 }
 
@@ -155,22 +156,26 @@ FormGb::Fans FormGb::calcFansF7(const FormCtx &ctx, const Hand &hand) const
     // Quanda Quanzhong Quanxiao
     if (util::all(ts, [](T34 t) { return t.isNum() && t.val() >= 7; }))
         res.push_back(Fan::QDA24);
+
     if (util::all(ts, [](T34 t) { return t.isNum() && 4 <= t.val() && t.val() <= 6; }))
         res.push_back(Fan::QZ24);
+
     if (util::all(ts, [](T34 t) { return t.isNum() && t.val() <= 3; }))
         res.push_back(Fan::QX24);
 
     // Dayuwu Xiaoyuwu
     if (!util::has(res, Fan::QDA24)
-            && util::all(ts, [](T34 t) { return t.isNum() && t.val() >= 5; })) {
+        && util::all(ts, [](T34 t) { return t.isNum() && t.val() >= 5; })) {
         res.push_back(Fan::DYW12);
     }
+
     if (!util::has(res, Fan::QX24)
-            && util::all(ts, [](T34 t) { return t.isNum() && t.val() <= 5; })) {
+        && util::all(ts, [](T34 t) { return t.isNum() && t.val() <= 5; })) {
         res.push_back(Fan::XYW12);
     }
 
     // Tuibudao
+    // *INDENT-OFF*
     auto isTumbler = [](T34 t) {
         using namespace tiles34;
         const std::array<T34, 14> tumbler {
@@ -178,6 +183,7 @@ FormGb::Fans FormGb::calcFansF7(const FormCtx &ctx, const Hand &hand) const
         };
         return util::has(tumbler, t);
     };
+    // *INDENT-ON*
     if (util::all(ts, isTumbler))
         res.push_back(Fan::TBD8);
 
@@ -197,7 +203,7 @@ FormGb::Fans FormGb::calcFansF7(const FormCtx &ctx, const Hand &hand) const
 
     // Duanyao
     if (!util::has(res, Fan::QZ24)
-            && util::none(ts, [](T34 t) { return t.isYao(); })) {
+        && util::none(ts, [](T34 t) { return t.isYao(); })) {
         res.push_back(Fan::DY2);
     }
 
@@ -217,7 +223,7 @@ FormGb::Fans FormGb::calcFansF7(const FormCtx &ctx, const Hand &hand) const
         Fan::DYW12, Fan::XYW12, Fan::DY2
     };
     if (!util::common(res, implyWz)
-            && util::none(ts, [](T34 t) { return t.isZ(); })) {
+        && util::none(ts, [](T34 t) { return t.isZ(); })) {
         res.push_back(Fan::WZ1);
     }
 
@@ -229,12 +235,13 @@ FormGb::Fans FormGb::calcFansF7(const FormCtx &ctx, const Hand &hand) const
 }
 
 FormGb::Fans FormGb::calcFansF4(const FormCtx &ctx, const Hand &hand, const T37 &last,
-                               const Explain4 &exp, bool juezhang) const
+                                const Explain4 &exp, bool juezhang) const
 {
     TileCount total(hand.closed()); // copy
     for (const M37 &m: hand.barks())
         for (const T37 &t : m.tiles())
             total.inc(t, 1);
+
     total.inc(last, 1);
 
     Fans res;
@@ -242,9 +249,9 @@ FormGb::Fans FormGb::calcFansF4(const FormCtx &ctx, const Hand &hand, const T37 
     const std::array<T34, 4> &heads = exp.heads();
 
     bool pureNumMelds = heads[0].isNum()
-            && heads[0].suit() == heads[1].suit()
-            && heads[1].suit() == heads[2].suit()
-            && heads[2].suit() == heads[3].suit();
+        && heads[0].suit() == heads[1].suit()
+        && heads[1].suit() == heads[2].suit()
+        && heads[2].suit() == heads[3].suit();
     bool pure = pureNumMelds && heads[0].suit() == exp.pair().suit();
 
     checkV8864F4(res, hand, exp, pure);
@@ -260,7 +267,6 @@ FormGb::Fans FormGb::calcFansF4(const FormCtx &ctx, const Hand &hand, const T37 
     checkV1F4(res, exp, ctx, hand);
     if (res.empty()) // Wufanhu
         res.push_back(Fan::WFH8);
-
 
     return res;
 }
@@ -301,6 +307,7 @@ void FormGb::checkV8864F4(Fans &res, const Hand &hand, const Explain4 &exp, bool
         res.push_back(Fan::SG88);
 
     // Lvyise
+    // *INDENT-OFF*
     auto green = [](T34 t) {
         if (t == T34(2, Suit::Y))
             return true;
@@ -309,15 +316,16 @@ void FormGb::checkV8864F4(Fans &res, const Hand &hand, const Explain4 &exp, bool
         int val = t.val();
         return val == 2 || val == 3 || val == 4 || val == 6 || val == 8;
     };
+    // *INDENT-ON*
     auto greenSeq = [](T34 t) { return t == T34(2, Suit::S); };
     if (green(exp.pair())
-            && util::all(exp.sb(), exp.se(), greenSeq)
-            && util::all(exp.x34b(), exp.x34e(), green))
+        && util::all(exp.sb(), exp.se(), greenSeq)
+        && util::all(exp.x34b(), exp.x34e(), green))
         res.push_back(Fan::LYS88);
 
     // Qingyaojiu
     if (exp.numX34() == 4 && util::all(heads, [](T34 t) { return t.isNum19(); })
-            && exp.pair().isNum19())
+        && exp.pair().isNum19())
         res.push_back(Fan::QYJ64);
 
     // Ziyise
@@ -330,8 +338,8 @@ void FormGb::checkV8864F4(Fans &res, const Hand &hand, const Explain4 &exp, bool
 
     // Yiseshuanglonghui
     if (pure && exp.numS() == 4 && exp.pair().val() == 5
-            && heads[0].val() == 1 && heads[1].val() == 1
-            && heads[2].val() == 7 && heads[3].val() == 7)
+        && heads[0].val() == 1 && heads[1].val() == 1
+        && heads[2].val() == 7 && heads[3].val() == 7)
         res.push_back(Fan::YSSLH64);
 }
 
@@ -368,8 +376,8 @@ void FormGb::checkV4832F4(Fans &res, const Explain4 &exp, bool pureNumMelds) con
 
     // Hunyaojiu
     const std::vector<Fan> implyHyj { Fan::QYJ64, Fan::ZYS64 };
-    if (!util::common(res, implyHyj) && exp.numX34() == 4  && exp.pair().isYao()
-            && util::all(hs, [](T34 t) { return t.isYao(); })) {
+    if (!util::common(res, implyHyj) && exp.numX34() == 4 && exp.pair().isYao()
+        && util::all(hs, [](T34 t) { return t.isYao(); })) {
         res.push_back(Fan::HYJ32);
     }
 }
@@ -411,8 +419,8 @@ void FormGb::checkV24F4(FormGb::Fans &res, const Explain4 &exp, bool pure) const
     auto isMiddle = [](T34 t) { return t.isNum() && 4 <= t.val() && t.val() <= 6; };
     auto isSmall = [](T34 t) { return t.isNum() && t.val() <= 3; };
     if (isBig(exp.pair())
-            && util::all(exp.sb(), exp.se(), [](T34 t) { return t.val() == 7; })
-            && util::all(exp.x34b(), exp.x34e(), isBig)) {
+        && util::all(exp.sb(), exp.se(), [](T34 t) { return t.val() == 7; })
+        && util::all(exp.x34b(), exp.x34e(), isBig)) {
         res.push_back(Fan::QDA24);
     } else if (isMiddle(exp.pair())
                && util::all(exp.sb(), exp.se(), [](T34 t) { return t.val() == 4; })
@@ -430,19 +438,21 @@ void FormGb::checkV16F4(FormGb::Fans &res, const Explain4 &exp) const
     const auto &h = exp.heads();
 
     // Qinglong
+    // *INDENT-OFF*
     auto ql = [](T34 l, T34 m, T34 r) {
         return l.suit() == r.suit() && l.val() == 1 && m.val() == 4 && r.val() == 7;
     };
+    // *INDENT-ON*
     if (seq3In3Or4(exp, ql))
         res.push_back(Fan::QL16);
 
     // Sanseshuanglonghui
     if (exp.numS() == 4 && exp.pair().val() == 5
-            && h[0].suit() == h[1].suit() && h[2].suit() == h[3].suit()
-            && h[0].suit() != h[2].suit()
-            && exp.pair().suit() != h[0].suit() && exp.pair().suit() != h[2].suit()
-            && h[0].val() == 1 && h[1].val() == 7
-            && h[2].val() == 1 && h[3].val() == 7) {
+        && h[0].suit() == h[1].suit() && h[2].suit() == h[3].suit()
+        && h[0].suit() != h[2].suit()
+        && exp.pair().suit() != h[0].suit() && exp.pair().suit() != h[2].suit()
+        && h[0].val() == 1 && h[1].val() == 7
+        && h[2].val() == 1 && h[3].val() == 7) {
         res.push_back(Fan::SSSLH16);
     }
 
@@ -455,25 +465,27 @@ void FormGb::checkV16F4(FormGb::Fans &res, const Explain4 &exp) const
 
     // Quandaiwu
     if (exp.pair().val() == 5
-            && util::all(exp.sb(), exp.se(), [](T34 t) { return 3 <= t.val() && t.val() <= 5; })
-            && util::all(exp.x34b(), exp.x34e(), [](T34 t) { return t.val() == 5; })) {
+        && util::all(exp.sb(), exp.se(), [](T34 t) { return 3 <= t.val() && t.val() <= 5; })
+        && util::all(exp.x34b(), exp.x34e(), [](T34 t) { return t.val() == 5; })) {
         res.push_back(Fan::QDW16);
     }
 
     // Santongke
+    // *INDENT-OFF*
     auto check = [](T34 l, T34 m, T34 r) -> bool {
         // suits must different (except vertical overflow bug)
         return l.isNum() && m.isNum() && r.isNum()
                 && l.val() == m.val() && m.val() == r.val();
     };
+    // *INDENT-ON*
     if (exp.numX34() == 3) {
         if (check(h[1], h[2], h[3])) // X34 lays from the back
             res.push_back(Fan::STK16);
     } else if (exp.numX34() == 4) {
         if (check(h[0], h[1], h[2])
-                || check(h[0], h[1], h[3])
-                || check(h[0], h[2], h[3])
-                || check(h[1], h[2], h[3]))
+            || check(h[0], h[1], h[3])
+            || check(h[0], h[2], h[3])
+            || check(h[1], h[2], h[3]))
             res.push_back(Fan::STK16);
     }
 
@@ -487,18 +499,18 @@ void FormGb::checkV12F4(FormGb::Fans &res, const Explain4 &exp) const
     // Dayuwu
     auto gt5 = [](T34 t) { return t.isNum() && t.val() > 5; };
     if (!util::has(res, Fan::QDA24)
-            && gt5(exp.pair())
-            && util::all(exp.sb(), exp.se(), [](T34 t) { return t.val() > 5; })
-            && util::all(exp.x34b(), exp.x34e(), gt5)) {
+        && gt5(exp.pair())
+        && util::all(exp.sb(), exp.se(), [](T34 t) { return t.val() > 5; })
+        && util::all(exp.x34b(), exp.x34e(), gt5)) {
         res.push_back(Fan::DYW12);
     }
 
     // Xiaoyuwu
     auto lt5 = [](T34 t) { return t.isNum() && t.val() < 5; };
     if (!util::has(res, Fan::QX24)
-            && lt5(exp.pair())
-            && util::all(exp.sb(), exp.se(), [](T34 t) { return t.val() < 2; })
-            && util::all(exp.x34b(), exp.x34e(), lt5)) {
+        && lt5(exp.pair())
+        && util::all(exp.sb(), exp.se(), [](T34 t) { return t.val() < 2; })
+        && util::all(exp.x34b(), exp.x34e(), lt5)) {
         res.push_back(Fan::XYW12);
     }
 
@@ -513,23 +525,26 @@ void FormGb::checkV8F4(FormGb::Fans &res, const Explain4 &exp, const FormCtx &ct
     // Hualong
     std::vector<T34> vals(exp.sb(), exp.se()); // copy
     std::sort(vals.begin(), vals.end(), [](T34 a, T34 b) { return a.val() < b.val(); });
+    // *INDENT-OFF*
     auto jerk = [](T34 a, T34 b, T34 c) {
         return a.suit() != b.suit() && b.suit() != c.suit() && c.suit() != a.suit()
                 && a.val() + 3 == b.val() && b.val() + 3 == c.val();
     };
+    // *INDENT-ON*
     if (exp.numS() == 3) {
         if (jerk(vals[0], vals[1], vals[2]))
             res.push_back(Fan::HL8);
     } else if (exp.numS() == 4) {
         if (jerk(vals[0], vals[1], vals[2])
-                || jerk(vals[0], vals[1], vals[3])
-                || jerk(vals[0], vals[2], vals[3])
-                || jerk(vals[1], vals[2], vals[3]))
+            || jerk(vals[0], vals[1], vals[3])
+            || jerk(vals[0], vals[2], vals[3])
+            || jerk(vals[1], vals[2], vals[3]))
             res.push_back(Fan::HL8);
     }
 
     // Tuibudao
     using namespace tiles34;
+    // *INDENT-OFF*
     auto isTumblerSeq = [](T34 t) {
         const std::array<T34, 4> tumblerSeq { 1_p, 2_p, 3_p, 4_s };
         return util::has(tumblerSeq, t);
@@ -540,35 +555,40 @@ void FormGb::checkV8F4(FormGb::Fans &res, const Explain4 &exp, const FormCtx &ct
         };
         return util::has(tumbler, t);
     };
+    // *INDENT-ON*
     if (isTumbler(exp.pair())
-            && util::all(exp.sb(), exp.se(), isTumblerSeq)
-            && util::all(exp.x34b(), exp.x34e(), isTumbler)) {
+        && util::all(exp.sb(), exp.se(), isTumblerSeq)
+        && util::all(exp.x34b(), exp.x34e(), isTumbler)) {
         res.push_back(Fan::TBD8);
     }
 
     // Sansesantongshun
+    // *INDENT-OFF*
     auto sanse = [](T34 a, T34 b, T34 c) {
         return a.suit() != b.suit() && b.suit() != c.suit()
                 && a.val() == b.val() && b.val() == c.val();
     };
+    // *INDENT-ON*
     if (seq3In3Or4(exp, sanse))
         res.push_back(Fan::SSSTS8);
 
     // Sansesanjiegao
     std::vector<T34> xs(exp.x34b(), exp.x34e()); // copy
     std::sort(xs.begin(), xs.end(), [](T34 a, T34 b) { return a.val() < b.val(); });
+    // *INDENT-OFF*
     auto kick = [](T34 a, T34 b, T34 c) {
         return a.suit() != b.suit() && b.suit() != c.suit() && c.suit() != a.suit()
                 && a.val() + 1 == b.val() && b.val() + 1 == c.val();
     };
+    // *INDENT-ON*
     if (xs.size() == 3) {
         if (kick(xs[0], xs[1], xs[2]))
             res.push_back(Fan::SSSJG8);
     } else if (xs.size() == 4) {
         if (kick(xs[0], xs[1], xs[2])
-                || kick(xs[0], xs[1], xs[3])
-                || kick(xs[0], xs[2], xs[3])
-                || kick(xs[1], xs[2], xs[3]))
+            || kick(xs[0], xs[1], xs[3])
+            || kick(xs[0], xs[2], xs[3])
+            || kick(xs[1], xs[2], xs[3]))
             res.push_back(Fan::SSSJG8);
     }
 
@@ -594,25 +614,27 @@ void FormGb::checkV6F4(FormGb::Fans &res, const Explain4 &exp, const Hand &hand)
 
     // Hunyise
     if (!util::has(res, Fan::LYS88)
-            && suits[3] + suits[4] > 0 && suits[0] + suits[1] + suits[2] == 1) {
+        && suits[3] + suits[4] > 0 && suits[0] + suits[1] + suits[2] == 1) {
         res.push_back(Fan::HYS6);
     }
 
     // Sansesanbugao
     std::vector<T34> seqs(exp.sb(), exp.se()); // copy
     std::sort(seqs.begin(), seqs.end(), [](T34 a, T34 b) { return a.val() < b.val(); });
+    // *INDENT-OFF*
     auto raise = [](T34 a, T34 b, T34 c) {
         return a.suit() != b.suit() && b.suit() != c.suit() && c.suit() != a.suit()
                 && a.val() + 1 == b.val() && b.val() + 1 == c.val();
     };
+    // *INDENT-ON*
     if (seqs.size() == 3) {
         if (raise(seqs[0], seqs[1], seqs[2]))
             res.push_back(Fan::SSSBG6);
     } else if (seqs.size() == 4) {
         if (raise(seqs[0], seqs[1], seqs[2])
-                || raise(seqs[0], seqs[1], seqs[3])
-                || raise(seqs[0], seqs[2], seqs[3])
-                || raise(seqs[1], seqs[2], seqs[3]))
+            || raise(seqs[0], seqs[1], seqs[3])
+            || raise(seqs[0], seqs[2], seqs[3])
+            || raise(seqs[1], seqs[2], seqs[3]))
             res.push_back(Fan::SSSBG6);
     }
 
@@ -649,9 +671,9 @@ void FormGb::checkV4F4(FormGb::Fans &res, const Explain4 &exp, bool mqq, bool hj
     // Quandaiyao
     std::vector<Fan> implyQdy { Fan::QYJ64, Fan::ZYS64, Fan::HYJ32 };
     if (!util::common(res, implyQdy)
-            && exp.pair().isYao()
-            && util::all(exp.sb(), exp.se(), [](T34 t) { return t.val() == 1 || t.val() == 7; })
-            && util::all(exp.x34b(), exp.x34e(), [](T34 t) { return t.isYao(); })) {
+        && exp.pair().isYao()
+        && util::all(exp.sb(), exp.se(), [](T34 t) { return t.val() == 1 || t.val() == 7; })
+        && util::all(exp.x34b(), exp.x34e(), [](T34 t) { return t.isYao(); })) {
         res.push_back(Fan::QDY4);
     }
 
@@ -705,6 +727,7 @@ void FormGb::checkV2F4(FormGb::Fans &res, const Explain4 &exp,
         if (!m.isKan())
             for (const T37 &t : m.tiles())
                 noGang.inc(t, 1);
+
     noGang.inc(pick, 1);
     for (T34 t : tiles34::ALL34)
         if (noGang.ct(t) == 4)
@@ -730,9 +753,9 @@ void FormGb::checkV2F4(FormGb::Fans &res, const Explain4 &exp,
     // Duanyao
     const std::vector<Fan> implyDy { Fan::QSK24, Fan::QZ24, Fan::QDW16 };
     if (!util::common(res, implyDy)
-            && util::none(exp.sb(), exp.se(), [](T34 t) { return t.val() == 1 || t.val() == 7; })
-            && util::none(exp.x34b(), exp.x34e(), [](T34 t) { return t.isYao(); })
-            && !exp.pair().isYao()) {
+        && util::none(exp.sb(), exp.se(), [](T34 t) { return t.val() == 1 || t.val() == 7; })
+        && util::none(exp.x34b(), exp.x34e(), [](T34 t) { return t.isYao(); })
+        && !exp.pair().isYao()) {
         res.push_back(Fan::DY2);
     }
 }
@@ -750,6 +773,7 @@ void FormGb::checkV1F4(FormGb::Fans &res, const Explain4 &exp,
     const std::vector<Fan> implyXxf { Fan::SSSLH16, Fan::SSSTS8 };
     const std::vector<Fan> implyLl { Fan::QL16 };
     const std::vector<Fan> implyLsf { Fan::YSSLH64, Fan::QL16, Fan::SSSLH16 };
+    // *INDENT-OFF*
     auto exclude = [](T34, T34) { return false; };
     auto ban = util::common(res, implyYbg) ? exclude
                                            : [](T34 a, T34 b) { return a == b; };
@@ -763,6 +787,7 @@ void FormGb::checkV1F4(FormGb::Fans &res, const Explain4 &exp,
                                            : [](T34 a, T34 b) {
         return a.suit() == b.suit() && a.val() == 1 && b.val() == 7;
     };
+    // *INDENT-ON*
     if (exp.numS() >= 2) {
         // wasting triangle of spaces, that's ok
         std::array<std::array<bool, 4>, 4> edges;
@@ -778,8 +803,10 @@ void FormGb::checkV1F4(FormGb::Fans &res, const Explain4 &exp,
                 } else if (i == 2) {
                     if (edges[0][i] && edges[0][j])
                         continue;
+
                     if (edges[0][1] && edges[1][i] && edges[0][j])
                         continue;
+
                     if (edges[1][i] && edges[1][j])
                         continue;
                 }
@@ -805,13 +832,13 @@ void FormGb::checkV1F4(FormGb::Fans &res, const Explain4 &exp,
     std::vector<Fan> implyYjk {
         Fan::DSX88, Fan::JLBD88, Fan::QYJ64, Fan::ZYS64, Fan::HYJ32
     };
-    if(!util::common(res, implyYjk)) {
+    if (!util::common(res, implyYjk)) {
         for (auto it = exp.x34b(); it != exp.x34e(); it++) {
             bool num19 = it->isNum19();
             bool okF = it->suit() == Suit::F
-                    && !util::has(res, Fan::XSX64)
-                    && it->val() != ctx.selfWind
-                    && it->val() != ctx.roundWind;
+                && !util::has(res, Fan::XSX64)
+                && it->val() != ctx.selfWind
+                && it->val() != ctx.roundWind;
             if (num19 || okF)
                 res.push_back(Fan::YJK1);
         }
@@ -827,6 +854,7 @@ void FormGb::checkV1F4(FormGb::Fans &res, const Explain4 &exp,
     hasSuits[static_cast<int>(exp.pair().suit())] = true;
     for (T34 t : exp.heads())
         hasSuits[static_cast<int>(t.suit())] = true;
+
     int hasSuitCt = hasSuits[0] + hasSuits[1] + hasSuits[2];
     std::vector<Fan> implyQym {
         Fan::XSY64, Fan::XSX64, Fan::YSSTS48, Fan::YSSJG48, Fan::YSSBG32,
@@ -842,8 +870,8 @@ void FormGb::checkV1F4(FormGb::Fans &res, const Explain4 &exp,
         Fan::DYW12, Fan::XYW12, Fan::DY2, Fan::PH2
     };
     if (!util::common(res, implyWz)
-            && !exp.pair().isZ()
-            && util::none(exp.heads(), [](T34 t) { return t.isZ(); })) {
+        && !exp.pair().isZ()
+        && util::none(exp.heads(), [](T34 t) { return t.isZ(); })) {
         res.push_back(Fan::WZ1);
     }
 
@@ -862,6 +890,7 @@ void FormGb::checkV1F4(FormGb::Fans &res, const Explain4 &exp,
         case Wait::ISORIDE:
             if (!util::has(res, Fan::SG88) && !util::has(res, Fan::QQR6))
                 res.push_back(Fan::DDJ1);
+
             break;
         default:
             break;
@@ -877,6 +906,7 @@ void FormGb::checkPick(FormGb::Fans &fs, const FormCtx &ctx) const
 {
     if (ctx.duringKan)
         fs.push_back(mDianpao ? Fan::QGH8 : Fan::GSKH8);
+
     if (ctx.emptyMount) // not 'else if', addable in GB rule
         fs.push_back(mDianpao ? Fan::HDLY8 : Fan::MSHC8);
 }
@@ -890,9 +920,9 @@ bool FormGb::seq3In3Or4(const Explain4 &exp, std::function<bool(T34, T34, T34)> 
             return true;
     } else if (exp.numS() == 4) {
         if (p(h[0], h[1], h[2])
-                || p(h[0], h[1], h[3])
-                || p(h[0], h[2], h[3])
-                || p(h[1], h[2], h[3]))
+            || p(h[0], h[1], h[3])
+            || p(h[0], h[2], h[3])
+            || p(h[1], h[2], h[3]))
             return true;
     }
 
@@ -901,6 +931,4 @@ bool FormGb::seq3In3Or4(const Explain4 &exp, std::function<bool(T34, T34, T34)> 
 
 
 
-}
-
-
+} // namespace saki

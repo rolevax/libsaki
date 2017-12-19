@@ -21,5 +21,3 @@ Action AiStub::think(const TableView &view, Ai::Limits &limits)
 
 
 } // namespace saki
-
-

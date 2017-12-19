@@ -61,5 +61,3 @@ private:
 
 
 #endif // SAKI_GIRLS_ACHIGA_H
-
-

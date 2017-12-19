@@ -47,5 +47,3 @@ inline std::ostream &operator<<(std::ostream &os, const Parsed &p)
 
 
 #endif // SAKI_PARSED_H
-
-

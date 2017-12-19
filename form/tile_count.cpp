@@ -93,9 +93,9 @@ bool TileCount::hasYao() const
 {
     using namespace tiles34;
     return ct(1_m) > 0 || ct(9_m) > 0
-            || ct(1_p) > 0 || ct(9_p) > 0
-            || ct(1_s) > 0 || ct(9_s) > 0
-            || hasZ();
+           || ct(1_p) > 0 || ct(9_p) > 0
+           || ct(1_s) > 0 || ct(9_s) > 0
+           || hasZ();
 }
 
 void TileCount::inc(const T37 &t, int delta)
@@ -210,8 +210,8 @@ bool TileCount::hasEffA(int barkCt, T34 t) const
 {
     int curr = step(barkCt); // should use common min, not individual
     return (!dislike4(t) && peekDraw(t, &TileCount::step4, barkCt) < curr)
-            || (barkCt == 0 && peekDraw(t, &TileCount::step7) < curr)
-            || (barkCt == 0 && t.isYao() && peekDraw(t, &TileCount::step13) < curr);
+           || (barkCt == 0 && peekDraw(t, &TileCount::step7) < curr)
+           || (barkCt == 0 && t.isYao() && peekDraw(t, &TileCount::step13) < curr);
 }
 
 bool TileCount::hasEffA4(int barkCt, T34 t) const
@@ -269,7 +269,7 @@ util::Stactor<T37, 13> TileCount::t37s13(bool allowDup) const
     for (const T37 &t : tiles37::ORDER37) {
         int num = ct(t);
         if (allowDup) {
-            while (num --> 0)
+            while (num-- > 0)
                 res.pushBack(t);
         } else {
             if (num != 0)
@@ -294,12 +294,16 @@ bool TileCount::dislike4(T34 t) const
     if (t.isNum()) {
         if (t.val() >= 2 && mCounts[ti - 1] > 0)
             return false; // has left neighbor
+
         if (t.val() <= 8 && mCounts[ti + 1] > 0)
             return false; // has right neighbor
+
         if (t.val() >= 3 && mCounts[ti - 2] > 0)
             return false; // has left-left neighbor
+
         if (t.val() <= 7 && mCounts[ti + 2] > 0)
             return false; // has right-right neighbor
+
     }
 
     return true; // nobody likes this tile
@@ -312,6 +316,7 @@ std::vector<Parsed> TileCount::parse4(int barkCt) const
     int maxCut = 4 - barkCt;
     int min = 8;
 
+    // *INDENT-OFF*
     auto update = [&](bool hasBirdHead, T34 h = T34()) {
         auto subreses = cutMeldOut(0, maxCut);
         int comin = (hasBirdHead ? 7 : 8) - subreses[0].work() - 2 * barkCt;
@@ -333,6 +338,7 @@ std::vector<Parsed> TileCount::parse4(int barkCt) const
             }
         }
     };
+    // *INDENT-ON*
 
     // having-birdhead cases
     for (T34 h : tiles34::ALL34) {
@@ -370,18 +376,23 @@ std::vector<TileCount::Explain4Closed> TileCount::explain4(T34 pick) const
                 res.push_back(exp);
 
                 // 111-222-333 --> 123-123-123
+                // *INDENT-OFF*
                 auto checkSequences = [](T34 l, T34 m, T34 r) -> bool {
                     return (l | m) && (m | r);
                 };
+                // *INDENT-ON*
                 if (exp.triplets.size() == 3) { // 0/1 seq + 3 tri --> 3/4 seq
                     if (checkSequences(exp.triplets[0], exp.triplets[1], exp.triplets[2])) {
                         Explain4Closed exp2(pick);
                         if (exp.sequences.size() == 1 && exp.sequences[0] < exp.triplets[0])
                             exp2.sequences.push_back(exp.sequences[0]); // keep ordered
+
                         for (int i = 0; i < 3; i++)
                             exp2.sequences.push_back(exp.triplets[0]);
+
                         if (exp.sequences.size() == 1 && exp2.sequences.size() == 3)
                             exp2.sequences.push_back(exp.sequences[0]); // keep ordered
+
                         res.push_back(exp2);
                     }
                 } else if (exp.triplets.size() == 4) { // 4 tri --> 3 seq + 1 tri
@@ -389,14 +400,17 @@ std::vector<TileCount::Explain4Closed> TileCount::explain4(T34 pick) const
                         Explain4Closed exp3(pick);
                         for (int i = 0; i < 3; i++)
                             exp3.sequences.push_back(exp.triplets[0]);
+
                         exp3.triplets.push_back(exp.triplets[3]);
                         res.push_back(exp3);
                     }
+
                     if (checkSequences(exp.triplets[1], exp.triplets[2], exp.triplets[3])) {
                         Explain4Closed exp4(pick);
                         exp4.triplets.push_back(exp.triplets[0]);
                         for (int i = 1; i < 4; i++)
                             exp4.sequences.push_back(exp.triplets[1]);
+
                         res.push_back(exp4);
                     }
                 }
@@ -417,8 +431,8 @@ bool TileCount::onlyInTriplet(T34 pick, int barkCt) const
         return true;
 
     if (pick.val() <= 7
-            && mCounts[pick.next().id34()] != 0
-            && mCounts[pick.nnext().id34()] != 0) {
+        && mCounts[pick.next().id34()] != 0
+        && mCounts[pick.nnext().id34()] != 0) {
         T34Delta guard1(mutableCounts(), pick, -1);
         T34Delta guard2(mutableCounts(), pick.next(), -1);
         T34Delta guard3(mutableCounts(), pick.nnext(), -1);
@@ -430,8 +444,8 @@ bool TileCount::onlyInTriplet(T34 pick, int barkCt) const
     }
 
     if (pick.val() >= 3
-            && mCounts[pick.prev().id34()] != 0
-            && mCounts[pick.pprev().id34()] != 0) {
+        && mCounts[pick.prev().id34()] != 0
+        && mCounts[pick.pprev().id34()] != 0) {
         T34Delta guard1(mutableCounts(), pick, -1);
         T34Delta guard2(mutableCounts(), pick.prev(), -1);
         T34Delta guard3(mutableCounts(), pick.pprev(), -1);
@@ -443,8 +457,8 @@ bool TileCount::onlyInTriplet(T34 pick, int barkCt) const
     }
 
     if (2 <= pick.val() && pick.val() <= 8
-            && mCounts[pick.prev().id34()] != 0
-            && mCounts[pick.next().id34()] != 0) {
+        && mCounts[pick.prev().id34()] != 0
+        && mCounts[pick.next().id34()] != 0) {
         T34Delta guard1(mutableCounts(), pick, -1);
         T34Delta guard2(mutableCounts(), pick.prev(), -1);
         T34Delta guard3(mutableCounts(), pick.next(), -1);
@@ -503,6 +517,7 @@ int TileCount::sum(const std::vector<T34> &ts) const
     int res = 0;
     for (T34 t : ts)
         res += mCounts[t.id34()];
+
     return res;
 }
 
@@ -541,7 +556,7 @@ int TileCount::cutMeld(int id34, int maxCut) const
     }
 
     // is number && value 1~7 (index 0~6) && make a seq
-    if (id34 + 2 < 27 && id34 % 9 <= 6 && mCounts[id34 + 1] > 0  && mCounts[id34 + 2] > 0) {
+    if (id34 + 2 < 27 && id34 % 9 <= 6 && mCounts[id34 + 1] > 0 && mCounts[id34 + 2] > 0) {
         T34Delta guard1(mutableCounts(), T34(id34), -1);
         T34Delta guard2(mutableCounts(), T34(id34 + 1), -1);
         T34Delta guard3(mutableCounts(), T34(id34 + 2), -1);
@@ -572,6 +587,7 @@ std::vector<Parsed> TileCount::cutMeldOut(int id34, int maxCut) const
     const T34 t(id34);
     int maxWork = 0;
 
+    // *INDENT-OFF*
     auto updateWork = [&](C34::Type type, bool cut) {
         auto subreses = cutMeldOut(id34 + !cut, maxCut - cut);
         int work = (cut ? 2 : 0) + subreses[0].work();
@@ -589,6 +605,7 @@ std::vector<Parsed> TileCount::cutMeldOut(int id34, int maxCut) const
             reses.insert(reses.end(), subreses.begin(), subreses.end());
         }
     };
+    // *INDENT-ON*
 
     if (maxCut > 0) {
         if (ct(t) >= 3) {
@@ -597,7 +614,7 @@ std::vector<Parsed> TileCount::cutMeldOut(int id34, int maxCut) const
             updateWork(C34::Type::TRI, true);
         }
 
-        if (t.isNum() && t.val() <= 7 && ct(t.next()) > 0  && ct(t.nnext()) > 0) {
+        if (t.isNum() && t.val() <= 7 && ct(t.next()) > 0 && ct(t.nnext()) > 0) {
             T34Delta guard1(mutableCounts(), t, -1);
             T34Delta guard2(mutableCounts(), t.next(), -1);
             T34Delta guard3(mutableCounts(), t.nnext(), -1);
@@ -677,6 +694,7 @@ std::vector<Parsed> TileCount::cutSubmeldOut(int id34, int maxCut) const
     int maxWork = 0;
     const T34 t(id34);
 
+    // *INDENT-OFF*
     auto updateWork = [&](C34::Type type, bool cut) {
         auto subreses = cutSubmeldOut(id34 + !cut, maxCut - cut);
         int work = cut + subreses[0].work();
@@ -693,6 +711,7 @@ std::vector<Parsed> TileCount::cutSubmeldOut(int id34, int maxCut) const
             reses.insert(reses.end(), subreses.begin(), subreses.end());
         }
     };
+    // *INDENT-ON*
 
     if (maxCut > 0) {
         if (ct(t) >= 2) {
@@ -739,9 +758,10 @@ bool TileCount::decomposeBirdless4(Explain4Closed &exp,
         if (remain > 0) {
             if (T34(tj).isZ() || T34(tj).val() > 7)
                 return false; // must be a floating tile
+
             borrows[1] += remain;
             borrows[2] += remain;
-            while (remain --> 0)
+            while (remain-- > 0)
                 exp.sequences.push_back(T34(tj));
         }
 
@@ -785,5 +805,3 @@ TileCount::NonEmptyGuard::~NonEmptyGuard()
 
 
 } // namespace saki
-
-

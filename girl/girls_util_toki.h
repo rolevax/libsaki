@@ -167,5 +167,3 @@ private:
 
 
 #endif // SAKI_GIRLS_UTIL_TOKI_H
-
-

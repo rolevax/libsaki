@@ -29,7 +29,7 @@ private:
         int jump;
         int ofs;
         int v;
-        explicit SssbgSet(bool jump, int ofs, int v) : jump(jump), ofs(ofs), v(v) { }
+        explicit SssbgSet(bool jump, int ofs, int v) : jump(jump), ofs(ofs), v(v) {}
     };
 
     static bool expand(Mount &mount, const TileCount &total);
@@ -44,10 +44,8 @@ private:
 
 
 
-}
+} // namespace saki
 
 
 
 #endif // SAKI_GIRLS_RINKAI_H
-
-

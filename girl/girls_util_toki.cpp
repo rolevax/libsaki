@@ -193,6 +193,7 @@ void TokiMountTracker::onDiscarded(const Table &table, bool spin)
     bool riichi = mToRiichi;
     if (riichi)
         mToRiichi = false;
+
     mEvents.emplace_back(new TokiEventDiscarded(table.getFocusTile(), spin, riichi));
 }
 
@@ -294,6 +295,7 @@ void TokiEventResult::print(std::ostream &os, Who toki) const
             os << '\n' << mOpeners[w].turnFrom(toki) << "J " << util::stringOf(mResult)
                << '\n' << mCloseds[w];
         }
+
         if (!mUrids.empty())
             os << "\nURADORAINDIC " << mUrids;
     } else if (mResult == RoundResult::HP) {
@@ -309,5 +311,3 @@ void TokiEventResult::print(std::ostream &os, Who toki) const
 
 
 } // namespace saki
-
-

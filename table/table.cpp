@@ -29,15 +29,15 @@ TablePrivate::TablePrivate(const std::array<int, 4> &points,
 
 Table::Table(const std::array<int, 4> &points,
              const std::array<int, 4> &girlIds,
-             const std::array<TableOperator*, 4> &operators,
-             const std::vector<TableObserver*> &observers,
+             const std::array<TableOperator *, 4> &operators,
+             const std::vector<TableObserver *> &observers,
              Rule rule, Who tempDealer, const TableEnv &env)
     : TablePrivate(points, rule, tempDealer, env)
     , mOperators(operators)
     , mObservers(observers)
 {
-    assert(!util::has(mOperators, static_cast<TableOperator*>(nullptr)));
-    assert(!util::has(mObservers, static_cast<TableObserver*>(nullptr)));
+    assert(!util::has(mOperators, static_cast<TableOperator *>(nullptr)));
+    assert(!util::has(mObservers, static_cast<TableObserver *>(nullptr)));
 
     for (int w = 0; w < 4; w++)
         mGirls[w].reset(Girl::create(Who(w), girlIds[w]));
@@ -47,8 +47,8 @@ Table::Table(const std::array<int, 4> &points,
 }
 
 Table::Table(const Table &orig,
-             const std::array<TableOperator*, 4> &operators,
-             const std::vector<TableObserver*> &observers,
+             const std::array<TableOperator *, 4> &operators,
+             const std::vector<TableObserver *> &observers,
              Who toki, const Choices &clean)
     : TablePrivate(orig)
     , mOperators(operators)
@@ -120,9 +120,11 @@ bool Table::check(Who who, const Action &action) const
         default:
             return true;
         }
+
     case Choices::Mode::BARK:
         if (action.isCp())
             return mHands[who.index()].canCp(getFocusTile(), action);
+
         return true;
     default:
         return true;
@@ -226,6 +228,7 @@ int Table::getRank(Who who) const
     for (int w = 0; w < 4; w++) {
         if (w == who.index())
             continue;
+
         int herPoint = mPoints[w];
         if (herPoint > myPoint) {
             rank++; // rank falls down
@@ -294,6 +297,7 @@ Who Table::findGirl(Girl::Id id) const
     for (int w = 0; w < 4; w++)
         if (mGirls[w]->getId() == id)
             return Who(w);
+
     return Who();
 }
 
@@ -570,9 +574,10 @@ void Table::flip()
 
 void Table::tryDraw(Who who)
 {
+    // SCRC
     if (mToEstablishRiichi)
         if (!finishRiichi())
-            return; // SCRC
+            return;
 
     bool dead = mKanContext.during();
     int w = who.index();
@@ -591,8 +596,8 @@ void Table::tryDraw(Who who)
         mode.kskp = noBarkYet() && mRivers[w].empty() && mHands[w].nine9();
 
         if (mMount.wallRemain() >= 4
-                && mPoints[w] >= 1000
-                && !riichiEstablished(who)) {
+            && mPoints[w] >= 1000
+            && !riichiEstablished(who)) {
             mHands[w].canRiichi(mode.swapRiichis, mode.spinRiichi);
         }
 
@@ -621,6 +626,7 @@ void Table::tryDraw(Who who)
             for (int w = 0; w < 4; w++)
                 if (mHands[w].ready())
                     openers.push_back(Who(w));
+
             exhaustRound(RoundResult::HP, openers);
         }
     }
@@ -683,6 +689,7 @@ void Table::onDiscarded()
         for (int w = 0; w < 4; w++)
             if (riichiEstablished(Who(w)))
                 openers.emplace_back(w);
+
         exhaustRound(RoundResult::SFRT, openers);
         return;
     }
@@ -758,7 +765,7 @@ void Table::chii(Who who, ActCode dir, const T37 &out, bool showAka5)
 
     pick();
 
-    void (Hand::*pChii)(const T37 &pick, bool showAka5);
+    void (Hand::*pChii) (const T37 &pick, bool showAka5);
     pChii = dir == L ? &Hand::chiiAsLeft
                      : dir == M ? &Hand::chiiAsMiddle : &Hand::chiiAsRight;
 
@@ -872,6 +879,7 @@ void Table::finishKan(Who who)
         for (int w = 0; w < 4; w++)
             if (riichiEstablished(Who(w)))
                 openers.emplace_back(w);
+
         exhaustRound(RoundResult::SKSR, openers);
         return;
     }
@@ -1034,7 +1042,7 @@ bool Table::nagashimangan(Who who) const
 {
     int w = who.index();
     return util::all(mRivers[w], [](const T37 &t) { return t.isYao(); })
-            && mPickeds[w].none();
+           && mPickeds[w].none();
 }
 
 void Table::exhaustRound(RoundResult result, const std::vector<Who> &openers)
@@ -1056,6 +1064,7 @@ void Table::exhaustRound(RoundResult result, const std::vector<Who> &openers)
             if (who == mDealer)
                 for (int l = 0; l < 4; ++l)
                     mPoints[l] += l == who.index() ? 12000 : -4000;
+
             else
                 for (int l = 0; l < 4; ++l)
                     mPoints[l] += l == who.index() ? 8000
@@ -1066,12 +1075,14 @@ void Table::exhaustRound(RoundResult result, const std::vector<Who> &openers)
     } else { // abortive round endings
         if (result == RoundResult::KSKP && mToEstablishRiichi)
             finishRiichi();
+
         mToChangeDealer = false;
     }
 
     std::vector<Form> forms; // empty
     for (auto &g : mGirls)
         g->onRoundEnded(*this, result, openers, Who(), forms);
+
     for (auto ob : mObservers)
         ob->onRoundEnded(*this, result, openers, Who(), forms);
 
@@ -1090,9 +1101,11 @@ void Table::finishRound(const std::vector<Who> &openers_, Who gunner)
     bool isRon = gunner.somebody();
 
     if (isRon && openers.size() >= 2) {
+        // *INDENT-OFF*
         auto compDist = [gunner](Who w1, Who w2) {
             return w1.turnFrom(gunner) < w2.turnFrom(gunner);
         };
+        // *INDENT-ON*
         std::sort(openers.begin(), openers.end(), compDist);
     }
 
@@ -1194,6 +1207,7 @@ void Table::endTable()
         int r = std::abs(sc) % 1000;
         if (r >= 600)
             q++;
+
         sc = sc > 0 ? q : -q;
     }
 
@@ -1204,5 +1218,3 @@ void Table::endTable()
 
 
 } // namespace saki
-
-

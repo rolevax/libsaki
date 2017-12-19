@@ -39,6 +39,7 @@ void Hatsumi::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
             // let them to have floating useless F
             mount.lightA(t, hand.ct(t) >= 1 ? -50 : (table.riichiEstablished(who) ? 500 : 80));
         }
+
         return;
     }
 
@@ -85,6 +86,7 @@ void Hatsumi::nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
             init.inc(mount.initPopExact(1_f), 1);
             init.inc(mount.initPopExact(1_f), 1);
         }
+
         if (mount.remainA(4_f) >= 2) {
             init.inc(mount.initPopExact(4_f), 1);
             init.inc(mount.initPopExact(4_f), 1);
@@ -136,9 +138,10 @@ void Kasumi::onMonkey(std::array<Exist, 4> &exists, const Princess &princess)
         for (T34 t : tiles34::ALL34) {
             // isNum && (rivals' 1-lack || self's 2-lack)
             if (t.isNum()
-                    && ((t.suit() == mZimSuit && Who(w) != mSelf)
-                        || (t.suit() != mZimSuit && Who(w) == mSelf)))
+                && ((t.suit() == mZimSuit && Who(w) != mSelf)
+                    || (t.suit() != mZimSuit && Who(w) == mSelf)))
                 exists[w].inc(t, -1000);
+
             if (t.isZ() && Who(w) == mSelf)
                 exists[w].inc(t, -20);
         }
@@ -227,5 +230,3 @@ void Kasumi::nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
 
 
 } // namespace saki
-
-

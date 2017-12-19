@@ -123,5 +123,3 @@ bool TableViewReal::inIppatsuCycle() const
 
 
 } // namespace saki
-
-

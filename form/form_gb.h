@@ -86,5 +86,3 @@ private:
 
 
 #endif // SAKI_FORM_GB_H
-
-

@@ -27,5 +27,3 @@ public:
 
 
 #endif // SAKI_TABLE_ENV_H
-
-

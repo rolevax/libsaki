@@ -13,7 +13,7 @@ namespace saki
 
 Explain4::Explain4(const std::vector<T34> &heads, Wait wait, T34 pair,
                    int o3Ct, int c3Ct, int o4Ct, int c4Ct)
-    : mHeads { heads[0], heads[1], heads[2], heads[3] }
+    : mHeads{heads[0], heads[1], heads[2], heads[3]}
     , mWait(wait)
     , mPair(pair)
     , mO3b(4 - (o3Ct + c3Ct + o4Ct + c4Ct))
@@ -35,12 +35,14 @@ std::vector<Explain4> Explain4::make(const TileCount &count, const util::Stactor
     for (TileCount::Explain4Closed &exp : expCloseds) {
         assert(exp.sequences.size() + exp.triplets.size() + barks.size() == 4);
 
+        // *INDENT-OFF*
         auto insertSequence = [&exp](T34 head) {
             auto &tar = exp.sequences;
             auto it = std::find_if_not(tar.begin(), tar.end(),
                                        [head](T34 t) { return t < head; });
             tar.insert(it, head);
         };
+        // *INDENT-ON*
 
         std::vector<T34> o3Heads;
         std::vector<T34> o4Heads;
@@ -210,6 +212,7 @@ void Explain4::mapWait(std::vector<Explain4> &res, T34 pick, bool ron, T34 pair,
             } else {
                 heads.insert(heads.end(), c3Heads.begin(), c3Heads.end());
             }
+
             heads.insert(heads.end(), o4Heads.begin(), o4Heads.end());
             heads.insert(heads.end(), c4Heads.begin(), c4Heads.end());
             res.emplace_back(heads, Wait::BIBUMP, pair,
@@ -236,5 +239,3 @@ void Explain4::mapWait(std::vector<Explain4> &res, T34 pick, bool ron, T34 pair,
 
 
 } // namespace saki
-
-

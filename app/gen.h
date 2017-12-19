@@ -45,5 +45,3 @@ public:
 
 
 #endif // SAKI_GEN_H
-
-

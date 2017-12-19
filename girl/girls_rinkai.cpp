@@ -23,6 +23,7 @@ void Huiyu::skill(Mount &mount, const Hand &hand, const FormCtx &ctx)
                 has = true;
                 mount.lightA(t, 300);
             }
+
             copy.spinOut();
         }
 
@@ -42,6 +43,7 @@ void Huiyu::skill(Mount &mount, const Hand &hand, const FormCtx &ctx)
 
 void Huiyu::onActivate(const Table &table, Choices &choices)
 {
+    // *INDENT-OFF*
     auto filterDrawn = [&]() {
         Choices::ModeDrawn drawn = choices.drawn();
 
@@ -72,6 +74,7 @@ void Huiyu::onActivate(const Table &table, Choices &choices)
             choices.setBark(bark);
         }
     };
+    // *INDENT-ON*
 
     switch (choices.mode()) {
     case Choices::Mode::DRAWN:
@@ -97,6 +100,7 @@ bool Huiyu::expand(Mount &mount, const TileCount &total)
 {
     std::bitset<34> minReqs, tempReqs;
     int minDist = 14, tempDist;
+    // *INDENT-OFF*
     auto update = [&](int (*f)(std::bitset<34> &reqs, const TileCount &total), int triggerDist) {
         tempReqs.reset();
         tempDist = f(tempReqs, total);
@@ -105,6 +109,7 @@ bool Huiyu::expand(Mount &mount, const TileCount &total)
             minReqs = tempReqs;
         }
     };
+    // *INDENT-ON*
 
     update(yssbg, 3);
     update(colors, 2);
@@ -166,6 +171,7 @@ int Huiyu::yssbg(std::bitset<34> &reqs, const TileCount &total)
         for (int v = 1; v <= 9; v++)
             if (total.ct(T34(s, v)))
                 matchQl++;
+
         if (matchQl > maxMatch) {
             maxMatch = matchQl;
             maxHead = T34(s, 1);
@@ -188,6 +194,7 @@ int Huiyu::yssbg(std::bitset<34> &reqs, const TileCount &total)
             for (T34 t : need1s)
                 if (total.ct(t) < 1)
                     reqs.set(t.id34());
+
             for (T34 t : need2s)
                 if (total.ct(t) < 2)
                     reqs.set(t.id34());
@@ -199,12 +206,16 @@ int Huiyu::yssbg(std::bitset<34> &reqs, const TileCount &total)
             T34 t5(s, v + 4);
             if (total.ct(t1) < 1)
                 reqs.set(t1.id34());
+
             if (total.ct(t2) < 2)
                 reqs.set(t2.id34());
+
             if (total.ct(t3) < 3)
                 reqs.set(t3.id34());
+
             if (total.ct(t4) < 2)
                 reqs.set(t4.id34());
+
             if (total.ct(t5) < 1)
                 reqs.set(t5.id34());
         }
@@ -218,6 +229,7 @@ int Huiyu::colors(std::bitset<34> &reqs, const TileCount &total)
     int maxMatch = 0;
     std::bitset<34> res;
 
+    // *INDENT-OFF*
     auto hasOne = [&](T34 t) { return total.ct(t) > 0; };
     auto update = [&](T34 m, T34 p, T34 s) {
         std::array<T34, 9> tars {
@@ -235,6 +247,7 @@ int Huiyu::colors(std::bitset<34> &reqs, const TileCount &total)
                     res.set(t.id34());
         }
     };
+    // *INDENT-ON*
 
     std::array<std::array<int, 3>, 6> mpsVals {
         std::array<int, 3> { 1, 4, 7 },
@@ -283,15 +296,17 @@ int Huiyu::sssjg(std::bitset<34> &reqs, const TileCount &total)
             T34 p(Suit::P, vals[1] + ofs);
             T34 s(Suit::S, vals[2] + ofs);
             int match = std::min(total.ct(m), 3)
-                    + std::min(total.ct(p), 3)
-                    + std::min(total.ct(s), 3);
+                + std::min(total.ct(p), 3)
+                + std::min(total.ct(s), 3);
             if (match > maxMatch) {
                 maxMatch = match;
                 maxReqs.reset();
                 if (total.ct(m) < 3)
                     maxReqs.set(m.id34());
+
                 if (total.ct(p) < 3)
                     maxReqs.set(p.id34());
+
                 if (total.ct(s) < 3)
                     maxReqs.set(s.id34());
             }
@@ -335,17 +350,20 @@ int Huiyu::qdqzqx(std::bitset<34> &reqs, const TileCount &total)
         for (Suit s : { Suit::M, Suit::P, Suit::S })
             for (int v = 7; v <= 9; v++)
                 reqs.set(T34(s, v).id34());
+
         return 14 - big;
     } else if (middle > big && middle > small) {
         for (Suit s : { Suit::M, Suit::P, Suit::S })
             for (int v = 4; v <= 6; v++)
                 reqs.set(T34(s, v).id34());
+
         return 14 - middle;
     } else {
         if (small >= 9)
             for (Suit s : { Suit::M, Suit::P, Suit::S })
                 for (int v = 1; v <= 3; v++)
                     reqs.set(T34(s, v).id34());
+
         return 14 - small;
     }
 }
@@ -360,6 +378,7 @@ int Huiyu::gtlt5(std::bitset<34> &reqs, const TileCount &total)
         int ct = total.ct(t);
         if (t.val() > 5)
             gt += ct;
+
         if (t.val() < 5)
             lt += ct;
     }
@@ -368,17 +387,17 @@ int Huiyu::gtlt5(std::bitset<34> &reqs, const TileCount &total)
         for (Suit s : { Suit::M, Suit::P, Suit::S })
             for (int v = 6; v <= 9; v++)
                 reqs.set(T34(s, v).id34());
+
         return 14 - gt;
     } else {
         for (Suit s : { Suit::M, Suit::P, Suit::S })
             for (int v = 1; v <= 4; v++)
                 reqs.set(T34(s, v).id34());
+
         return 14 - lt;
     }
 }
 
 
 
-}
-
-
+} // namespace saki

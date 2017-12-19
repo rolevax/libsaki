@@ -31,5 +31,3 @@ public:
 
 
 #endif // SAKI_AI_EISUI_H
-
-

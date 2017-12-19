@@ -86,6 +86,7 @@ void Sawaya::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
             mount.lightA(t, mk, rinshan);
             mount.lightB(t, mk, rinshan);
         }
+
         return; // priority higher than clouds and other kamuy
     }
 
@@ -191,6 +192,7 @@ void Sawaya::nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
         // one possible smarter sol: use a who-is-here mask as condition
         for (T34 t : tiles34::Z7)
             mount.loadB(T37(t.id34()), 1); // one is enough to make it non-wallable
+
     }
 
     if (mClouds[Cloud::WHITE].on)
@@ -282,5 +284,3 @@ Choices Sawaya::handleIrsCheck(const Table &table, Mount &mount, unsigned mask)
 
 
 } // namespace saki
-
-

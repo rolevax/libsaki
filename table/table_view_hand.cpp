@@ -30,5 +30,3 @@ const Hand &TableViewHand::myHand() const
 
 
 } // namespace saki
-
-

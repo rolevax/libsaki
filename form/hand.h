@@ -82,7 +82,7 @@ public:
     int peekPickStep13(T34 pick) const;
 
     template<typename Ret, typename... Args>
-    Ret peekDiscard(const Action &a, Ret (Hand::*f)(Args...) const, Args&&... args) const
+    Ret peekDiscard(const Action &a, Ret (Hand::*f) (Args...) const, Args && ... args) const
     {
         switch (a.act()) {
         case ActCode::SWAP_OUT:
@@ -95,27 +95,27 @@ public:
     }
 
     template<typename Ret, typename... Args>
-    Ret peekSwap(const T37 &t, Ret (Hand::*f)(Args...) const, Args... args) const
+    Ret peekSwap(const T37 &t, Ret (Hand::*f) (Args...) const, Args... args) const
     {
-        DeltaSwap guard(const_cast<Hand&>(*this), t);
+        DeltaSwap guard(const_cast<Hand &>(*this), t);
         (void) guard;
         return (this->*f)(args...);
     }
 
     template<typename Ret, typename... Args>
-    Ret peekSpin(Ret (Hand::*f)(Args...) const, Args... args) const
+    Ret peekSpin(Ret (Hand::*f) (Args...) const, Args... args) const
     {
-        DeltaSpin guard(const_cast<Hand&>(*this));
+        DeltaSpin guard(const_cast<Hand &>(*this));
         (void) guard;
         return (this->*f)(args...);
     }
 
     template<typename Ret, typename... Args>
     Ret peekCp(const T37 &pick, const Action &action,
-               Ret (Hand::*f)(Args...) const, Args... args) const
+               Ret (Hand::*f) (Args...) const, Args... args) const
     {
         assert(action.isCp());
-        DeltaCp guard(const_cast<Hand&>(*this), pick, action, action.t37());
+        DeltaCp guard(const_cast<Hand &>(*this), pick, action, action.t37());
         (void) guard;
         return (this->*f)(args...);
     }
@@ -205,5 +205,3 @@ int operator%(const util::Stactor<T37, 5> &inds, const Hand &hand);
 
 
 #endif // SAKI_HAND_H
-
-

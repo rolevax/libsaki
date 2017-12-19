@@ -25,5 +25,3 @@ public:
 
 
 #endif // SAKI_AI_USUZAN_H
-
-

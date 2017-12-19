@@ -191,6 +191,7 @@ inline std::ostream &operator<<(std::ostream &os, const util::Stactor<C34, MAX> 
             first = false;
         else
             os << ' ';
+
         os << c;
     }
 
@@ -204,5 +205,3 @@ inline std::ostream &operator<<(std::ostream &os, const util::Stactor<C34, MAX> 
 
 
 #endif // SAKI_COMELD_H
-
-

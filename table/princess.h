@@ -62,5 +62,3 @@ private:
 
 
 #endif // SAKI_PRINCESS_H
-
-

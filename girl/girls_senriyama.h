@@ -61,5 +61,3 @@ public:
 
 
 #endif // SAKI_GIRLS_SENRIYAMA_H
-
-

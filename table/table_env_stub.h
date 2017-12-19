@@ -26,5 +26,3 @@ public:
 
 
 #endif // SAKI_TABLE_ENV_STUB_H
-
-

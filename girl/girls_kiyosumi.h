@@ -28,10 +28,8 @@ public:
 
 
 
-}
+} // namespace saki
 
 
 
 #endif // SAKI_GIRLS_KIYOSUMI_H
-
-

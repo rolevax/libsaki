@@ -49,5 +49,3 @@ private:
 
 
 #endif // SAKI_GIRLS_HIMEMATSU_H
-
-

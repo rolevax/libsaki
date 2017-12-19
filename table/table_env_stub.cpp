@@ -15,5 +15,3 @@ int TableEnvStub::hour24() const
 
 
 } // namespace saki
-
-

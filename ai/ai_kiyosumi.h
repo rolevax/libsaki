@@ -19,10 +19,8 @@ public:
 
 
 
-} //namespace saki
+} // namespace saki
 
 
 
 #endif // SAKI_AI_KIYOSUMI_H
-
-

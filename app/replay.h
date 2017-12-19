@@ -68,9 +68,9 @@ public:
 
     struct InAct
     {
-        explicit InAct(In act) : act(act) { }
-        explicit InAct(In act, const T37 &t) : act(act), t37(t) { }
-        explicit InAct(In act, int showAka5) : act(act), showAka5(showAka5) { }
+        explicit InAct(In act) : act(act) {}
+        explicit InAct(In act, const T37 &t) : act(act), t37(t) {}
+        explicit InAct(In act, int showAka5) : act(act), showAka5(showAka5) {}
         In act;
         union
         {
@@ -81,8 +81,8 @@ public:
 
     struct OutAct
     {
-        explicit OutAct(Out act) : act(act) { }
-        explicit OutAct(Out act, const T37 &t) : act(act), t37(t) { }
+        explicit OutAct(Out act) : act(act) {}
+        explicit OutAct(Out act, const T37 &t) : act(act), t37(t) {}
         Out act;
         T37 t37;
     };
@@ -162,5 +162,3 @@ private:
 
 
 #endif // SAKI_REPLAY_H
-
-

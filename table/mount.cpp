@@ -51,10 +51,12 @@ Exist::Polar Exist::polarize(const TileCount &stoch) const
 {
     Polar res;
 
+    // *INDENT-OFF*
     auto add = [&res, &stoch](const T37 &t, int d) {
         if (stoch.ct(t) > 0)
             (res.*(d > 0 ? &Polar::pos : &Polar::npos)).emplace_back(t, d);
     };
+    // *INDENT-ON*
 
     for (int ti = 0; ti < 34; ti++)
         add(T37(ti), mBlack[ti]);
@@ -365,7 +367,7 @@ std::vector<T37> Mount::popPolar(util::Rand &rand, Exist::Polar &polar,
         sum = std::accumulate(polar.pos.begin(), polar.pos.end(), 0, plus);
     }
 
-    while (need --> 0) {
+    while (need-- > 0) {
         T37 pop;
         int index;
         if (polar.pos.empty()) {
@@ -380,6 +382,7 @@ std::vector<T37> Mount::popPolar(util::Rand &rand, Exist::Polar &polar,
             index = 0;
             while (!(r < polar.pos[index].e))
                 r -= polar.pos[index++].e;
+
             pop = polar.pos[index].t;
         }
 
@@ -411,6 +414,7 @@ T37 Mount::popScientific(util::Rand &rand)
     TileCount &stoch = sum > 0 ? mStochA : mStochB;
     if (sum == 0)
         sum = mStochB.sum();
+
     assert(sum > 0);
 
     int r = rand.gen(sum);
@@ -443,5 +447,3 @@ int operator%(const util::Stactor<T37, 5> &indics, T34 t)
 
 
 } // namespace saki
-
-

@@ -16,7 +16,7 @@ namespace util
 
 
 
-std::array<const char*, static_cast<int>(ActCode::NUM_ACTCODE)> actCodes
+std::array<const char *, static_cast<int>(ActCode::NUM_ACTCODE)> actCodes
 {
     "NOTHING", "PASS", "SWAP_OUT", "SPIN_OUT", "SWAP_RIICHI", "SPIN_RIICHI",
     "CHII_AS_LEFT", "CHII_AS_MIDDLE", "CHII_AS_RIGHT",
@@ -32,14 +32,17 @@ const char *stringOf(ActCode act)
 
 ActCode actCodeOf(const char *str)
 {
-    auto it = std::find_if(actCodes.begin(), actCodes.end(), [str](const char *src){
+    // *INDENT-OFF*
+    auto eq = [str](const char *src) {
         return std::string(src) == str;
-    });
+    };
+    // *INDENT-ON*
+    auto it = std::find_if(actCodes.begin(), actCodes.end(), eq);
     assert(it != actCodes.end());
     return static_cast<ActCode>(it - actCodes.begin());
 }
 
-std::array<const char*, static_cast<int>(ActCode::NUM_ACTCODE)> m37Types
+std::array<const char *, static_cast<int>(ActCode::NUM_ACTCODE)> m37Types
 {
     "CHII", "PON", "DAIMINKAN", "ANKAN", "KAKAN"
 };
@@ -49,7 +52,7 @@ const char *stringOf(M37::Type type)
     return m37Types[static_cast<int>(type)];
 }
 
-std::array<const char*, static_cast<int>(RoundResult::NUM_ROUNDRES)> roundResults
+std::array<const char *, static_cast<int>(RoundResult::NUM_ROUNDRES)> roundResults
 {
     "TSUMO", "RON", "HP", "KSKP", "SFRT", "SKSR", "SCRC", "SCHR", "NGSMG", "ABORT"
 };
@@ -61,14 +64,17 @@ const char *stringOf(RoundResult result)
 
 RoundResult roundResultOf(const char *str)
 {
-    auto it = std::find_if(roundResults.begin(), roundResults.end(), [str](const char *src){
+    // *INDENT-OFF*
+    auto eq = [str](const char *src) {
         return std::string(src) == str;
-    });
+    };
+    // *INDENT-ON*
+    auto it = std::find_if(roundResults.begin(), roundResults.end(), eq);
     assert(it != roundResults.end());
     return static_cast<RoundResult>(it - roundResults.begin());
 }
 
-std::array<const char*, static_cast<int>(Fan::NUM_FANS)> fans
+std::array<const char *, static_cast<int>(Fan::NUM_FANS)> fans
 {
     "Dsy88", "Dsx88", "Jlbd88", "Lqd88", "Sg88", "Lys88", "Ssy88",
     "Qyj64", "Xsy64", "Xsx64", "Zys64", "Sak64", "Ysslh64",
@@ -100,5 +106,3 @@ const char *stringOf(Fan f)
 
 
 } // namespace saki
-
-

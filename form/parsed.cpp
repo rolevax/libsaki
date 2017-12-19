@@ -69,14 +69,17 @@ util::Stactor<T34, 9> Parsed::minTilesTo(const std::array<C34, 3> &cs) const
     util::Stactor<T34, 9> res;
     for (const C34 &c : cs)
         res.pushBack(minTilesTo(c).range());
+
     return res;
 }
 
 util::Stactor<T34, 3> Parsed::minTilesTo(const C34 &c) const
 {
+    // *INDENT-OFF*
     auto comp = [&c](const C34 &a, const C34 &b) {
         return a.tilesTo(c).size() < b.tilesTo(c).size();
     };
+    // *INDENT-ON*
 
     return std::min_element(mHeads.begin(), mHeads.end(), comp)->tilesTo(c);
 }
@@ -84,5 +87,3 @@ util::Stactor<T34, 3> Parsed::minTilesTo(const C34 &c) const
 
 
 } // namespace saki
-
-

@@ -24,13 +24,14 @@ TestScope::TestScope(const char *str, bool nl)
     std::cout << str << std::string(len, ' ') << std::flush;
     if (nl)
         std::cout << std::endl;
+
     mStart = std::chrono::steady_clock::now();
 
 }
 
 TestScope::~TestScope()
 {
-    std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     auto t = std::chrono::duration_cast<std::chrono::milliseconds>(end - mStart).count();
     std::cout << " PASS " << t << "ms" << std::endl;
 }
@@ -99,7 +100,7 @@ void testForm()
     TestScope test("form");
 
     using namespace tiles37;
-    TileCount close { 1_m, 2_m, 3_m, 2_p, 3_p, 4_p, 3_s, 4_s, 5_s, 4_s, 5_s,   7_s, 7_s };
+    TileCount close { 1_m, 2_m, 3_m, 2_p, 3_p, 4_p, 3_s, 4_s, 5_s, 4_s, 5_s, 7_s, 7_s };
     Hand hand(close);
 
     Rule rule;
@@ -120,8 +121,8 @@ void testTable()
     std::array<int, 4> points { 25000, 25000, 25000, 25000 };
     std::array<int, 4> girlIds { 714915, 712715, 710113, 713314 };
     std::array<std::unique_ptr<Ai>, 4> ais;
-    std::array<TableOperator*, 4> ops;
-    std::vector<TableObserver*> obs;
+    std::array<TableOperator *, 4> ops;
+    std::vector<TableObserver *> obs;
     Rule rule;
     for (int iter = 0; iter < 20; iter++) {
         util::p(iter);
@@ -129,7 +130,6 @@ void testTable()
             ais[w].reset(Ai::create(Who(w), Girl::Id(girlIds[w])));
             ops[w] = ais[w].get();
         }
-
 
         TableEnvStub env;
         Table table(points, girlIds, ops, obs, rule, Who(0), env);
@@ -148,7 +148,7 @@ void testFormGb()
     using namespace tiles37;
 
     {
-        TileCount close1 {1_m,9_m,1_p,9_p,1_s,9_s,1_f,2_f,3_f,4_f,1_y,2_y,3_y};
+        TileCount close1 { 1_m, 9_m, 1_p, 9_p, 1_s, 9_s, 1_f, 2_f, 3_f, 4_f, 1_y, 2_y, 3_y };
         Hand hand1(close1);
         hand1.draw(1_m);
         FormGb form1(hand1, ctx, false);
@@ -156,12 +156,13 @@ void testFormGb()
     }
 
     {
-        TileCount close2 {1_s,2_s,3_s,3_s,4_s,5_s,5_s,6_s,7_s,7_s,8_s,9_s,9_s};
+        TileCount close2 { 1_s, 2_s, 3_s, 3_s, 4_s, 5_s, 5_s, 6_s, 7_s, 7_s, 8_s, 9_s, 9_s };
         Hand hand2(close2);
         hand2.draw(9_s);
         FormGb form2(hand2, ctx, false);
         for (Fan f : form2.fans())
             util::p("f", util::stringOf(f));
+
         util::p("form2.fan", form2.fan());
     }
 }
@@ -169,5 +170,3 @@ void testFormGb()
 
 
 } // namespace saki
-
-

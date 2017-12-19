@@ -27,15 +27,15 @@ inline int _tid34(Suit suit, int val)
     assume_opt_out(1 <= val && val <= 9);
 
     return suit == Suit::F ? 27 + val - 1
-         : suit == Suit::Y ? 31 + val - 1
-         : 9 * static_cast<int>(suit) + val - 1;
+                           : suit == Suit::Y ? 31 + val - 1
+                                             : 9 * static_cast<int>(suit) + val - 1;
 }
 
 constexpr int _tid34(int val, Suit suit)
 {
     return suit == Suit::F ? 27 + val - 1
-         : suit == Suit::Y ? 31 + val - 1
-         : 9 * static_cast<int>(suit) + val - 1;
+                           : suit == Suit::Y ? 31 + val - 1
+                                             : 9 * static_cast<int>(suit) + val - 1;
 }
 
 class T34
@@ -43,7 +43,7 @@ class T34
 public:
     static char charOf(Suit s)
     {
-        switch(s) {
+        switch (s) {
         case Suit::M: return 'm';
         case Suit::P: return 'p';
         case Suit::S: return 's';
@@ -55,7 +55,7 @@ public:
 
     static Suit suitOf(char c)
     {
-        switch(std::tolower(c)) {
+        switch (std::tolower(c)) {
         case 'm': return Suit::M;
         case 'p': return Suit::P;
         case 's': return Suit::S;
@@ -117,12 +117,16 @@ public:
 #endif
         if (0 <= mId34 && mId34 < 9)
             return Suit::M;
+
         if (9 <= mId34 && mId34 < 18)
             return Suit::P;
+
         if (18 <= mId34 && mId34 < 27)
             return Suit::S;
+
         if (27 <= mId34 && mId34 < 31)
             return Suit::F;
+
         if (31 <= mId34 && mId34 < 34)
             return Suit::Y;
 
@@ -136,8 +140,10 @@ public:
 #endif
         if (0 <= mId34 && mId34 < 27)
             return mId34 % 9 + 1;
+
         if (27 <= mId34 && mId34 < 31)
             return mId34 - 27 + 1;
+
         if (31 <= mId34 && mId34 < 34)
             return mId34 - 31 + 1;
 
@@ -146,7 +152,7 @@ public:
 
     const char *str() const
     {
-        static const std::array<const char*, 34> STRS {
+        static const std::array<const char *, 34> STRS {
             "1m", "2m", "3m", "4m", "5m", "6m", "7m", "8m", "9m",
             "1p", "2p", "3p", "4p", "5p", "6p", "7p", "8p", "9p",
             "1s", "2s", "3s", "4s", "5s", "6s", "7s", "8s", "9s",
@@ -183,7 +189,7 @@ public:
         assert(1 <= roundWind && roundWind <= 4);
 
         return suit() == Suit::Y
-                || (suit() == Suit::F && (val() == selfWind || val() == roundWind));
+               || (suit() == Suit::F && (val() == selfWind || val() == roundWind));
     }
 
     bool operator==(T34 rhs) const
@@ -322,8 +328,7 @@ inline std::ostream &operator<<(std::ostream &os, const util::Stactor<T34, MAX> 
 {
     for (size_t i = 0; i < ts.size(); i++) {
         os << ts[i].val();
-        if (i < ts.size() - 1
-                && ts[i].suit() != ts[i + 1].suit())
+        if (i < ts.size() - 1 && ts[i].suit() != ts[i + 1].suit())
             os << T34::charOf(ts[i].suit());
     }
 
@@ -337,8 +342,7 @@ inline std::ostream &operator<<(std::ostream &os, const std::array<T34, N> &ts)
 {
     for (size_t i = 0; i < ts.size(); i++) {
         os << ts[i].val();
-        if (i < ts.size() - 1
-                && ts[i].suit() != ts[i + 1].suit())
+        if (i < ts.size() - 1 && ts[i].suit() != ts[i + 1].suit())
             os << T34::charOf(ts[i].suit());
     }
 
@@ -394,7 +398,7 @@ public:
     const char *str() const
     {
         if (isAka5()) {
-            switch(suit()) {
+            switch (suit()) {
             case Suit::M: return "0m";
             case Suit::P: return "0p";
             case Suit::S: return "0s";
@@ -445,6 +449,7 @@ inline int operator%(const util::Stactor<T37, 5> &inds, const T37 &d)
     int s = 0;
     for (const T37 &ind : inds)
         s += (ind % d);
+
     return s;
 }
 
@@ -458,8 +463,7 @@ inline std::ostream &operator<<(std::ostream &os, const util::Stactor<T37, MAX> 
 {
     for (size_t i = 0; i < ts.size(); i++) {
         os << (ts[i].isAka5() ? 0 : ts[i].val());
-        if (i < ts.size() - 1
-                && ts[i].suit() != ts[i + 1].suit())
+        if (i < ts.size() - 1 && ts[i].suit() != ts[i + 1].suit())
             os << T34::charOf(ts[i].suit());
     }
 
@@ -614,5 +618,3 @@ const std::array<T37, 37> ORDER37
 
 
 #endif // SAKI_TILE_H
-
-

@@ -25,7 +25,7 @@ public:
     {
         struct Cy
         {
-            explicit Cy(const T37 &t, int e) : t(t), e(e) { }
+            explicit Cy(const T37 &t, int e) : t(t), e(e) {}
             T37 t;
             int e;
         };
@@ -107,17 +107,18 @@ private:
     struct Erwin
     {
         enum State { SUPERPOS, DEFINITE };
+
         const State state;
         const T37 tile;
         const std::unique_ptr<Exist> exA; // const-ptr, not ptr-to-const
         const std::unique_ptr<Exist> exB; // const-ptr, not ptr-to-const
-        Erwin() : state(SUPERPOS), exA(new Exist), exB(new Exist) { }
-        Erwin(const T37 &t) : state(DEFINITE), tile(t) { }
+        Erwin() : state(SUPERPOS), exA(new Exist), exB(new Exist) {}
+        Erwin(const T37 &t) : state(DEFINITE), tile(t) {}
         Erwin(const Erwin &copy)
             : state(copy.state), tile(copy.tile)
             , exA(copy.state == SUPERPOS ? new Exist(*copy.exA) : nullptr)
             , exB(copy.state == SUPERPOS ? new Exist(*copy.exB) : nullptr)
-        { }
+        {}
     };
 
 

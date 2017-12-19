@@ -152,5 +152,3 @@ void Kyouko::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
 
 
 } // namespace saki
-
-

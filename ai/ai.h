@@ -6,7 +6,7 @@
 
 
 #define AI_CTORS(Name) \
-    explicit Name(Who who) : Ai(who) { }
+    explicit Name(Who who) : Ai(who) {}
 
 
 
@@ -78,7 +78,7 @@ protected:
     Action thinkAttackStep(const TableView &view, const util::Range<Action> &outs);
     Action thinkAttackEff(const TableView &view, const util::Range<Action> &outs);
     Action thinkDefendChance(const TableView &view, const util::Range<Action> &outs,
-                                    const util::Stactor<Who, 3> &threats);
+                             const util::Stactor<Who, 3> &threats);
 
     bool afraid(const TableView &view, util::Stactor<Who, 3> &threats);
     bool testRiichi(const TableView &view, Limits &limits, Action &riichi);
@@ -101,5 +101,3 @@ protected:
 
 
 #endif // SAKI_AI_H
-
-

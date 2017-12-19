@@ -86,5 +86,3 @@ private:
 
 
 #endif // SAKI_KAN_CTX_H
-
-

@@ -41,7 +41,6 @@ bool Kuro::checkInit(Who who, const Hand &init, const Princess &princess, int it
     if (who != mSelf || iter > 100)
         return true;
 
-
     // drop extreme cases
     int doraCt = princess.getImageIndic(Princess::Indic::DORA) % init;
     int akaCt = init.ctAka5();
@@ -61,6 +60,7 @@ void Kuro::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     if (mCd) {
         if (who != mSelf)
             return;
+
         for (T34 d : doras)
             mount.lightA(d, -EJECT_MK, rinshan);
 
@@ -86,6 +86,7 @@ void Kuro::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         } else {
             for (T34 d : doras)
                 mount.lightA(d, -EJECT_MK, rinshan);
+
             mount.lightA(0_m, -EJECT_MK, rinshan);
             mount.lightA(0_p, -EJECT_MK, rinshan);
             mount.lightA(0_s, -EJECT_MK, rinshan);
@@ -192,6 +193,7 @@ void Ako::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     if (hand.ctAka5() + drids % hand < 1) {
         for (const T37 &t : drids)
             mount.lightA(t.dora(), 80);
+
         mount.lightA(T37(Suit::M, 0), 30);
         mount.lightA(T37(Suit::P, 0), 30);
         mount.lightA(T37(Suit::S, 0), 30);
@@ -224,6 +226,7 @@ int Ako::ittDist(const TileCount &closed, T34 head)
     } else if (v == 4) {
         for (int i = 1; i <= 3; i++)
             sum += (closed.ct(T34(s, i)) > 0);
+
         for (int i = 7; i <= 8; i++)
             sum += (closed.ct(T34(s, i)) > 0);
     } else if (v == 7) {
@@ -245,6 +248,7 @@ void Ako::oneDragTwo(Mount &mount, const TileCount &closed, T34 head)
             for (Suit s : { Suit::M, Suit::P, Suit::S }) {
                 if (s == head.suit())
                     continue;
+
                 thinFill(mount, closed, T34(s, head.val()));
             }
         }
@@ -253,6 +257,7 @@ void Ako::oneDragTwo(Mount &mount, const TileCount &closed, T34 head)
             for (int v : { 1, 4, 7 }) {
                 if (v == head.val())
                     continue;
+
                 thinFill(mount, closed, T34(head.suit(), v));
             }
         }
@@ -269,5 +274,3 @@ void Ako::thinFill(Mount &mount, const TileCount &closed, T34 head)
 
 
 } // namespace saki
-
-

@@ -4,8 +4,10 @@
 
 
 
-// SAKILOGY PLAY RECORD DOCUMENT
-// VERSION 3 STANDARD
+// *INDENT-OFF*
+//
+// PANCAKE MAHJONG PLAY RECORD DOCUMENT
+// VERSION 3
 //
 // {
 //     "version": 3
@@ -47,6 +49,8 @@
 // pon/daiminkan: "5p05", "0p55", "0p055"
 // ankan: "a5p"
 // kakan: "k0p", "k5p"
+//
+// *INDENT-ON*
 
 
 
@@ -59,6 +63,7 @@ void Replay::onTableStarted(const Table &table, uint32_t sd)
 {
     for (int w = 0; w < 4; w++)
         girls[w] = table.getGirl(Who(w)).getId();
+
     initPoints = table.getPoints();
     rule = table.getRule();
     seed = sd;
@@ -160,6 +165,7 @@ void Replay::onBarked(const Table &table, Who who, const M37 &bark, bool spin)
         int showAka5 = 0;
         for (int i = 0; i < static_cast<int>(bark.tiles().size()); i++)
             showAka5 += (i != bark.layIndex() && bark.tiles().at(i).isAka5());
+
         rounds.back().tracks[who.index()].in.emplace_back(In::PON, showAka5);
     } else if (bark.type() == M37::Type::DAIMINKAN) {
         rounds.back().tracks[who.index()].in.emplace_back(In::DAIMINKAN);
@@ -245,13 +251,14 @@ TableSnap Replay::look(int roundId, int turn)
     bool kanContext = false;
     Who lastDiscarder;
 
-    for (bool inStage = true; turn --> 0; inStage = !inStage) {
+    for (bool inStage = true; turn-- > 0; inStage = !inStage) {
         int step = steps[who.index()];
 
         // in-stage
         if (inStage) {
             if (step >= int(tracks[who.index()].in.size()))
                 break;
+
             const InAct &in = tracks[who.index()].in[step];
 
             if (toRiichi && in.act != In::RON) {
@@ -267,6 +274,7 @@ TableSnap Replay::look(int roundId, int turn)
                 snap.wallRemain--;
                 if (kanContext)
                     snap.deadRemain--;
+
                 break;
             case In::CHII_AS_LEFT:
             case In::CHII_AS_MIDDLE:
@@ -290,7 +298,8 @@ TableSnap Replay::look(int roundId, int turn)
                 } else {
                     snap.cannon = snap[snap.gunner.index()].river.back();
                 }
-                // fall-through
+
+                [[fallthrough]];
             case In::SKIP_IN:
                 turn++; // no consume
                 inStage = !inStage; // stay in in-stage
@@ -301,16 +310,19 @@ TableSnap Replay::look(int roundId, int turn)
         } else { // out-stage
             if (step >= int(tracks[who.index()].out.size()))
                 break;
+
             const OutAct &out = tracks[who.index()].out[step];
 
             steps[who.index()]++;
 
+            // *INDENT-OFF*
             auto checkFlip = [&snap, &round, &toFlip]() {
                 if (toFlip && snap.drids.size() < round.drids.size()) {
                     snap.drids.emplace_back(round.drids[snap.drids.size()]);
                     toFlip = false;
                 }
             };
+            // *INDENT-ON*
 
             // assumption: snap.gunner is only read after tsumo or ron
             snap.gunner = out.act == Out::TSUMO ? Who() : who;
@@ -356,6 +368,7 @@ TableSnap Replay::look(int roundId, int turn)
                 checkFlip(); // flipping of previous kan
                 if (snap.drids.size() < round.drids.size()) // flip this kan
                     snap.drids.push_back(round.drids[snap.drids.size()]);
+
                 break;
             case Out::KAKAN:
                 lookKakan(snap, hands[who.index()], out.t37, who);
@@ -460,6 +473,7 @@ void Replay::lookPon(TableSnap &snap, TileCount &hand, int showAka5,
     T37 t2(pick.id34());
     if (showAka5 >= 1)
         t1 = t1.toAka5();
+
     if (showAka5 >= 2)
         t2 = t2.toAka5();
 
@@ -498,6 +512,7 @@ void Replay::lookDaiminkan(TableSnap &snap, TileCount &hand, Who who, Who lastDi
 
     for (const T37 t : pushes)
         hand.inc(t, -1);
+
     snap[lastDiscarder.index()].river.pop_back();
 }
 
@@ -511,6 +526,7 @@ void Replay::lookAnkan(TableSnap &snap, TileCount &hand, T34 t34, Who who)
             for (int i = 0; i < 4; i++)
                 if (i < hand.ct(pushes[i].toAka5()))
                     pushes[i] = pushes[i].toAka5();
+
         // four in hand
         snap[w].barks.pushBack(M37::ankan(pushes[0], pushes[1], pushes[2], pushes[3]));
         hand.inc(pushes[0], -1);
@@ -557,5 +573,3 @@ void Replay::lookKakan(TableSnap &snap, TileCount &hand, const T37 &t37, Who who
 
 
 } // namespace saki
-
-

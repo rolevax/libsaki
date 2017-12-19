@@ -30,5 +30,3 @@ private:
 
 
 #endif // SAKI_GIRLS_MIYAMORI_H
-
-

@@ -73,5 +73,3 @@ void Toyone::onRiichiEstablished(const Table &table, Who who)
 
 
 } // namespace saki
-
-

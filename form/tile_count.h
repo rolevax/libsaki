@@ -21,7 +21,7 @@ public:
 
     struct Explain4Closed
     {
-        explicit Explain4Closed(T34 p) : pair(p) { }
+        explicit Explain4Closed(T34 p) : pair(p) {}
         T34 pair;
         std::vector<T34> triplets;
         std::vector<T34> sequences;
@@ -83,7 +83,7 @@ public:
     int sum() const;
 
     template<typename Ret, typename... Args>
-    Ret peekDraw(T34 t, Ret (TileCount::*f)(Args...) const, Args... args) const
+    Ret peekDraw(T34 t, Ret (TileCount::*f) (Args...) const, Args... args) const
     {
         T34Delta guard(mutableCounts(), t, 1);
         (void) guard;
@@ -136,5 +136,3 @@ private:
 
 
 #endif // SAKI_TILECOUNT_H
-
-

@@ -27,5 +27,3 @@ Action AiToyone::think(const TableView &view, Limits &limits)
 
 
 } // namespace saki
-
-

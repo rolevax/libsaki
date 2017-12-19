@@ -85,15 +85,15 @@ public:
     bool isCpdmk() const
     {
         return mType == Type::CHII
-                || mType == Type::PON
-                || mType == Type::DAIMINKAN;
+               || mType == Type::PON
+               || mType == Type::DAIMINKAN;
     }
 
     bool isKan() const
     {
         return mType == Type::DAIMINKAN
-                || mType == Type::ANKAN
-                || mType == Type::KAKAN;
+               || mType == Type::ANKAN
+               || mType == Type::KAKAN;
     }
 
     bool has(T34 t) const
@@ -131,6 +131,7 @@ inline std::ostream &operator<<(std::ostream &os, const M37 &m)
     for (const T37 &t : m.tiles()) {
         os << (t.isAka5() ? 0 : t.val());
     }
+
     os << T34::charOf(m[0].suit());
     return os;
 }

@@ -33,6 +33,3 @@ struct Rule
 
 
 #endif // SAKI_RULE_H
-
-
-

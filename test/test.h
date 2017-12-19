@@ -15,6 +15,7 @@ class TestScope
 public:
     TestScope(const char *str, bool nl = false);
     ~TestScope();
+
 private:
     std::chrono::steady_clock::time_point mStart;
 };
@@ -39,5 +40,3 @@ void testTable();
 
 
 #endif // SAKI_TEST_H
-
-

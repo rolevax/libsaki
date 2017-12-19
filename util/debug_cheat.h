@@ -10,9 +10,9 @@
 ///
 /// uncomment cheat flags to enable debug-cheat build
 ///
-//#define LIBSAKI_CHEAT_ROUND
-//#define LIBSAKI_CHEAT_PRINCESS
-//#define LIBSAKI_CHEAT_AI
+// #define LIBSAKI_CHEAT_ROUND
+// #define LIBSAKI_CHEAT_PRINCESS
+// #define LIBSAKI_CHEAT_AI
 
 #ifdef LIBSAKI_CHEAT_ROUND
 #ifdef NDEBUG
@@ -59,10 +59,10 @@ const uint32_t state = 1291430400;
 using namespace tiles37;
 
 const std::array<std::vector<T37>, 4> inits = {
-    std::vector<T37> {  1_p, 2_p, 3_p, 1_s, 2_s, 3_s, 7_s, 8_s, 9_s, 2_p, 3_p, 5_p, 5_p   },
+    std::vector<T37> { 1_p, 2_p, 3_p, 1_s, 2_s, 3_s, 7_s, 8_s, 9_s, 2_p, 3_p, 5_p, 5_p },
     std::vector<T37> {},
-    std::vector<T37> {  },
-    std::vector<T37> {  }
+    std::vector<T37> {},
+    std::vector<T37> {}
 };
 
 const std::vector<T37> wall = {
@@ -83,5 +83,3 @@ const std::vector<T37> dead = {
 
 
 #endif // SAKI_DEBUG_CHEAT_H
-
-

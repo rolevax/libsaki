@@ -10,7 +10,7 @@
 
 
 #define GIRL_CTORS(Name) \
-    Name(Who who, Id id) : Girl(who, id) { }; \
+    Name(Who who, Id id) : Girl(who, id) {}; \
     Name(const Name &copy) = default; \
     Name *clone() const override { return new Name(*this); }
 
@@ -43,6 +43,7 @@ struct IrsCheckRow
 class Girl
 {
 public:
+    // *INDENT-OFF*
     enum class Id
     {
         DOGE = 0,
@@ -71,6 +72,7 @@ public:
             MIHOROGI_UTA = 990011, TAKUWA_RIO = 990014,
         KAJINO_YUI = 990024
     };
+    // *INDENT-ON*
 
     enum NmSkill
     {
@@ -130,5 +132,3 @@ protected:
 
 
 #endif // SAKI_GIRL_H
-
-

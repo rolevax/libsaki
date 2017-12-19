@@ -60,26 +60,26 @@ private:
     bool mConsumedSecondHuri = false;
 
     std::array<IrsCheckRow, size_t(Cloud::NUM_CLOUD)> mClouds =
-            std::array<IrsCheckRow, size_t(Cloud::NUM_CLOUD)> {
-        IrsCheckRow{ false, false, "SAWAYA_C_BLUE", false, false },
-        IrsCheckRow{ false, false, "SAWAYA_C_YELLOW", false, false },
-        IrsCheckRow{ false, false, "SAWAYA_C_RED", true, false },
-        IrsCheckRow{ true, true, "SAWAYA_C_RED_SELF", false, true },
-        IrsCheckRow{ true, true, "SAWAYA_C_RED_RIVALS", false, false },
-        IrsCheckRow{ false, false, "SAWAYA_C_WHITE", true, false },
-        IrsCheckRow{ false, false, "SAWAYA_C_BLACK", false, false },
+        std::array<IrsCheckRow, size_t(Cloud::NUM_CLOUD)> {
+        IrsCheckRow { false, false, "SAWAYA_C_BLUE", false, false },
+        IrsCheckRow { false, false, "SAWAYA_C_YELLOW", false, false },
+        IrsCheckRow { false, false, "SAWAYA_C_RED", true, false },
+        IrsCheckRow { true, true, "SAWAYA_C_RED_SELF", false, true },
+        IrsCheckRow { true, true, "SAWAYA_C_RED_RIVALS", false, false },
+        IrsCheckRow { false, false, "SAWAYA_C_WHITE", true, false },
+        IrsCheckRow { false, false, "SAWAYA_C_BLACK", false, false },
     };
 
     std::array<IrsCheckRow, size_t(Kamuy::NUM_KAMUY)> mKamuys =
-            std::array<IrsCheckRow, size_t(Kamuy::NUM_KAMUY)> {
-        IrsCheckRow{ false, false, "SAWAYA_K_PA_KOR", true, false },
-        IrsCheckRow{ true, true, "SAWAYA_K_PA_KOR_R", false, true },
-        IrsCheckRow{ true, true, "SAWAYA_K_PA_KOR_C", false, false },
-        IrsCheckRow{ true, true, "SAWAYA_K_PA_KOR_L", false, false },
-        IrsCheckRow{ false, false, "SAWAYA_K_AT_KOR", true, false },
-        IrsCheckRow{ false, false, "SAWAYA_K_HOYAW", false, false },
-        IrsCheckRow{ false, false, "SAWAYA_K_HURI", true, false },
-        IrsCheckRow{ false, false, "SAWAYA_K_PAWCI", false, false },
+        std::array<IrsCheckRow, size_t(Kamuy::NUM_KAMUY)> {
+        IrsCheckRow { false, false, "SAWAYA_K_PA_KOR", true, false },
+        IrsCheckRow { true, true, "SAWAYA_K_PA_KOR_R", false, true },
+        IrsCheckRow { true, true, "SAWAYA_K_PA_KOR_C", false, false },
+        IrsCheckRow { true, true, "SAWAYA_K_PA_KOR_L", false, false },
+        IrsCheckRow { false, false, "SAWAYA_K_AT_KOR", true, false },
+        IrsCheckRow { false, false, "SAWAYA_K_HOYAW", false, false },
+        IrsCheckRow { false, false, "SAWAYA_K_HURI", true, false },
+        IrsCheckRow { false, false, "SAWAYA_K_PAWCI", false, false },
     };
 };
 
@@ -90,5 +90,3 @@ private:
 
 
 #endif // SAKI_GIRLS_USUZAN_H
-
-

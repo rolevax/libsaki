@@ -42,5 +42,3 @@ public:
 
 
 #endif // SAKI_AI_SHIRAITODAI_H
-
-

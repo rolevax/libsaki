@@ -35,9 +35,9 @@ bool Princess::imagedAsDora(T34 t, Princess::Indic which) const
 bool Princess::mayHaveDora(T34 t) const
 {
     return imagedAsDora(t, Indic::DORA)
-            || imagedAsDora(t, Indic::URADORA)
-            || imagedAsDora(t, Indic::KANDORA)
-            || imagedAsDora(t, Indic::KANURA);
+           || imagedAsDora(t, Indic::URADORA)
+           || imagedAsDora(t, Indic::KANDORA)
+           || imagedAsDora(t, Indic::KANURA);
 }
 
 bool Princess::hasImageIndic(Indic which) const
@@ -70,6 +70,7 @@ std::array<TileCount, 4> Princess::nonMonkey()
     for (int w = 0; w < 4; w++)
         for (const T37 &t : cheat::inits[w])
             res[w].inc(mMount.initPopExact(t), 1);
+
 #else
     std::bitset<Girl::NUM_NM_SKILL> presence;
 
@@ -99,6 +100,7 @@ std::array<TileCount, 4> Princess::nonMonkey()
         if (who.somebody())
             mGirls[who.index()]->nonMonkey(mRand, res[who.index()], mMount, presence, *this);
     }
+
 #endif
 
     return res;
@@ -123,9 +125,11 @@ std::array<Hand, 4> Princess::monkey(std::array<TileCount, 4> &inits)
             mount.initFill(mRand, init, exist);
             Hand hand(init);
 
+            // *INDENT-OFF*
             auto pass = [w, &hand, this, &mount, iter](int checker) {
                 return mGirls[checker]->checkInit(Who(w), hand, *this, iter);
             };
+            // *INDENT-ON*
 
             if (pass(0) && pass(1) && pass(2) && pass(3)) {
                 mMount = mount;
@@ -150,11 +154,13 @@ void Princess::doraMatters()
     std::array<Fix, 4> fixes;
     fixes.fill(Fix::NONE);
 
+    // *INDENT-OFF*
     auto update = [&fixes](Indic which, Fix rhs) {
         Fix &lhs = fixes[int(which)];
         // overwrite by priority
         lhs = std::max(lhs, rhs);
     };
+    // *INDENT-ON*
 
     // exluded by numeric value, regardless of red/black
     std::array<std::array<bool, 34>, 4> ex34ss;
@@ -227,6 +233,7 @@ void Princess::fixIndicator(Indic which, const std::array<bool, 34> &exceptId34s
     T37 indic(mImageIndics[i].id34());
     if (mMount.remainA(indic) == 0)
         indic = indic.toAka5();
+
     mMount.loadB(indic, 1);
     mImageIndics[static_cast<int>(which)] = indic;
     mHasImageIndics[static_cast<int>(which)] = true;
@@ -247,8 +254,8 @@ T34 Princess::pickIndicator(const std::array<bool, 34> &ex34s, bool wall)
 
     for (T34 t : tiles34::ALL34) {
         if (!ex34s[t.id34()]
-                && mMount.remainA(t) > 0
-                && (!wall || mMount.remainA(t.dora()) == 4)) {
+            && mMount.remainA(t) > 0
+            && (!wall || mMount.remainA(t.dora()) == 4)) {
             indicatable.push_back(t);
         }
     }
@@ -260,5 +267,3 @@ T34 Princess::pickIndicator(const std::array<bool, 34> &ex34s, bool wall)
 
 
 } // namespace saki
-
-

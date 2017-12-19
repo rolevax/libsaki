@@ -133,7 +133,7 @@ const Form::Yakus &Form::yakus() const
 
 std::vector<const char *> Form::keys() const
 {
-    std::vector<const char*> res;
+    std::vector<const char *> res;
 
     for (int i = 0; i < NUM_YAKUS; i++)
         if (mYakus[i])
@@ -146,14 +146,19 @@ ManganType Form::manganType() const
 {
     if (mBase == 2000)
         return ManganType::MG;
+
     if (mBase == 3000)
         return ManganType::HNM;
+
     if (mBase == 4000)
         return ManganType::BM;
+
     if (mBase == 6000)
         return ManganType::SBM;
+
     if (mBase == 8000)
         return ManganType::KZEYKM;
+
     return ManganType::HR;
 }
 
@@ -168,7 +173,7 @@ int Form::netLoss(bool explode) const
     int b = base();
 
     res = mDealerWin ? (mRon ? b * 6 : b * 2)
-                     : (mRon ? b * 4 : (explode ? b * 2 : b));
+                             : (mRon ? b * 4 : (explode ? b * 2 : b));
 
     if (res % 100 != 0)
         res = res - res % 100 + 100;
@@ -331,12 +336,14 @@ std::string Form::charge() const
     if (mYakuman) {
         if (mExtraRound != 0)
             oss << mExtraRound << "Hb   ";
+
         oss << "Ykm ";
     } else {
         oss << mFu << "Fu ";
         oss << mHan << "Han";
         if (mExtraRound != 0)
             oss << " " << mExtraRound << "Hb";
+
         oss << "   " << manganName[manganType()];
     }
 
@@ -385,8 +392,8 @@ void Form::init4(const FormCtx &ctx, const Rule &rule,
         int tempHan = calcHan(ys);
         int tempBase = calcBase(tempFu, tempHan);
         if (tempBase > mBase
-                || (tempBase == mBase && tempHan > mHan)
-                || (tempBase == mBase && tempHan == mHan && tempFu > mFu)) {
+            || (tempBase == mBase && tempHan > mHan)
+            || (tempBase == mBase && tempHan == mHan && tempFu > mFu)) {
             mYakus = ys;
             mBase = tempBase;
             mFu = tempFu;
@@ -526,6 +533,7 @@ void Form::checkAge4(Form::Yakus &ys, const Explain4 &exp, bool menzen) const
         none = none && !yao;
         if (!all && !none) // mixture, no more hope
             return;
+
         hasZ = hasZ || it->isZ();
     }
 
@@ -547,7 +555,7 @@ void Form::checkPinfu4(Form::Yakus &ys, const FormCtx &ctx,
                        const Explain4 &exp, bool menzen) const
 {
     if (menzen && exp.numS() == 4 && exp.wait() == Wait::BIFACE
-            && !exp.pair().isYakuhai(ctx.selfWind, ctx.roundWind)) {
+        && !exp.pair().isYakuhai(ctx.selfWind, ctx.roundWind)) {
         ys.set(Yaku::PF);
     }
 }
@@ -578,9 +586,10 @@ void Form::checkCup4(Form::Yakus &ys, const Explain4 &exp, bool menzen) const
 {
     if (!menzen)
         return;
+
     if (exp.numS() == 4
-            && exp.heads().at(0) == exp.heads().at(1)
-            && exp.heads().at(2) == exp.heads().at(3)) {
+        && exp.heads().at(0) == exp.heads().at(1)
+        && exp.heads().at(2) == exp.heads().at(3)) {
         ys.set(Yaku::RPK);
     } else if (exp.numS() >= 2) {
         for (auto it = exp.sb(); it + 1 != exp.se(); ++it) {
@@ -618,9 +627,11 @@ void Form::checkYakuhai4(Form::Yakus &ys, const FormCtx &ctx, const Explain4 &ex
 
 void Form::checkIttsuu4(Form::Yakus &ys, const Explain4 &exp, bool menzen) const
 {
+    // *INDENT-OFF*
     auto check = [](T34 l, T34 m, T34 r) -> bool {
         return l.suit() == r.suit() && l.val() == 1 && m.val() == 4 && r.val() == 7;
     };
+    // *INDENT-ON*
 
     const auto &h = exp.heads(); // save typing
 
@@ -629,20 +640,22 @@ void Form::checkIttsuu4(Form::Yakus &ys, const Explain4 &exp, bool menzen) const
             ys.set(menzen ? Yaku::IKTK : Yaku::IKTK_K);
     } else if (exp.numS() == 4) {
         if (check(h[0], h[1], h[2])
-                || check(h[0], h[1], h[3])
-                || check(h[0], h[2], h[3])
-                || check(h[1], h[2], h[3]))
+            || check(h[0], h[1], h[3])
+            || check(h[0], h[2], h[3])
+            || check(h[1], h[2], h[3]))
             ys.set(menzen ? Yaku::IKTK : Yaku::IKTK_K);
     }
 }
 
 void Form::checkSanshoku4(Form::Yakus &ys, const Explain4 &exp, bool menzen) const
 {
+    // *INDENT-OFF*
     auto check = [](T34 l, T34 m, T34 r) -> bool {
         // inequality is transitive when it is sorted
         return l.suit() != m.suit() && m.suit() != r.suit()
                 && l.val() == m.val() && m.val() == r.val();
     };
+    // *INDENT-ON*
 
     const auto &h = exp.heads(); // save typing
 
@@ -651,9 +664,9 @@ void Form::checkSanshoku4(Form::Yakus &ys, const Explain4 &exp, bool menzen) con
             ys.set(menzen ? Yaku::SSKDJ : Yaku::SSKDJ_K);
     } else if (exp.numS() == 4) {
         if (check(h[0], h[1], h[2])
-                || check(h[0], h[1], h[3])
-                || check(h[0], h[2], h[3])
-                || check(h[1], h[2], h[3]))
+            || check(h[0], h[1], h[3])
+            || check(h[0], h[2], h[3])
+            || check(h[1], h[2], h[3]))
             ys.set(menzen ? Yaku::SSKDJ : Yaku::SSKDJ_K);
     }
 }
@@ -662,19 +675,23 @@ void Form::checkX34s4(Form::Yakus &ys, const Explain4 &exp) const
 {
     if (exp.numX34() == 4)
         ys.set(Yaku::TTH);
+
     if (exp.numC3() + exp.numC4() == 3)
         ys.set(Yaku::S3AK);
+
     if (exp.numO4() + exp.numC4() == 3)
         ys.set(Yaku::S3KT);
 }
 
 void Form::checkSanshokudoukou4(Form::Yakus &ys, const Explain4 &exp) const
 {
+    // *INDENT-OFF*
     auto check = [](T34 l, T34 m, T34 r) -> bool {
         // suits must different (except vertical overflow bug)
         return l.isNum() && m.isNum() && r.isNum()
                 && l.val() == m.val() && m.val() == r.val();
     };
+    // *INDENT-ON*
 
     const auto &h = exp.heads(); // save typing
 
@@ -683,9 +700,9 @@ void Form::checkSanshokudoukou4(Form::Yakus &ys, const Explain4 &exp) const
             ys.set(Yaku::SSKDK);
     } else if (exp.numX34() == 4) {
         if (check(h[0], h[1], h[2])
-                || check(h[0], h[1], h[3])
-                || check(h[0], h[2], h[3])
-                || check(h[1], h[2], h[3]))
+            || check(h[0], h[1], h[3])
+            || check(h[0], h[2], h[3])
+            || check(h[1], h[2], h[3]))
             ys.set(Yaku::SSKDK);
     }
 }
@@ -734,10 +751,11 @@ Form::Yakus Form::calcYakuman4(const FormCtx &ctx, const Explain4 &exp,
 
     // Chinroutou
     if (exp.numX34() == 4 && util::all(heads, [](T34 t) { return t.isNum19(); })
-            && exp.pair().isNum19())
+        && exp.pair().isNum19())
         res.set(Yaku::CRT);
 
     // Ryuuiisou
+    // *INDENT-OFF*
     auto green = [](T34 t) {
         if (t == T34(2, Suit::Y))
             return true;
@@ -746,10 +764,11 @@ Form::Yakus Form::calcYakuman4(const FormCtx &ctx, const Explain4 &exp,
         int val = t.val();
         return val == 2 || val == 3 || val == 4 || val == 6 || val == 8;
     };
+    // *INDENT-ON*
     auto greenSeq = [](T34 t) { return t == T34(2, Suit::S); };
     if (green(exp.pair())
-            && util::all(exp.sb(), exp.se(), greenSeq)
-            && util::all(exp.x34b(), exp.x34e(), green))
+        && util::all(exp.sb(), exp.se(), greenSeq)
+        && util::all(exp.x34b(), exp.x34e(), green))
         res.set(Yaku::RIS);
 
     // Chuurenpoutou
@@ -765,13 +784,12 @@ Form::Yakus Form::calcYakuman4(const FormCtx &ctx, const Explain4 &exp,
         }
 
         if (totalLook == 411111113 || totalLook == 321111113 ||
-                 totalLook == 312111113 || totalLook == 311211113 ||
-                 totalLook == 311121113 || totalLook == 311112113 ||
-                 totalLook == 311111213 || totalLook == 311111123 ||
-                 totalLook == 311111114)
+            totalLook == 312111113 || totalLook == 311211113 ||
+            totalLook == 311121113 || totalLook == 311112113 ||
+            totalLook == 311111213 || totalLook == 311111123 ||
+            totalLook == 311111114)
             res.set(waitLook == 311111113 || anyWait ? Yaku::CRPT_A : Yaku::CRPT);
     }
-
 
     // Suukantsu
     if (exp.numO4() + exp.numC4() == 4)
@@ -817,10 +835,13 @@ int Form::calcFu(const FormCtx &ctx, const Explain4 &exp, bool menzen) const
 
     for (auto it = exp.o3b(); it != exp.o3e(); ++it)
         res += 2 + 2 * it->isYao();
+
     for (auto it = exp.c3b(); it != exp.c3e(); ++it)
         res += 4 + 4 * it->isYao();
+
     for (auto it = exp.o4b(); it != exp.o4e(); ++it)
         res += 8 + 8 * it->isYao();
+
     for (auto it = exp.c4b(); it != exp.c4e(); ++it)
         res += 16 + 16 * it->isYao();
 
@@ -830,6 +851,7 @@ int Form::calcFu(const FormCtx &ctx, const Explain4 &exp, bool menzen) const
 
     if (res == 20 && mRon) // there's no 20-fu ron
         res = 30;
+
     if (res % 10 != 0) // 10-fu-ceiling
         res = res - res % 10 + 10;
 
@@ -889,5 +911,3 @@ int Form::calcBase(int fu, int han) const
 
 
 } // namespace saki
-
-

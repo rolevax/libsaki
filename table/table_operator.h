@@ -15,7 +15,7 @@ class Table;
 class TableOperator
 {
 public:
-    explicit TableOperator(Who self) : mSelf(self) { }
+    explicit TableOperator(Who self) : mSelf(self) {}
     explicit TableOperator(const TableOperator &copy) = default;
     TableOperator &operator=(const TableOperator &assign) = default;
     virtual ~TableOperator() = default;
@@ -28,7 +28,7 @@ protected:
 
 
 
-}
+} // namespace saki
 
 
 

@@ -57,5 +57,3 @@ public:
 
 
 #endif // SAKI_GIRLS_OTHER_H
-
-

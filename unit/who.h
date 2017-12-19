@@ -17,7 +17,7 @@ class Who
 public:
     static const int HUMAN = 0;
 
-    Who() : mWho(NOBODY) { }
+    Who() : mWho(NOBODY) {}
 
     explicit Who(int who)
         : mWho(who)
@@ -31,7 +31,7 @@ public:
         assert(0 <= mWho && mWho <= NOBODY);
     }
 
-    Who(const Who& copy) = default;
+    Who(const Who &copy) = default;
 
     int index() const
     {
@@ -143,5 +143,3 @@ private:
 
 
 #endif // SAKI_WHO_H
-
-

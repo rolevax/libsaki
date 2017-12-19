@@ -129,5 +129,3 @@ public:
 
 
 #endif // SAKI_TABLEOBSERVER_H
-
-

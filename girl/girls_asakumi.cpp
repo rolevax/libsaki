@@ -24,6 +24,7 @@ bool Shino::checkInit(Who who, const Hand &init, const Princess &princess, int i
     for (T34 t : tiles34::ALL34) {
         if (init.closed().ct(t) >= 3)
             return false; // no triplet
+
         if (init.closed().ct(t) == 2)
             pairCt++;
     }
@@ -36,11 +37,10 @@ void Shino::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     if (who != mSelf || rinshan)
         return;
 
-
     const Hand &hand = table.getHand(mSelf);
 
     bool south3 = table.getRule().roundLimit - table.getRound() <= 2
-            && table.getRank(mSelf) != 1;
+        && table.getRank(mSelf) != 1;
     int posMk = south3 ? 1000 : 100;
     int negMk = south3 ? -40 : 0;
     int accelMk = south3 ? 400 : 10;
@@ -49,8 +49,10 @@ void Shino::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         using namespace tiles34;
         if (hand.hasEffA(1_s))
             mount.lightA(1_s, 10 * posMk);
+
         if (table.getFuriten(mSelf).any())
             accelMk += 4 * posMk;
+
         accelerate(mount, hand, table.getRiver(mSelf), accelMk);
     } else {
         powerPinfu(hand, table.getRiver(mSelf), mount, posMk);
@@ -139,8 +141,10 @@ void Shino::powerIipei(const Hand &hand, const River &river, Mount &mount, int p
                 drags.reset();
                 if (l < 2)
                     drags.set(lt.id34());
+
                 if (m < 2)
                     drags.set(mt.id34());
+
                 if (r < 2)
                     drags.set(rt.id34());
             }
@@ -168,7 +172,7 @@ bool Shino::power3sk(const Hand &hand, Mount &mount, int posMk, int negMk)
         };
         std::array<bool, 9> having;
         std::transform(ts.begin(), ts.end(), having.begin(),
-                       [&closed](T34 t){ return closed.ct(t) != 0; });
+                       [&closed](T34 t) { return closed.ct(t) != 0; });
         int sum = std::accumulate(having.begin(), having.end(), 0);
         if (sum == 9) { // had sanshoku already
             maxSum = 9;
@@ -310,12 +314,15 @@ void Yue::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
 void Yue::dye(const TileCount &closed, Mount &mount, int mk)
 {
     std::array<int, 3> ofss { 0, 9, 18 };
+    // *INDENT-OFF*
     auto sum = [&closed](int ofs) {
         int s = 0;
         for (int i = 0; i < 9; i++)
             s += closed.ct(T34(ofs + i));
+
         return s;
     };
+    // *INDENT-ON*
     std::array<int, 3> sums;
     std::transform(ofss.begin(), ofss.end(), sums.begin(), sum);
     int ofs = ofss[std::max_element(sums.begin(), sums.end()) - sums.begin()];
@@ -333,6 +340,7 @@ bool Yue::dyed(const Hand &hand)
                 suitCt++;
                 if (suitCt >= 2)
                     return false;
+
                 break; // go for next suit
             }
         }
@@ -344,9 +352,11 @@ bool Yue::dyed(const Hand &hand)
 int Yue::countGuest(const Hand &hand, T34 g)
 {
     // count 'closed' only
+    // *INDENT-OFF*
     auto isAnkan = [g](const M37 &m) {
         return m.type() == M37::Type::ANKAN && m[0] == g;
     };
+    // *INDENT-ON*
 
     if (util::any(hand.barks(), isAnkan))
         return 4;
@@ -357,5 +367,3 @@ int Yue::countGuest(const Hand &hand, T34 g)
 
 
 } // namespace saki
-
-

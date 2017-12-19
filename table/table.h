@@ -86,13 +86,13 @@ class Table : private TablePrivate
 public:
     explicit Table(const std::array<int, 4> &points,
                    const std::array<int, 4> &girlIds,
-                   const std::array<TableOperator*, 4> &operators,
-                   const std::vector<TableObserver*> &observers,
+                   const std::array<TableOperator *, 4> &operators,
+                   const std::vector<TableObserver *> &observers,
                    Rule rule, Who tempDealer, const TableEnv &env);
 
     explicit Table(const Table &orig,
-                   const std::array<TableOperator*, 4> &operators,
-                   const std::vector<TableObserver*> &observers,
+                   const std::array<TableOperator *, 4> &operators,
+                   const std::vector<TableObserver *> &observers,
                    Who toki, const Choices &clean);
 
     Table(const Table &copy) = delete;
@@ -177,8 +177,8 @@ private:
 
 private:
     std::array<std::unique_ptr<Girl>, 4> mGirls;
-    std::array<TableOperator*, 4> mOperators;
-    std::vector<TableObserver*> mObservers;
+    std::array<TableOperator *, 4> mOperators;
+    std::vector<TableObserver *> mObservers;
 };
 
 
@@ -188,5 +188,3 @@ private:
 
 
 #endif // SAKI_TABLE_H
-
-

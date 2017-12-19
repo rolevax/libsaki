@@ -153,5 +153,3 @@ private:
 
 
 #endif // SAKI_GIRLS_SHIRAITODAI_H
-
-

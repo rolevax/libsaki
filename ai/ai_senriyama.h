@@ -24,5 +24,3 @@ public:
 
 
 #endif // SAKI_AI_SENRIYAMA_H
-
-

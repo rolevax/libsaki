@@ -21,7 +21,7 @@ template<typename T>
 class Range
 {
 public:
-    explicit Range(const T *begin, const T *end) : mBegin(begin) , mEnd(end) {}
+    explicit Range(const T *begin, const T *end) : mBegin(begin), mEnd(end) {}
     const T *begin() const noexcept { return mBegin; }
     const T *end() const noexcept { return mEnd; }
     bool empty() const noexcept { return mBegin == mEnd; }
@@ -52,7 +52,7 @@ public:
     // not good to place this func as static member
     // extract it to somewhere else
     static Stactor<T, MAX> allMaxs(const Range<T> &range,
-                                   std::function<int(const T&)> measure, int floor)
+                                   std::function<int(const T &)> measure, int floor)
     {
         int max = floor;
         Stactor<T, MAX> res;
@@ -72,7 +72,7 @@ public:
         return res;
     }
 
-	using ArrayType = std::array<T, MAX>;
+    using ArrayType = std::array<T, MAX>;
 
     using Iterator = typename ArrayType::iterator;
     using ConstIterator = typename ArrayType::const_iterator;
@@ -81,16 +81,16 @@ public:
     using value_type = T;
 
     T &operator[](size_t i)
-	{
-		assert(i < mSize);
-		return mArray[i];
-	}
+    {
+        assert(i < mSize);
+        return mArray[i];
+    }
 
     const T &operator[](size_t i) const
-	{
-		assert(i < mSize);
-		return mArray[i];
-	}
+    {
+        assert(i < mSize);
+        return mArray[i];
+    }
 
     T &at(size_t i)
     {
@@ -113,9 +113,9 @@ public:
     }
 
     Iterator begin() noexcept
-	{
-		return mArray.begin();
-	}
+    {
+        return mArray.begin();
+    }
 
     ConstIterator begin() const noexcept
     {
@@ -123,9 +123,9 @@ public:
     }
 
     Iterator end() noexcept
-	{
-		return mArray.begin() + mSize;
-	}
+    {
+        return mArray.begin() + mSize;
+    }
 
     ConstIterator end() const noexcept
     {
@@ -213,11 +213,11 @@ public:
     {
         for (size_t i = 0; i < mSize; i++)
             if (pred(mArray[i]))
-                exile(i--); // stay
+                exile(i--);
     }
 
 private:
-	ArrayType mArray;
+    ArrayType mArray;
     size_t mSize = 0;
 };
 
@@ -233,5 +233,3 @@ private:
 
 
 #endif // SAKI_UTIL_STACTOR_H
-
-

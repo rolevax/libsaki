@@ -53,5 +53,3 @@ private:
 
 
 #endif // SAKI_GIRLS_EISUI_H
-
-

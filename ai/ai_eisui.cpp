@@ -12,7 +12,7 @@ Action AiHatsumi::think(const TableView &view, Limits &limits)
     if (view.getSelfWind(mSelf) == 4) {
         using namespace tiles34;
 
-        switch  (view.myChoices().mode()) {
+        switch (view.myChoices().mode()) {
         case Choices::Mode::DRAWN:
             limits.addNoOut(1_f);
             limits.addNoOut(2_f);
@@ -31,6 +31,7 @@ Action AiHatsumi::think(const TableView &view, Limits &limits)
                     return Ai::thinkAttackStep(view, list.range());
                 }
             }
+
             break;
         default:
             break;
@@ -56,5 +57,3 @@ Action AiKasumi::forward(const TableView &view)
 
 
 } // namespace saki
-
-

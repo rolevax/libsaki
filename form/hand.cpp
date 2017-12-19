@@ -129,11 +129,13 @@ int Hand::ct(T34 t) const
 int Hand::ctAka5() const
 {
     int inClosed = mClosed.ctAka5();
+    // *INDENT-OFF*
     auto aka5InMeld = [](int s, const M37 &m) {
         const auto &ts = m.tiles();
         auto isAka5 = [](const T37 &t) { return t.isAka5(); };
         return s + std::count_if(ts.begin(), ts.end(), isAka5);
     };
+    // *INDENT-ON*
     int inBarks = std::accumulate(mBarks.begin(), mBarks.end(), 0, aka5InMeld);
     int inDrawn = mHasDrawn ? mDrawn.isAka5() : 0;
     return inClosed + inBarks + inDrawn;
@@ -152,9 +154,11 @@ bool Hand::canChiiAsLeft(T34 t) const
     if (!(mClosed.ct(t.next()) > 0 && mClosed.ct(t.nnext()) > 0))
         return false; // no material you eat a J8
 
+    // *INDENT-OFF*
     return hasSwappableAfterChii(t.next(), t.nnext(), [t](T34 out){
         return t != out && !(t ^ out);
     });
+    // *INDENT-ON*
 }
 
 bool Hand::canChiiAsMiddle(T34 t) const
@@ -165,9 +169,11 @@ bool Hand::canChiiAsMiddle(T34 t) const
     if (!(mClosed.ct(t.prev()) > 0 && mClosed.ct(t.next()) > 0))
         return false; // no material you eat a J8
 
+    // *INDENT-OFF*
     return hasSwappableAfterChii(t.prev(), t.next(), [t](T34 out){
         return t != out;
     });
+    // *INDENT-ON*
 }
 
 bool Hand::canChiiAsRight(T34 t) const
@@ -178,9 +184,11 @@ bool Hand::canChiiAsRight(T34 t) const
     if (!(mClosed.ct(t.pprev()) > 0 && mClosed.ct(t.prev()) > 0))
         return false; // no material you eat a J8
 
+    // *INDENT-OFF*
     return hasSwappableAfterChii(t.pprev(), t.prev(), [t](T34 out){
         return out != t && !(out ^ t);
     });
+    // *INDENT-ON*
 }
 
 bool Hand::canPon(T34 t) const
@@ -204,23 +212,27 @@ bool Hand::canCp(T34 pick, const Action &action) const
     case AC::CHII_AS_LEFT:
         if (!canChiiAsLeft(pick))
             return false;
+
         kuikae = (pick ^ out);
         needShow = ((pick | out) || (pick || out)) && tension;
         break;
     case AC::CHII_AS_MIDDLE:
         if (!canChiiAsMiddle(pick))
             return false;
+
         needShow = ((out | pick) || (pick | out)) && tension;
         break;
     case AC::CHII_AS_RIGHT:
         if (!canChiiAsRight(pick))
             return false;
+
         kuikae = (out ^ pick);
         needShow = ((out || pick) || (out | pick)) && tension;
         break;
     case AC::PON:
         if (!canPon(pick))
             return false;
+
         break;
     default:
         unreached("Hand::canCp");
@@ -244,10 +256,12 @@ bool Hand::canAnkan(util::Stactor<T34, 3> &choices, bool riichi) const
         case 3:
             if (t == mDrawn && (!riichi || mClosed.onlyInTriplet(t, mBarks.size())))
                 choices.pushBack(t);
+
             break;
         case 4:
             if (!riichi)
                 choices.pushBack(t);
+
             break;
         default:
             break;
@@ -264,7 +278,7 @@ bool Hand::canKakan(util::Stactor<int, 3> &barkIds) const
 
     for (size_t i = 0; i < mBarks.size(); i++) {
         if (mBarks[i].type() == M37::Type::PON
-                && (mDrawn == mBarks[i][0] || mClosed.ct(T34(mBarks[i][0])) == 1)) {
+            && (mDrawn == mBarks[i][0] || mClosed.ct(T34(mBarks[i][0])) == 1)) {
             barkIds.pushBack(i);
         }
     }
@@ -298,6 +312,7 @@ bool Hand::canRiichi(util::Stactor<T37, 13> &swappables, bool &spinnable) const
     if (!isMenzen())
         return false;
 
+    // *INDENT-OFF*
     SwapOk ok = [this](T34 t) {
         if (mClosed.ct(t) == 0)
             return false;
@@ -306,6 +321,7 @@ bool Hand::canRiichi(util::Stactor<T37, 13> &swappables, bool &spinnable) const
             t37 = t37.toAka5();
         return peekSwap(t37, &Hand::ready);
     };
+    // *INDENT-ON*
     swappables = makeChoices(ok);
     spinnable = peekSpin(&Hand::ready);
 
@@ -315,7 +331,7 @@ bool Hand::canRiichi(util::Stactor<T37, 13> &swappables, bool &spinnable) const
 bool Hand::ready() const
 {
     return step7() == 0 || step13() == 0
-            || (step4() == 0 && util::any(effA(), [this](T34 t) { return ct(t) < 4; }));
+           || (step4() == 0 && util::any(effA(), [this](T34 t) { return ct(t) < 4; }));
 }
 
 int Hand::step() const
@@ -524,6 +540,7 @@ void Hand::ankan(T34 t)
 
     if (!useDrawn)
         mClosed.inc(mDrawn, 1);
+
     mHasDrawn = false;
 
     mBarks.pushBack(M37::ankan(one, two, three, four));
@@ -538,6 +555,7 @@ void Hand::kakan(int barkId)
     } else {
         if (mClosed.ct(t) == 0)
             t = t.toInverse5();
+
         assert(mClosed.ct(t) == 1);
         mClosed.inc(t, -1);
         mClosed.inc(mDrawn, 1);
@@ -686,5 +704,3 @@ int operator%(const util::Stactor<T37, 5> &inds, const Hand &hand)
 
 
 } // namespace saki
-
-
