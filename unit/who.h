@@ -2,6 +2,7 @@
 #define SAKI_WHO_H
 
 #include "../util/assume.h"
+#include "../util/int_iter.h"
 
 #define valid_somebody(w) (0 <= w && w < 4)
 
@@ -15,7 +16,8 @@ namespace saki
 class Who
 {
 public:
-    static const int HUMAN = 0;
+    static constexpr int HUMAN = 0;
+    static constexpr IntRange<Who, 4> ALL4 = IntRange<Who, 4>();
 
     Who() : mWho(NOBODY) {}
 
