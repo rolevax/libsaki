@@ -67,7 +67,6 @@ void Table::start()
 
     activate();
 }
-
 void Table::action(Who who, const Action &act)
 {
     assert(check(who, act));
@@ -585,7 +584,7 @@ void Table::tryDraw(Who who)
     if (mMount.wallRemain() > 0) {
         for (auto &g : mGirls)
             g->onDraw(*this, mMount, who, dead);
-
+ 
         T37 tile = dead ? mMount.deadPop(mRand) : mMount.wallPop(mRand);
         mHands[w].draw(tile);
 
@@ -893,14 +892,14 @@ void Table::finishKan(Who who)
 
     tryDraw(who);
 }
-
 void Table::activate()
 {
     mActionInbox.fill(Action()); // clear
-
+    bool tsundere = false;
     for (int w = 0; w < 4; w++) {
         // fitering, extra-attaching, and/or global-forwarding
         if (mChoicess[w].mode() != Choices::Mode::WATCH) {
+            tsundere = true;
             bool couldRon = mChoicess[w].can(ActCode::RON);
             mGirls[w]->onActivate(*this, mChoicess[w]);
             if (couldRon && !mChoicess[w].can(ActCode::RON))
@@ -910,6 +909,9 @@ void Table::activate()
         // continue activation if not everything filtered
         if (mChoicess[w].mode() != Choices::Mode::WATCH)
             mOperators[w]->onActivated(*this);
+    }
+    if (tsundere == true && !anyActivated()) {
+        tryDraw(mFocus.who().right());
     }
 }
 
