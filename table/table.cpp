@@ -67,7 +67,6 @@ void Table::start()
 
     activate();
 }
-
 void Table::action(Who who, const Action &act)
 {
     assert(check(who, act));
@@ -893,14 +892,15 @@ void Table::finishKan(Who who)
 
     tryDraw(who);
 }
-
 void Table::activate()
 {
-    mActionInbox.fill(Action()); // clear
 
+    mActionInbox.fill(Action()); // clear
+    bool hadActivated = false;
     for (int w = 0; w < 4; w++) {
         // fitering, extra-attaching, and/or global-forwarding
         if (mChoicess[w].mode() != Choices::Mode::WATCH) {
+            hadActivated = true;
             bool couldRon = mChoicess[w].can(ActCode::RON);
             mGirls[w]->onActivate(*this, mChoicess[w]);
             if (couldRon && !mChoicess[w].can(ActCode::RON))
@@ -911,6 +911,9 @@ void Table::activate()
         if (mChoicess[w].mode() != Choices::Mode::WATCH)
             mOperators[w]->onActivated(*this);
     }
+
+    if (hadActivated && !anyActivated())
+        tryDraw(mFocus.who().right());
 }
 
 bool Table::anyActivated() const
