@@ -892,10 +892,11 @@ void Table::finishKan(Who who)
 
     tryDraw(who);
 }
+
 void Table::activate()
 {
-
     mActionInbox.fill(Action()); // clear
+
     bool hadActivated = false;
     for (int w = 0; w < 4; w++) {
         // fitering, extra-attaching, and/or global-forwarding

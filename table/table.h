@@ -134,6 +134,7 @@ public:
     const Choices &getChoices(Who who) const;
     const Mount &getMount() const;
     const TableEnv &getEnv() const;
+
     void popUp(Who who) const;
 
 private:
