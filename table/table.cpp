@@ -29,14 +29,11 @@ TablePrivate::TablePrivate(const std::array<int, 4> &points,
 
 Table::Table(const std::array<int, 4> &points,
              const std::array<int, 4> &girlIds,
-             const std::array<TableOperator *, 4> &operators,
              const std::vector<TableObserver *> &observers,
              Rule rule, Who tempDealer, const TableEnv &env)
     : TablePrivate(points, rule, tempDealer, env)
-    , mOperators(operators)
     , mObservers(observers)
 {
-    assert(!util::has(mOperators, static_cast<TableOperator *>(nullptr)));
     assert(!util::has(mObservers, static_cast<TableObserver *>(nullptr)));
 
     for (int w = 0; w < 4; w++)
@@ -47,11 +44,9 @@ Table::Table(const std::array<int, 4> &points,
 }
 
 Table::Table(const Table &orig,
-             const std::array<TableOperator *, 4> &operators,
-             const std::vector<TableObserver *> &observers,
-             Who toki, const Choices &clean)
+             std::vector<TableObserver *> observers,
+             Who toki, Choices clean)
     : TablePrivate(orig)
-    , mOperators(operators)
     , mObservers(observers)
 {
     for (int w = 0; w < 4; w++)
@@ -88,9 +83,7 @@ void Table::action(Who who, const Action &act)
         mChoicess[w] = Choices();
     }
 
-    if (reactivate) {
-        mOperators[w]->onActivated(*this);
-    } else if (!anyActivated()) {
+    if (!reactivate && !anyActivated()) {
         process();
         activate();
     }
@@ -289,6 +282,11 @@ bool Table::beforeEast1() const
 bool Table::inIppatsuCycle() const
 {
     return mIppatsuFlags.any();
+}
+
+bool Table::anyActivated() const
+{
+    return util::any(mChoicess, [](const Choices &c) { return c.any(); });
 }
 
 Who Table::findGirl(Girl::Id id) const
@@ -907,19 +905,10 @@ void Table::activate()
             if (couldRon && !mChoicess[w].can(ActCode::RON))
                 passRon(Who(w));
         }
-
-        // continue activation if not everything filtered
-        if (mChoicess[w].mode() != Choices::Mode::WATCH)
-            mOperators[w]->onActivated(*this);
     }
 
     if (hadActivated && !anyActivated())
         tryDraw(mFocus.who().right());
-}
-
-bool Table::anyActivated() const
-{
-    return util::any(mChoicess, [](const Choices &c) { return c.mode() != Choices::Mode::WATCH; });
 }
 
 bool Table::kanOverflow(Who kanner)

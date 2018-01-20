@@ -19,6 +19,11 @@ Choices::Choices()
     // leave the union garbage
 }
 
+bool Choices::any() const
+{
+    return mMode != Mode::WATCH;
+}
+
 Choices::Mode Choices::mode() const
 {
     return mMode;

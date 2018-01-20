@@ -2,8 +2,7 @@
 #define SAKI_GIRLS_UTIL_TOKI_H
 
 #include "girl.h"
-#include "../table/table_observer.h"
-#include "../table/table_operator.h"
+#include "../table/table_tester.h"
 
 
 
@@ -142,15 +141,15 @@ private:
 
 
 
-class TokiAutoOp : public TableOperator
+class TokiAutoOp : public TableDecider
 {
 public:
-    using FourOps = std::array<std::unique_ptr<TableOperator>, 4>;
+    using FourOps = std::array<std::unique_ptr<TableDecider>, 4>;
     static FourOps create(const std::array<Girl::Id, 4> &ids, const Action &firstAction);
 
     TokiAutoOp(Who self, const Action &firstAction);
 
-    void onActivated(Table &table);
+    Decision decide(const TableView &view) override;
 
 private:
     Action think(const TableView &view);

@@ -51,6 +51,8 @@ public:
 
     Choices();
 
+    bool any() const;
+
     Mode mode() const;
     bool can(ActCode act) const;
     bool canRiichi() const;

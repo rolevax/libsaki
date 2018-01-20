@@ -91,17 +91,18 @@ Choices Toki::forwardAction(const Table &table, Mount &mount, const Action &acti
     for (int w = 0; w < 4; w++)
         ids[w] = table.getGirl(Who(w)).getId();
 
-    std::array<std::unique_ptr<TableOperator>, 4> ais = TokiAutoOp::create(ids, action);
-    std::array<TableOperator *, 4> operators;
-    std::transform(ais.begin(), ais.end(), operators.begin(),
-                   [](std::unique_ptr<TableOperator> &up) { return up.get(); });
+    std::array<std::unique_ptr<TableDecider>, 4> deciders = TokiAutoOp::create(ids, action);
+    std::array<TableDecider *, 4> deciderPtrs;
+    std::transform(deciders.begin(), deciders.end(), deciderPtrs.begin(),
+                   [](const std::unique_ptr<TableDecider> &p) { return p.get(); });
 
     // prepare observer
     TokiMountTracker mountTracker(mount, mSelf);
     std::vector<TableObserver *> observers { &mountTracker };
 
-    Table future(table, operators, observers, mSelf, mCleanChoices);
-    future.start();
+    Table future(table, observers, mSelf, mCleanChoices);
+    TableTester tester(future, deciderPtrs);
+    tester.run();
 
     // push iff not found
     if (!util::has(mRecords, action))

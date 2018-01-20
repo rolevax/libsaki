@@ -9,7 +9,7 @@ namespace saki
 
 Action AiHatsumi::think(const TableView &view, Limits &limits)
 {
-    if (view.getSelfWind(mSelf) == 4) {
+    if (view.getSelfWind(view.self()) == 4) {
         using namespace tiles34;
 
         switch (view.myChoices().mode()) {

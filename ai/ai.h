@@ -1,7 +1,7 @@
 #ifndef SAKI_AI_H
 #define SAKI_AI_H
 
-#include "../table/table.h"
+#include "../table/table_tester.h"
 
 
 
@@ -17,7 +17,7 @@ namespace saki
 
 /// should give same output when given same input
 /// need to be reproducible for implementing prediction-related skills
-class Ai : public TableOperator
+class Ai : public TableDecider
 {
 public:
     class Limits
@@ -50,7 +50,7 @@ public:
     Ai(const Ai &copy) = delete;
     Ai &operator=(const Ai &assign) = delete;
 
-    void onActivated(Table &table) final;
+    Decision decide(const TableView &view) final;
 
 protected:
     Ai(Who who);

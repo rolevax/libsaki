@@ -2,7 +2,7 @@
 #include "../form/tile_count.h"
 #include "../form/form.h"
 #include "../form/form_gb.h"
-#include "../table/table.h"
+#include "../table/table_tester.h"
 #include "../table/table_env_stub.h"
 #include "../ai/ai.h"
 #include "../util/string_enum.h"
@@ -40,13 +40,15 @@ TestScope::~TestScope()
 
 void testAll()
 {
+    // *INDENT-OFF*
 //    testUtil();
 //    testTileCount();
-    testParse();
+//    testParse();
 //    testHand();
 //    testForm();
 //    testFormGb();
-//    testTable();
+    testTable();
+    // *INDENT-ON*
 }
 
 void testUtil()
@@ -121,19 +123,20 @@ void testTable()
     std::array<int, 4> points { 25000, 25000, 25000, 25000 };
     std::array<int, 4> girlIds { 714915, 712715, 710113, 713314 };
     std::array<std::unique_ptr<Ai>, 4> ais;
-    std::array<TableOperator *, 4> ops;
+    std::array<TableDecider *, 4> deciders;
     std::vector<TableObserver *> obs;
     Rule rule;
     for (int iter = 0; iter < 20; iter++) {
         util::p(iter);
         for (int w = 0; w < 4; w++) {
             ais[w].reset(Ai::create(Who(w), Girl::Id(girlIds[w])));
-            ops[w] = ais[w].get();
+            deciders[w] = ais[w].get();
         }
 
         TableEnvStub env;
-        Table table(points, girlIds, ops, obs, rule, Who(0), env);
-        table.start();
+        Table table(points, girlIds, obs, rule, Who(0), env);
+        TableTester tester(table, deciders);
+        tester.run();
     }
 }
 

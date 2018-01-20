@@ -6,7 +6,6 @@
 #include "mount.h"
 #include "table_env.h"
 #include "table_view.h"
-#include "table_operator.h"
 #include "table_observer.h"
 #include "../girl/girl.h"
 #include "../form/tile_count.h"
@@ -86,14 +85,12 @@ class Table : private TablePrivate
 public:
     explicit Table(const std::array<int, 4> &points,
                    const std::array<int, 4> &girlIds,
-                   const std::array<TableOperator *, 4> &operators,
                    const std::vector<TableObserver *> &observers,
                    Rule rule, Who tempDealer, const TableEnv &env);
 
     explicit Table(const Table &orig,
-                   const std::array<TableOperator *, 4> &operators,
-                   const std::vector<TableObserver *> &observers,
-                   Who toki, const Choices &clean);
+                   std::vector<TableObserver *> observers,
+                   Who toki, Choices clean);
 
     Table(const Table &copy) = delete;
     Table &operator=(const Table &assign) = delete;
@@ -122,6 +119,7 @@ public:
     bool isAllLast() const;
     bool beforeEast1() const;
     bool inIppatsuCycle() const;
+    bool anyActivated() const;
 
     Who findGirl(Girl::Id id) const;
     Who getDealer() const;
@@ -161,7 +159,6 @@ private:
     void kakan(Who who, int barkId);
     void finishKan(Who who);
     void activate();
-    bool anyActivated() const;
     bool kanOverflow(Who kanner);
     bool noBarkYet() const;
     bool checkDeathWinds() const;
@@ -177,7 +174,6 @@ private:
 
 private:
     std::array<std::unique_ptr<Girl>, 4> mGirls;
-    std::array<TableOperator *, 4> mOperators;
     std::vector<TableObserver *> mObservers;
 };
 

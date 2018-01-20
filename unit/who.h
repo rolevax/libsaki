@@ -16,15 +16,13 @@ namespace saki
 class Who
 {
 public:
-    static constexpr int HUMAN = 0;
-    static constexpr IntRange<Who, 4> ALL4 = IntRange<Who, 4>();
+    static constexpr int HUMAN_INDEX = 0;
 
     Who() : mWho(NOBODY) {}
 
-    explicit Who(int who)
+    explicit constexpr Who(int who)
         : mWho(who)
     {
-        assert(valid_somebody(mWho));
     }
 
     explicit Who(unsigned who)
@@ -117,7 +115,7 @@ public:
 
     bool human() const
     {
-        return mWho == HUMAN;
+        return mWho == HUMAN_INDEX;
     }
 
     bool operator==(Who rhs) const
@@ -137,6 +135,21 @@ private:
 
     int mWho;
 };
+
+
+
+namespace whos
+{
+
+
+
+constexpr IntRange<Who, 4> ALL4;
+
+constexpr Who HUMAN(Who::HUMAN_INDEX);
+
+
+
+} // namespace whos
 
 
 

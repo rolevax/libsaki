@@ -12,7 +12,7 @@ Action AiTakami::think(const TableView &view, Limits &limits)
 {
     // first discard of a non-all-last
     if (!view.isAllLast()
-        && view.getRiver(mSelf).empty()
+        && view.getRiver(view.self()).empty()
         && view.myChoices().mode() == Choices::Mode::DRAWN) {
         const Takami &takami = static_cast<const Takami &>(view.me());
         assert(takami.getId() == Girl::Id::SHIBUYA_TAKAMI);

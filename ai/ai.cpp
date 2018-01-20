@@ -92,32 +92,30 @@ Action Ai::thinkStdDrawnAttack(const TableView &view)
     return ai.thinkDrawnAttack(view, limits);
 }
 
-void Ai::onActivated(Table &table)
+TableDecider::Decision Ai::decide(const TableView &view)
 {
-    std::unique_ptr<TableView> view(table.getView(mSelf));
-
-    Action decision;
+    TableDecider::Decision decision;
 
 #ifdef LIBSAKI_CHEAT_AI
     decision = placeHolder(*view);
 #else
-    if (view->myChoices().forwardAny())
-        decision = forward(*view);
+    if (view.myChoices().forwardAny())
+        decision.action = forward(view);
 
-    if (decision.act() == ActCode::NOTHING) {
+    if (decision.action.act() == ActCode::NOTHING) {
         Limits limits;
-        decision = think(*view, limits);
+        decision.action = think(view, limits);
     }
 
 #endif
 
-    assert(decision.act() != ActCode::NOTHING);
-    table.action(mSelf, decision);
+    assert(decision.action.act() != ActCode::NOTHING);
+    return decision;
 }
 
 Ai::Ai(Who who)
-    : TableOperator(who)
 {
+    (void) who; // historical, might be useless
 }
 
 Action Ai::forward(const TableView &view)
@@ -142,7 +140,7 @@ Action Ai::placeHolder(const TableView &view)
 void Ai::antiHatsumi(const TableView &view, Ai::Limits &limits)
 {
     Who hatsumi = view.findGirl(Girl::Id::USUZUMI_HATSUMI);
-    if (hatsumi.nobody() || hatsumi == mSelf || view.getSelfWind(hatsumi) != 4)
+    if (hatsumi.nobody() || hatsumi == view.self() || view.getSelfWind(hatsumi) != 4)
         return;
 
     const auto &barks = view.getBarks(hatsumi);
@@ -163,7 +161,7 @@ void Ai::antiHatsumi(const TableView &view, Ai::Limits &limits)
 void Ai::antiToyone(const TableView &view, Ai::Limits &limits)
 {
     Who toyone = view.findGirl(Girl::Id::ANETAI_TOYONE);
-    if (toyone.somebody() && toyone != mSelf && view.isMenzen(toyone))
+    if (toyone.somebody() && toyone != view.self() && view.isMenzen(toyone))
         limits.addNoRiichi();
 }
 
@@ -254,7 +252,7 @@ Action Ai::thinkBarkAttack(const TableView &view, Limits &limits)
     const Choices::ModeBark &mode = view.myChoices().bark();
 
     bool barked = !hand.isMenzen();
-    int sw = view.getSelfWind(mSelf);
+    int sw = view.getSelfWind(view.self());
     int rw = view.getRoundWind();
 
     if (hand.hasEffA(pick) && (barked || pick.isYakuhai(sw, rw)))
@@ -311,7 +309,7 @@ Action Ai::thinkAttackEff(const TableView &view, const util::Range<Action> &outs
                                        : view.myHand().peekCp(view.getFocusTile(), action, &Hand::effA);
         int remainEffA = view.visibleRemain().ct(effA);
         int floatTrash = (5 - (view.getDrids() % out + out.isAka5()))
-                + 2 * (view.getRiver(mSelf).size() < 6 ? out.isYao() : !out.isYao());
+                + 2 * (view.getRiver(view.self()).size() < 6 ? out.isYao() : !out.isYao());
 
         return 2 + 10 * remainEffA + floatTrash;
     };
@@ -345,12 +343,13 @@ Action Ai::thinkDefendChance(const TableView &view, const util::Range<Action> &o
 
 bool Ai::afraid(const TableView &view, util::Stactor<Who, 3> &threats)
 {
+    Who self = view.self();
     bool scary = false;
 
-    if (!(view.riichiEstablished(mSelf) || view.getRiver(mSelf).size() < 6)) {
+    if (!(view.riichiEstablished(self) || view.getRiver(self).size() < 6)) {
         for (int w = 0; w < 4; w++) {
             Who who(w);
-            if (who == mSelf)
+            if (who == self)
                 continue;
 
             int riverCt = view.getRiver(who).size();
@@ -383,7 +382,7 @@ bool Ai::testRiichi(const TableView &view, Limits &limits, Action &riichi)
 
     Action act = thinkAttackEff(view, outs.range());
     int est = view.myHand().peekDiscard(act, &Hand::estimate, view.getRule(),
-                                        view.getSelfWind(mSelf), view.getRoundWind(), view.getDrids());
+                                        view.getSelfWind(view.self()), view.getRoundWind(), view.getDrids());
 
     riichi = act.toRiichi();
     return est < 7000;
@@ -435,7 +434,7 @@ util::Stactor<Action, 14> Ai::listOuts(const TableView &view, const Limits &limi
     if (!limits.noOut(hand.drawn()))
         res.pushBack(Action(ActCode::SPIN_OUT));
 
-    if (!view.riichiEstablished(mSelf))
+    if (!view.riichiEstablished(view.self()))
         for (const T37 &t : hand.closed().t37s13())
             if (!limits.noOut(t))
                 res.pushBack(Action(ActCode::SWAP_OUT, t));

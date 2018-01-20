@@ -246,7 +246,7 @@ const TokiEvents &TokiMountTracker::getEvents() const
 TokiAutoOp::FourOps TokiAutoOp::create(const std::array<Girl::Id, 4> &ids,
                                        const Action &firstAction)
 {
-    std::array<std::unique_ptr<TableOperator>, 4> res;
+    std::array<std::unique_ptr<TableDecider>, 4> res;
 
     for (int w = 0; w < 4; w++) {
         if (ids[w] == Girl::Id::ONJOUJI_TOKI)
@@ -259,17 +259,20 @@ TokiAutoOp::FourOps TokiAutoOp::create(const std::array<Girl::Id, 4> &ids,
 }
 
 TokiAutoOp::TokiAutoOp(Who self, const Action &firstAction)
-    : TableOperator(self)
-    , mFirstAction(firstAction)
+    : mFirstAction(firstAction)
 {
+    (void) self; // historical, might be useless now
 }
 
-void TokiAutoOp::onActivated(Table &table)
+TableDecider::Decision TokiAutoOp::decide(const TableView &view)
 {
-    std::unique_ptr<TableView> view = table.getView(mSelf);
-    Action decision = think(*view);
-    if (decision.act() != ActCode::NOTHING)
-        table.action(mSelf, decision);
+    Decision decision;
+
+    decision.action = think(view);
+    if (decision.action.act() == ActCode::NOTHING)
+        decision.abortTable = true;
+
+    return decision;
 }
 
 Action TokiAutoOp::think(const TableView &view)

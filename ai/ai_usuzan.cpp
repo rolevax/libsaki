@@ -14,7 +14,7 @@ Action AiSawaya::forward(const TableView &view)
 {
     if (view.myChoices().can(ActCode::IRS_CHECK)) {
         unsigned mask = 0;
-        if (view.getDealer() == mSelf) {
+        if (view.getDealer() == view.self()) {
             const Sawaya &girl = static_cast<const Sawaya &>(view.me());
             assert(girl.getId() == Girl::Id::SHISHIHARA_SAWAYA);
 
@@ -34,7 +34,7 @@ Action AiSawaya::think(const TableView &view, Limits &limits)
     const Sawaya &girl = static_cast<const Sawaya &>(view.me());
     assert(girl.getId() == Girl::Id::SHISHIHARA_SAWAYA);
 
-    if (!girl.usingRedCloud() || view.getRiver(mSelf).size() > 3)
+    if (!girl.usingRedCloud() || view.getRiver(view.self()).size() > 3)
         return Ai::think(view, limits);
 
     // reserve Z when using red cloud
