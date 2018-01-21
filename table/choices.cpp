@@ -1,9 +1,17 @@
 #include "choices.h"
+#include "../util/misc.h"
 
 
 
 namespace saki
 {
+
+
+
+bool Choices::ModeIrsCheck::any() const
+{
+    return util::any(list, [](const IrsCheckItem &i) { return i.able(); });
+}
 
 
 
@@ -39,7 +47,7 @@ bool Choices::can(ActCode act) const
     switch (mMode) {
     case Mode::WATCH:
         return false;
-    case Mode::CUT:
+    case Mode::IRS_CHECK:
         return act == AC::IRS_CHECK;
     case Mode::DICE:
         return act == AC::DICE;
@@ -104,20 +112,10 @@ bool Choices::canRiichi() const
     return can(ActCode::SWAP_RIICHI) || can(ActCode::SPIN_RIICHI);
 }
 
-bool Choices::forwardAll() const
-{
-    return mForwardAll;
-}
-
-bool Choices::forwardAny() const
-{
-    return forwardAll() || mMode == Mode::CUT || mIrsClick;
-}
-
 bool Choices::spinOnly() const
 {
     return mMode == Mode::DRAWN
-           && !forwardAny()
+           && !mIrsClick
            && !mModeDrawn.swapOut
            && !mModeDrawn.spinRiichi
            && !mModeDrawn.tsumo
@@ -127,15 +125,21 @@ bool Choices::spinOnly() const
            && mModeDrawn.swapRiichis.empty();
 }
 
-Action Choices::sweep() const
+///
+/// \brief Provide a fallback action in this choices.
+///        Typically used as a placeholder on network timeout.
+///
+Action Choices::timeout() const
 {
-    if (mForwardAll && mIrsClick)
-        return Action(IRS_CLICK); // toki: exit future
+    // click whenever possible, to ensure toki's green world exited
+    // clicking in other cases does no harm either
+    if (can(ActCode::IRS_CLICK))
+        return Action(ActCode::IRS_CLICK);
 
     switch (mMode) {
     case Mode::WATCH:
         return Action();
-    case Mode::CUT:
+    case Mode::IRS_CHECK:
         // assume 0u is always legal
         return Action(ActCode::IRS_CHECK, 0u);
     case Mode::DICE:
@@ -151,6 +155,11 @@ Action Choices::sweep() const
     }
 }
 
+const Choices::ModeIrsCheck &Choices::irsCheck() const
+{
+    return mModeIrsCheck;
+}
+
 const Choices::ModeDrawn &Choices::drawn() const
 {
     assert(mMode == Mode::DRAWN);
@@ -163,9 +172,11 @@ const Choices::ModeBark &Choices::bark() const
     return mModeBark;
 }
 
-void Choices::setCut()
+/// allow to set all items disabled, without switching mode to 'watch'
+void Choices::setIrsCheck(const ModeIrsCheck &irsCheck)
 {
-    mMode = Mode::CUT;
+    mMode = Mode::IRS_CHECK;
+    mModeIrsCheck = irsCheck;
 }
 
 void Choices::setDice()
@@ -200,9 +211,30 @@ void Choices::setExtra(bool v)
     mIrsClick = v;
 }
 
-void Choices::setForwarding(bool v)
+void Choices::filter(const ChoiceFilter &f)
 {
-    mForwardAll = v;
+    switch (mode()) {
+    case Mode::DRAWN:
+        if (f.noTsumo)
+            mModeDrawn.tsumo = false;
+
+        if (f.noRiichi) {
+            mModeDrawn.swapRiichis.clear();
+            mModeDrawn.spinRiichi = false;
+        }
+
+        break;
+    case Mode::BARK:
+        if (f.noRon) {
+            ModeBark mode = bark();
+            mode.ron = false;
+            setBark(mode);
+        }
+
+        break;
+    default:
+        break;
+    }
 }
 
 

@@ -1,7 +1,7 @@
 #ifndef SAKI_GIRLS_KIYOSUMI_H
 #define SAKI_GIRLS_KIYOSUMI_H
 
-#include "girl.h"
+#include "../table/girl.h"
 
 
 

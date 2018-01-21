@@ -80,7 +80,7 @@ Ai *Ai::create(Who who, Girl::Id id)
     case Girl::Id::ANETAI_TOYONE:       return new AiToyone(who);
     case Girl::Id::HARAMURA_NODOKA:     return new AiNodoka(who);
     case Girl::Id::SHISHIHARA_SAWAYA:   return new AiSawaya(who);
-    default:                            return new Ai(who);
+    default: return new Ai(who);
     }
 }
 
@@ -99,8 +99,8 @@ TableDecider::Decision Ai::decide(const TableView &view)
 #ifdef LIBSAKI_CHEAT_AI
     decision = placeHolder(*view);
 #else
-    if (view.myChoices().forwardAny())
-        decision.action = forward(view);
+    if (view.me().irsReady())
+        decision.action = thinkIrs(view);
 
     if (decision.action.act() == ActCode::NOTHING) {
         Limits limits;
@@ -118,10 +118,10 @@ Ai::Ai(Who who)
     (void) who; // historical, might be useless
 }
 
-Action Ai::forward(const TableView &view)
+Action Ai::thinkIrs(const TableView &view)
 {
     (void) view;
-    unreached("unoverriden Ai::forward");
+    unreached("unoverriden Ai::thinkIrs");
 }
 
 Action Ai::think(const TableView &view, Limits &limits)
@@ -134,7 +134,7 @@ Action Ai::think(const TableView &view, Limits &limits)
 
 Action Ai::placeHolder(const TableView &view)
 {
-    return view.myChoices().sweep();
+    return view.myChoices().timeout();
 }
 
 void Ai::antiHatsumi(const TableView &view, Ai::Limits &limits)
@@ -172,7 +172,7 @@ Action Ai::thinkChoices(const TableView &view, Ai::Limits &limits)
     switch (choices.mode()) {
     case Choices::Mode::WATCH:
         unreached("Ai::think: unexpected watch mode");
-    case Choices::Mode::CUT:
+    case Choices::Mode::IRS_CHECK:
         unreached("Ai::think: unhandled cut mode");
     case Choices::Mode::DICE:
         return Action(ActCode::DICE);

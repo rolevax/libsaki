@@ -71,7 +71,7 @@ protected:
 class Mount : private MountPrivate
 {
 public:
-    enum Exit { WALL, DEAD, DORA, URADORA, NUM_EXITS };
+    enum Exit { PII, RINSHAN, DORAHYOU, URAHYOU, NUM_EXITS };
 
     explicit Mount(TileCount::AkadoraCount fillMode);
     explicit Mount(const Mount &copy);
@@ -79,11 +79,10 @@ public:
 
     void initFill(util::Rand &rand, TileCount &init, Exist &exist);
     const T37 &initPopExact(const T37 &t);
-    T37 wallPop(util::Rand &rand);
-    T37 deadPop(util::Rand &rand);
+    T37 pop(util::Rand &rand, bool rinshan = false);
 
-    int wallRemain() const;
-    int deadRemain() const;
+    int remainPii() const;
+    int remainRinshan() const;
     int remainA(T34 t) const;
     int remainA(const T37 &t) const;
     bool affordA(const TileCount &need) const;

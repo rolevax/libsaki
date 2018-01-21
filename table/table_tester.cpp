@@ -13,9 +13,10 @@ TableTester::TableTester(Table &table, std::array<TableDecider *, 4> deciders)
 {
 }
 
-void TableTester::run()
+void TableTester::run(bool fromHalfWay)
 {
-    mTable.start();
+    if (!fromHalfWay)
+        mTable.start();
 
     while (mTable.anyActivated()) {
         for (Who who : whos::ALL4) {

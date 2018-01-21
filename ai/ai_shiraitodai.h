@@ -32,7 +32,7 @@ class AiAwai : public Ai
 {
 public:
     AI_CTORS(AiAwai)
-    Action forward(const TableView &view) override;
+    Action thinkIrs(const TableView &view) override;
 };
 
 

@@ -3,6 +3,8 @@
 
 #include "../unit/action.h"
 
+#include <bitset>
+
 
 
 namespace saki
@@ -10,12 +12,125 @@ namespace saki
 
 
 
+class IrsCheckItem
+{
+public:
+    IrsCheckItem() = default;
+
+    enum Init
+    {
+        // Choices::sweep() of IRS_CHECK relys on the fact
+        // that radio button can only be child of a check box
+        // by assuming checking nothing is always a legal action
+        CHECK_DISABLED, CHECK_ENABLED, CHILD_RADIO_DEFAULT, CHILD_RADIO
+    };
+
+    IrsCheckItem(Init config)
+    {
+        switch (config) {
+        case CHECK_DISABLED:
+            init(false, false, false, false);
+            break;
+        case CHECK_ENABLED:
+            init(false, false, true, false);
+            break;
+        case CHILD_RADIO_DEFAULT:
+            init(true, true, false, true);
+            break;
+        case CHILD_RADIO:
+            init(true, true, false, false);
+            break;
+        default:
+            break;
+        }
+    }
+
+    bool mono() const
+    {
+        return mBits[MONO];
+    }
+
+    bool indent() const
+    {
+        return mBits[INDENT];
+    }
+
+    bool able() const
+    {
+        return mBits[ABLE];
+    }
+
+    bool on() const
+    {
+        return mBits[ON];
+    }
+
+    void setAble(bool v)
+    {
+        mBits[ABLE] = v;
+    }
+
+    void setOn(bool v)
+    {
+        mBits[ON] = v;
+    }
+
+private:
+    void init(bool mono, bool indent, bool able, bool on)
+    {
+        mBits[MONO] = mono;
+        mBits[INDENT] = indent;
+        setAble(able);
+        setOn(on);
+    }
+
+    enum Offset : unsigned { MONO, INDENT, ABLE, ON };
+
+    std::bitset<4> mBits;
+};
+
+// assume 16 isi enough
+using IrsCheckList = util::Stactor<IrsCheckItem, 16>;
+
+
+
+struct ChoiceFilter
+{
+    union
+    {
+        bool noTsumo = false;
+        bool noRon;
+    };
+
+    bool noRiichi = false;
+
+    void join(ChoiceFilter that)
+    {
+        noTsumo = noTsumo || that.noTsumo;
+        noRiichi = noRiichi || that.noRiichi;
+    }
+};
+
+
+
+///
+/// \brief Choice set of one player
+///
 class Choices
 {
 public:
     enum class Mode
     {
-        WATCH, CUT, DICE, DRAWN, BARK, END
+        WATCH, IRS_CHECK, DICE, DRAWN, BARK, END
+    };
+
+    struct ModeIrsCheck
+    {
+        ModeIrsCheck(const char *n, IrsCheckList l) : name(n), list(l) {}
+        const char *name = nullptr;
+        IrsCheckList list;
+
+        bool any() const;
     };
 
     struct ModeDrawn
@@ -56,31 +171,31 @@ public:
     Mode mode() const;
     bool can(ActCode act) const;
     bool canRiichi() const;
-    bool forwardAll() const;
-    bool forwardAny() const;
     bool spinOnly() const;
 
-    Action sweep() const;
+    Action timeout() const;
 
+    const ModeIrsCheck &irsCheck() const;
     const ModeDrawn &drawn() const;
     const ModeBark &bark() const;
 
-    void setCut();
+    void setIrsCheck(const ModeIrsCheck &irsCheck);
     void setDice();
     void setDrawn(const ModeDrawn &mode);
     void setBark(const ModeBark &mode);
     void setEnd(const ModeEnd &mode);
 
     void setExtra(bool v);
-    void setForwarding(bool v);
+
+    void filter(const ChoiceFilter &f);
 
 private:
     Mode mMode = Mode::WATCH;
     bool mIrsClick = false;
-    bool mForwardAll = false;
 
     union
     {
+        ModeIrsCheck mModeIrsCheck;
         ModeDrawn mModeDrawn;
         ModeBark mModeBark;
         ModeEnd mModeEnd;

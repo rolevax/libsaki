@@ -2,7 +2,7 @@
 #define SAKI_REPLAY_H
 
 #include "../table/table_observer.h"
-#include "../girl/girl.h"
+#include "../table/girl.h"
 
 
 
@@ -77,6 +77,7 @@ public:
             T37 t37;
             int showAka5;
         };
+
     };
 
     struct OutAct

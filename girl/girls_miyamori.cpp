@@ -9,11 +9,10 @@ namespace saki
 
 
 
-void Toyone::onDice(util::Rand &rand, const Table &table, Choices &choices)
+void Toyone::onDice(util::Rand &rand, const Table &table)
 {
     (void) rand;
     (void) table;
-    (void) choices;
 
     mFirstRiichi = Who();
 }

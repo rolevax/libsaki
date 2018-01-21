@@ -33,7 +33,7 @@ class TableTester
 public:
     explicit TableTester(Table &table, std::array<TableDecider *, 4> deciders);
 
-    void run();
+    void run(bool fromHalfWay = false);
 
 private:
     Table &mTable;

@@ -1,7 +1,7 @@
 #ifndef SAKI_GIRLS_UTIL_TOKI_H
 #define SAKI_GIRLS_UTIL_TOKI_H
 
-#include "girl.h"
+#include "../table/girl.h"
 #include "../table/table_tester.h"
 
 
@@ -141,13 +141,13 @@ private:
 
 
 
-class TokiAutoOp : public TableDecider
+class TokiHumanSimulator : public TableDecider
 {
 public:
-    using FourOps = std::array<std::unique_ptr<TableDecider>, 4>;
-    static FourOps create(const std::array<Girl::Id, 4> &ids, const Action &firstAction);
+    TokiHumanSimulator(const Action &firstAction,
+                       const std::array<Girl::Id, 4> &ids);
 
-    TokiAutoOp(Who self, const Action &firstAction);
+    std::array<TableDecider *, 4> makeDeciders();
 
     Decision decide(const TableView &view) override;
 
@@ -157,6 +157,7 @@ private:
 private:
     bool mFirst = true;
     Action mFirstAction;
+    std::array<std::unique_ptr<TableDecider>, 4> mAis;
 };
 
 

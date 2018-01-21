@@ -171,7 +171,7 @@ void TokiMountTracker::onDrawn(const Table &table, Who who)
     // fixing random generator is not enough,
     // because the mount should appears the same even order is different
     const T37 &t = table.getHand(who).drawn();
-    mReal.pin(table.duringKan() ? Mount::DEAD : Mount::WALL,
+    mReal.pin(table.duringKan() ? Mount::RINSHAN : Mount::PII,
               table.duringKan() ? mDeadPos++ : mWallPos++, t);
 
     // see self's draw, output to expr
@@ -183,7 +183,7 @@ void TokiMountTracker::onFlipped(const Table &table)
 {
     // fix the mount
     const T37 &newIndic = table.getMount().getDrids().back();
-    mReal.pin(Mount::DORA, mDoraPos++, newIndic);
+    mReal.pin(Mount::DORAHYOU, mDoraPos++, newIndic);
 
     mEvents.emplace_back(new TokiEventFlipped(newIndic));
 }
@@ -228,7 +228,7 @@ void TokiMountTracker::onRoundEnded(const Table &table, RoundResult result,
 
         const auto &urids = table.getMount().getUrids();
         for (size_t i = 0; i < urids.size(); i++)
-            mReal.pin(Mount::URADORA, i, urids[i]);
+            mReal.pin(Mount::URAHYOU, i, urids[i]);
 
         mEvents.emplace_back(new TokiEventResult(result, openers, closeds, pick, urids));
     } else { // ryuukyoku
@@ -243,28 +243,30 @@ const TokiEvents &TokiMountTracker::getEvents() const
 
 
 
-TokiAutoOp::FourOps TokiAutoOp::create(const std::array<Girl::Id, 4> &ids,
-                                       const Action &firstAction)
+TokiHumanSimulator::TokiHumanSimulator(const Action &firstAction,
+                                       const std::array<Girl::Id, 4> &ids)
+    : mFirstAction(firstAction)
 {
-    std::array<std::unique_ptr<TableDecider>, 4> res;
-
     for (int w = 0; w < 4; w++) {
         if (ids[w] == Girl::Id::ONJOUJI_TOKI)
-            res[w].reset(new TokiAutoOp(Who(w), firstAction));
+            mAis[w].reset(nullptr);
         else
-            res[w].reset(Ai::create(Who(w), ids[w]));
+            mAis[w].reset(Ai::create(Who(w), ids[w]));
     }
+}
+
+std::array<TableDecider *, 4> TokiHumanSimulator::makeDeciders()
+{
+    std::array<TableDecider *, 4> res;
+
+    using Up = std::unique_ptr<TableDecider>;
+    auto toPtr = [this](Up &up) { return up ? up.get() : this; };
+    std::transform(mAis.begin(), mAis.end(), res.begin(), toPtr);
 
     return res;
 }
 
-TokiAutoOp::TokiAutoOp(Who self, const Action &firstAction)
-    : mFirstAction(firstAction)
-{
-    (void) self; // historical, might be useless now
-}
-
-TableDecider::Decision TokiAutoOp::decide(const TableView &view)
+TableDecider::Decision TokiHumanSimulator::decide(const TableView &view)
 {
     Decision decision;
 
@@ -275,7 +277,7 @@ TableDecider::Decision TokiAutoOp::decide(const TableView &view)
     return decision;
 }
 
-Action TokiAutoOp::think(const TableView &view)
+Action TokiHumanSimulator::think(const TableView &view)
 {
     if (mFirst) { // the test condition action
         mFirst = false;

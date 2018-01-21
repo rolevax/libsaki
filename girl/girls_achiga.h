@@ -1,7 +1,7 @@
 #ifndef SAKI_GIRLS_ACHIGA_H
 #define SAKI_GIRLS_ACHIGA_H
 
-#include "girl.h"
+#include "../table/girl.h"
 
 
 

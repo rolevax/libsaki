@@ -1,7 +1,7 @@
 #ifndef SAKI_GIRLS_SENRIYAMA_H
 #define SAKI_GIRLS_SENRIYAMA_H
 
-#include "girl.h"
+#include "../table/irs_chance.h"
 #include "girls_util_toki.h"
 #include "../table/table_observer.h"
 
@@ -23,20 +23,36 @@ public:
 
     bool checkInit(Who who, const Hand &init, const Princess &princess, int iter) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
-    void onActivate(const Table &table, Choices &choices) override;
     void onInbox(Who who, const Action &action) override;
-    Choices forwardAction(const Table &table, Mount &mount, const Action &action) override;
 
     std::string popUpStr() const override;
 
+protected:
+    IrsCtrlGetter attachIrsOnDrawn(const Table &table) override;
+
 private:
+    class PredictCtrl : public IrsCtrlPlus<Toki>
+    {
+    public:
+        const Choices &choices() const override;
+        IrsResult handle(Toki &toki, const Table &table, Mount &mount, const Action &action) override;
+        void setClickHost(Choices normal);
+
+    private:
+        Choices mChoices;
+    };
+
     enum class PopUpMode { OO, FV };
 
+    static std::array<Girl::Id, 4> makeIdArray(const Table &table);
+
+    IrsResult handleIrs(const Table &table, Mount &mount, const Action &action);
+    IrsResult handleIrsClick();
+    IrsResult handlePredict(const Table &table, Mount &mount, const Action &action);
     void popUpBy(const Table &table, PopUpMode mode);
 
 private:
-    Choices mCleanChoices;
-    Choices mCrazyChoices;
+    PredictCtrl mIrsCtrl;
     bool mInFuture = false;
     bool mCheckNextAction = false;
     std::vector<Action> mRecords;

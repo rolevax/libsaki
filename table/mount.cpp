@@ -111,7 +111,7 @@ void Mount::initFill(util::Rand &rand, TileCount &init, Exist &exist)
     int need = 13 - init.sum();
 
     assert(0 <= need && need <= 13);
-    assert(wallRemain() >= 70 + need);
+    assert(remainPii() >= 70 + need);
     mRemain -= need;
 
     std::vector<T37> pops = popExist(rand, exist, need);
@@ -126,28 +126,25 @@ const T37 &Mount::initPopExact(const T37 &t)
     return t;
 }
 
-T37 Mount::wallPop(util::Rand &rand)
+T37 Mount::pop(util::Rand &rand, bool rinshan)
 {
-    assert(wallRemain() > 0);
+    assert(remainPii() > 0);
     mRemain--;
-    return popFrom(rand, Exit::WALL);
+
+    if (rinshan) {
+        assert(remainRinshan() > 0);
+        mKanCt++;
+    }
+
+    return popFrom(rand, rinshan ? Exit::RINSHAN : Exit::PII);
 }
 
-T37 Mount::deadPop(util::Rand &rand)
-{
-    assert(wallRemain() > 0);
-    assert(deadRemain() > 0);
-    mRemain--;
-    mKanCt++;
-    return popFrom(rand, Exit::DEAD);
-}
-
-int Mount::wallRemain() const
+int Mount::remainPii() const
 {
     return mRemain;
 }
 
-int Mount::deadRemain() const
+int Mount::remainRinshan() const
 {
     return 4 - mKanCt;
 }
@@ -186,22 +183,22 @@ const util::Stactor<T37, 5> &Mount::getUrids() const
 
 void Mount::lightA(T34 t, int delta, bool rinshan)
 {
-    power(rinshan ? Exit::DEAD : Exit::WALL, 0, t, delta, false);
+    power(rinshan ? Exit::RINSHAN : Exit::PII, 0, t, delta, false);
 }
 
 void Mount::lightA(const T37 &t, int delta, bool rinshan)
 {
-    power(rinshan ? Exit::DEAD : Exit::WALL, 0, t, delta, false);
+    power(rinshan ? Exit::RINSHAN : Exit::PII, 0, t, delta, false);
 }
 
 void Mount::lightB(T34 t, int delta, bool rinshan)
 {
-    power(rinshan ? Exit::DEAD : Exit::WALL, 0, t, delta, true);
+    power(rinshan ? Exit::RINSHAN : Exit::PII, 0, t, delta, true);
 }
 
 void Mount::lightB(const T37 &t, int delta, bool rinshan)
 {
-    power(rinshan ? Exit::DEAD : Exit::WALL, 0, t, delta, true);
+    power(rinshan ? Exit::RINSHAN : Exit::PII, 0, t, delta, true);
 }
 
 void Mount::power(Exit exit, size_t pos, T34 t, int delta, bool bSpace)
@@ -264,13 +261,13 @@ void Mount::loadB(const T37 &t, int count)
 
 void Mount::flipIndic(util::Rand &rand)
 {
-    mDrids.pushBack(popFrom(rand, Exit::DORA));
+    mDrids.pushBack(popFrom(rand, Exit::DORAHYOU));
 }
 
 void Mount::digIndic(util::Rand &rand)
 {
     while (mUrids.size() < mDrids.size())
-        mUrids.pushBack(popFrom(rand, Exit::URADORA));
+        mUrids.pushBack(popFrom(rand, Exit::URAHYOU));
 }
 
 const std::unique_ptr<Mount::Erwin> &Mount::prepareSuperpos(Exit exit, std::size_t pos)

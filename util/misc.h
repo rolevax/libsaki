@@ -18,34 +18,10 @@ namespace util
 
 
 ///
-/// @brief Enable type conversion when expanding templates
-///
-template<typename T>
-struct Identity
-{
-    using type = T;
-};
-
-///
-/// @brief same as boost::all_of
-///
-/// Typically used by a std::vector<T>
-///
-template<template<typename...> class V, typename T, typename... Rest>
-inline bool all(const V<T, Rest...> &v,
-                typename Identity<std::function<bool(const T &)>>::type f)
-{
-    return std::all_of(v.begin(), v.end(), f);
-}
-
-///
 /// @brief same as boost:all_of
 ///
-/// Typically used by a std::array<T, N>
-///
-template<template<typename T, std::size_t N> class V, typename T, std::size_t N>
-inline bool all(const V<T, N> &v,
-                typename Identity<std::function<bool(const T &)>>::type f)
+template<typename V, typename Pred>
+inline bool all(const V &v, Pred f)
 {
     return std::all_of(v.begin(), v.end(), f);
 }
@@ -62,23 +38,8 @@ inline bool all(Iter begin, Iter end, Pred f)
 ///
 /// @brief same as boost::any_of
 ///
-/// Typically used by a std::vector<T>
-///
-template<template<typename...> class V, class T, typename... Rest>
-inline bool any(const V<T, Rest...> &v,
-                typename Identity<std::function<bool(const T &)>>::type f)
-{
-    return std::any_of(v.begin(), v.end(), f);
-}
-
-///
-/// @brief same as boost::any_of
-///
-/// Typically used by a std::array<T, N>
-///
-template<template<typename T, std::size_t N> class V, typename T, std::size_t N>
-inline bool any(const V<T, N> &v,
-                typename Identity<std::function<bool(const T &)>>::type f)
+template<typename V, typename Pred>
+inline bool any(const V &v, Pred f)
 {
     return std::any_of(v.begin(), v.end(), f);
 }
@@ -95,23 +56,8 @@ inline bool any(Iter begin, Iter end, Pred f)
 ///
 /// @brief same as boost::none_of
 ///
-/// Typically used by a std::vector<T>
-///
-template<template<typename...> class V, typename T, typename... Rest>
-inline bool none(const V<T, Rest...> &v,
-                 typename Identity<std::function<bool(const T &)>>::type f)
-{
-    return std::none_of(v.begin(), v.end(), f);
-}
-
-///
-/// @brief same as boost::none_of
-///
-/// Typically used by a std::array<T, N>
-///
-template<template<typename T, std::size_t N> class V, typename T, std::size_t N>
-inline bool none(const V<T, N> &v,
-                 typename Identity<std::function<bool(const T &)>>::type f)
+template<typename V, typename Pred>
+inline bool none(const V &v, Pred f)
 {
     return std::none_of(v.begin(), v.end(), f);
 }
@@ -128,21 +74,8 @@ inline bool none(Iter begin, Iter end, Pred f)
 ///
 /// @brief same as boost::any_of_equal
 ///
-/// Typically used by a std::vector<T>
-///
-template<template<typename...> class V, typename T, typename... Rest>
-inline bool has(const V<T, Rest...> &v, T e)
-{
-    return std::find(v.begin(), v.end(), e) != v.end();
-}
-
-///
-/// @brief same as boost::any_of_equal
-///
-/// Typically used by a std::array<T, N>
-///
-template<template<typename T, std::size_t N> class V, typename T, std::size_t N>
-inline bool has(const V<T, N> &v, T e)
+template<typename V, typename T>
+inline bool has(const V &v, T e)
 {
     return std::find(v.begin(), v.end(), e) != v.end();
 }
@@ -157,7 +90,7 @@ inline bool has(Iter begin, Iter end, T e)
 }
 
 ///
-/// \brief insersection not empty
+/// \brief intersection not empty
 ///
 template<typename V>
 inline bool common(V v1, V v2)

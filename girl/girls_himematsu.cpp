@@ -12,10 +12,8 @@ namespace saki
 
 const std::array<int, 4> Suzu::POWERS { 80, 130, 230, 330 };
 
-void Suzu::onDice(util::Rand &rand, const Table &table, Choices &choices)
+void Suzu::onDice(util::Rand &rand, const Table &table)
 {
-    (void) choices;
-
     if (!mExploded) {
         int remainRound = table.getRule().roundLimit - table.getRound();
         int threshold = remainRound < 4 ? 25 : 10;

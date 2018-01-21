@@ -21,7 +21,7 @@ class AiKasumi : public Ai
 {
 public:
     AI_CTORS(AiKasumi)
-    Action forward(const TableView &view) override;
+    Action thinkIrs(const TableView &view) override;
 };
 
 

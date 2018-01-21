@@ -66,11 +66,10 @@ void Teru::nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
 
 
 
-void Sumire::onDice(util::Rand &rand, const Table &table, Choices &choices)
+void Sumire::onDice(util::Rand &rand, const Table &table)
 {
     (void) rand;
     (void) table;
-    (void) choices;
 
     mTarget = Who();
 }
@@ -94,14 +93,6 @@ bool Sumire::checkInit(Who who, const Hand &init, const Princess &princess, int 
     return std::count_if(ts.begin(), ts.end(), isYao) <= 3;
 }
 
-void Sumire::onActivate(const Table &table, Choices &choices)
-{
-    if (aimable(table)) {
-        mChoicesBackup = choices;
-        choices.setExtra(true);
-    }
-}
-
 void Sumire::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
 {
     if (who == mSelf)
@@ -110,38 +101,19 @@ void Sumire::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         handleDrawTarget(table, mount, rinshan);
 }
 
-const IrsCheckRow &Sumire::irsCheckRow(int index) const
+void Sumire::onIrsChecked(const Table &table, Mount &mount)
 {
-    static const std::array<IrsCheckRow, 4> ROWS = std::array<IrsCheckRow, 4> {
-        IrsCheckRow { false, false, "SUMIRE_A", true, false },
-        IrsCheckRow { true, true, "SUMIRE_A_R", false, true },
-        IrsCheckRow { true, true, "SUMIRE_A_C", false, false },
-        IrsCheckRow { true, true, "SUMIRE_A_L", false, false },
-    };
-
-    return ROWS[index];
-}
-
-int Sumire::irsCheckCount() const
-{
-    return 4;
-}
-
-Choices Sumire::forwardAction(const Table &table, Mount &mount, const Action &action)
-{
-    assert(action.isIrs());
-
-    Choices cut;
-    cut.setCut();
-
-    switch (action.act()) {
-    case ActCode::IRS_CLICK:
-        return cut;
-    case ActCode::IRS_CHECK:
-        return handleIrsCheck(action.mask(), table, mount);
-    default:
-        unreached("Sumire::forwardAction");
+    if (mIrsCtrl.itemAt(MAIN).on()) {
+        if (mIrsCtrl.itemAt(RIGHT).on())
+            mTarget = mSelf.right();
+        else if (mIrsCtrl.itemAt(CROSS).on())
+            mTarget = mSelf.cross();
+        else if (mIrsCtrl.itemAt(LEFT).on())
+            mTarget = mSelf.left();
     }
+
+    if (mTarget.somebody())
+        pickBullet(table, mount);
 }
 
 std::string Sumire::popUpStr() const
@@ -149,6 +121,16 @@ std::string Sumire::popUpStr() const
     std::ostringstream oss;
     oss << ">> " << mWant << " <<";
     return oss.str();
+}
+
+Girl::IrsCtrlGetter Sumire::attachIrsOnDrawn(const Table &table)
+{
+    if (aimable(table)) {
+        mIrsCtrl.setClickHost(table.getChoices(mSelf));
+        return &Sumire::mIrsCtrl;
+    }
+
+    return nullptr;
 }
 
 void Sumire::handleDrawSelf(const Table &table, Mount &mount, bool rinshan)
@@ -222,23 +204,6 @@ void Sumire::handleDrawTarget(const Table &table, Mount &mount, bool rinshan)
             if (table.getHand(mTarget).hasEffA(t))
                 mount.lightA(t, -40, rinshan);
     }
-}
-
-Choices Sumire::handleIrsCheck(unsigned mask, const Table &table, Mount &mount)
-{
-    if ((mask & 0b1000) != 0) {
-        if ((mask & 0b0100) != 0)
-            mTarget = mSelf.right();
-        else if ((mask & 0b0010) != 0)
-            mTarget = mSelf.cross();
-        else if ((mask & 0b0001) != 0)
-            mTarget = mSelf.left();
-    }
-
-    if (mTarget.somebody())
-        pickBullet(table, mount);
-
-    return mChoicesBackup;
 }
 
 bool Sumire::aimable(const Table &table)
@@ -489,16 +454,6 @@ void Seiko::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     }
 }
 
-
-
-void Awai::onDice(util::Rand &rand, const Table &table, Choices &choices)
-{
-    (void) rand;
-    (void) table;
-    mChoicesBackup = choices;
-    choices.setCut();
-}
-
 bool Awai::checkInit(Who who, const Hand &init, const Princess &princess, int iter)
 {
     (void) princess;
@@ -511,7 +466,7 @@ bool Awai::checkInit(Who who, const Hand &init, const Princess &princess, int it
 
 void Awai::onMonkey(std::array<Exist, 4> &exists, const Princess &princess)
 {
-    if (!mDaburi.on)
+    if (!mIrsCtrl.itemAt(0).on())
         return;
 
     using Indic = Princess::Indic;
@@ -544,7 +499,7 @@ void Awai::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         return;
     }
 
-    if (rinshan || !mDaburi.on)
+    if (rinshan || !mIrsCtrl.itemAt(0).on())
         return;
 
     if (who == mSelf && table.getRiver(who).empty()) {
@@ -562,7 +517,7 @@ void Awai::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         int barkCt = barks.size();
         if (barkCt > 0
             && util::any(barks, [](const M37 &m) { return m.type() == M37::Type::ANKAN; })
-            && mount.wallRemain() <= lastCorner(table.getDice(), 4 - mount.deadRemain())) {
+            && mount.remainPii() <= lastCorner(table.getDice(), 4 - mount.remainRinshan())) {
             // after kan and corner, for every player,
             // make wait-tile appear in mount continuously
             for (T34 t : tiles34::ALL34) {
@@ -571,8 +526,8 @@ void Awai::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
             }
         } else if (who == mSelf) {
             // before kan
-            int tail = lastCorner(table.getDice(), 4 - mount.deadRemain());
-            int rem = mount.wallRemain();
+            int tail = lastCorner(table.getDice(), 4 - mount.remainRinshan());
+            int rem = mount.remainPii();
             if (tail < rem && rem <= tail + 4) {
                 // before last corner, extract kan-material
                 for (T34 t : tiles34::ALL34) {
@@ -596,7 +551,7 @@ void Awai::nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
                      std::bitset<Girl::NUM_NM_SKILL> &presence,
                      const Princess &princess)
 {
-    if (!mDaburi.on)
+    if (!mIrsCtrl.itemAt(0).on())
         return;
 
     // add 3 kanura
@@ -643,23 +598,9 @@ void Awai::nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
     }
 }
 
-const IrsCheckRow &Awai::irsCheckRow(int index) const
+Girl::IrsCtrlGetter Awai::attachIrsOnDice()
 {
-    assert(index == 0);
-    return mDaburi;
-}
-
-int Awai::irsCheckCount() const
-{
-    return 1;
-}
-
-Choices Awai::forwardAction(const Table &table, Mount &mount, const Action &action)
-{
-    (void) table;
-    (void) mount;
-    mDaburi.on = action.mask() & 0b1;
-    return mChoicesBackup;
+    return &Awai::mIrsCtrl;
 }
 
 int Awai::lastCorner(int dice, int kanCt)

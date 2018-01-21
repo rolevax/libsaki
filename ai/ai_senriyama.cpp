@@ -7,10 +7,11 @@ namespace saki
 
 
 
-Action AiToki::forward(const TableView &view)
+Action AiToki::thinkIrs(const TableView &view)
 {
     (void) view;
-    return Action(); // dummy
+    Limits limits;
+    return think(view, limits);
 }
 
 

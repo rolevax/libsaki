@@ -1,7 +1,7 @@
 #ifndef SAKI_GIRLS_SHIRAITODAI_H
 #define SAKI_GIRLS_SHIRAITODAI_H
 
-#include "girl.h"
+#include "../table/irs_chance.h"
 
 
 
@@ -37,22 +37,19 @@ class Sumire : public Girl
 public:
     GIRL_CTORS(Sumire)
 
-    void onDice(util::Rand &rand, const Table &table, Choices &choices) override;
+    void onDice(util::Rand &rand, const Table &table) override;
     bool checkInit(Who who, const Hand &init, const Princess &princess, int iter) override;
-    void onActivate(const Table &table, Choices &choices) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
-
-    const IrsCheckRow &irsCheckRow(int index) const override;
-    int irsCheckCount() const override;
-
-    Choices forwardAction(const Table &table, Mount &mount, const Action &action) override;
+    void onIrsChecked(const Table &table, Mount &mount) override;
 
     std::string popUpStr() const override;
+
+protected:
+    IrsCtrlGetter attachIrsOnDrawn(const Table &table) override;
 
 private:
     void handleDrawSelf(const Table &table, Mount &mount, bool rinshan);
     void handleDrawTarget(const Table &table, Mount &mount, bool rinshan);
-    Choices handleIrsCheck(unsigned mask, const Table &table, Mount &mount);
 
     bool aimable(const Table &table);
     bool shootable(const Table &table);
@@ -61,7 +58,22 @@ private:
     void shapeYaku(const Table &table, Mount &mount, bool rinshan);
 
 private:
-    Choices mChoicesBackup;
+    // *** SYNC order with 'mIrsCtrl' ***
+    enum IrsIndex { MAIN, RIGHT, CROSS, LEFT };
+
+    IrsCtrlClickCheck<Sumire> mIrsCtrl {
+        Choices::ModeIrsCheck {
+            "SUMIRE",
+            IrsCheckList {
+                IrsCheckItem::CHECK_ENABLED,
+                IrsCheckItem::CHILD_RADIO_DEFAULT,
+                IrsCheckItem::CHILD_RADIO,
+                IrsCheckItem::CHILD_RADIO,
+            }
+        },
+        &Sumire::mIrsCtrl
+    };
+
     Who mTarget;
     T34 mWant;
     T37 mFeed;
@@ -107,7 +119,6 @@ class Awai : public Girl
 public:
     GIRL_CTORS(Awai)
 
-    void onDice(util::Rand &rand, const Table &table, Choices &choices) override;
     bool checkInit(Who who, const Hand &init, const Princess &princess, int iter) override;
     void onMonkey(std::array<Exist, 4> &exists, const Princess &princess) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
@@ -116,9 +127,8 @@ public:
                    std::bitset<NUM_NM_SKILL> &presence,
                    const Princess &princess) override;
 
-    const IrsCheckRow &irsCheckRow(int index) const override;
-    int irsCheckCount() const override;
-    Choices forwardAction(const Table &table, Mount &mount, const Action &action) override;
+protected:
+    IrsCtrlGetter attachIrsOnDice() override;
 
 private:
     struct InitSketch
@@ -138,8 +148,14 @@ private:
     static const int ACCEL_MK = 800;
     static const int EJECT_MK = 100;
 
-    Choices mChoicesBackup;
-    IrsCheckRow mDaburi { false, false, "AWAI_DABURI", true, false };
+    IrsCtrlCheck<Awai> mIrsCtrl {
+        Choices::ModeIrsCheck {
+            "AWAI",
+            IrsCheckList {
+                IrsCheckItem::CHECK_ENABLED
+            }
+        }
+    };
     T37 mFirstDraw;
     bool mNeedFirstDraw = false;
     T34 mKanura;

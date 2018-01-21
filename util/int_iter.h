@@ -1,6 +1,8 @@
 #ifndef SAKI_INT_ITER_H
 #define SAKI_INT_ITER_H
 
+#include <iterator>
+
 
 
 namespace saki
@@ -15,6 +17,13 @@ public:
     constexpr explicit IntIter(int c) : mCurr(c) {}
     IntIter(const IntIter &copy) = default;
     IntIter &operator=(const IntIter &assign) = default;
+
+    // std input iterator traits
+    using iterator_category = std::input_iterator_tag;
+    using difference_type = int;
+    using value_type = T;
+    using pointer = T *;
+    using reference = T &;
 
     T operator*()
     {

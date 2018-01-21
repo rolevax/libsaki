@@ -14,7 +14,7 @@ class AiToki : public Ai
 {
 public:
     AI_CTORS(AiToki)
-    Action forward(const TableView &view) override;
+    Action thinkIrs(const TableView &view) override;
 };
 
 

@@ -28,26 +28,6 @@ void Toki::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     accelerate(mount, table.getHand(mSelf), table.getRiver(mSelf), 25);
 }
 
-void Toki::onActivate(const Table &table, Choices &choices)
-{
-    (void) table;
-
-    if (choices.can(ActCode::DICE)
-        || choices.can(ActCode::NEXT_ROUND)
-        || choices.can(ActCode::END_TABLE)
-        || choices.spinOnly())
-        return; // not a branch point
-
-    if (mCd > 0) {
-        mCd--;
-    } else {
-        mCleanChoices = choices;
-        choices.setExtra(true);
-        mCrazyChoices = choices;
-        mCrazyChoices.setForwarding(true);
-    }
-}
-
 void Toki::onInbox(Who who, const Action &action)
 {
     using AC = ActCode;
@@ -71,48 +51,6 @@ void Toki::onInbox(Who who, const Action &action)
     }
 }
 
-Choices Toki::forwardAction(const Table &table, Mount &mount, const Action &action)
-{
-    if (action.act() == ActCode::IRS_CLICK) {
-        if (mInFuture) { // to exit future
-            mInFuture = false;
-            mCheckNextAction = true;
-            return mCleanChoices;
-        } else { // to enter future
-            mInFuture = true;
-            return mCrazyChoices;
-        }
-    }
-
-    popUpBy(table, PopUpMode::OO);
-
-    // prepare operators
-    std::array<Girl::Id, 4> ids;
-    for (int w = 0; w < 4; w++)
-        ids[w] = table.getGirl(Who(w)).getId();
-
-    std::array<std::unique_ptr<TableDecider>, 4> deciders = TokiAutoOp::create(ids, action);
-    std::array<TableDecider *, 4> deciderPtrs;
-    std::transform(deciders.begin(), deciders.end(), deciderPtrs.begin(),
-                   [](const std::unique_ptr<TableDecider> &p) { return p.get(); });
-
-    // prepare observer
-    TokiMountTracker mountTracker(mount, mSelf);
-    std::vector<TableObserver *> observers { &mountTracker };
-
-    Table future(table, observers, mSelf, mCleanChoices);
-    TableTester tester(future, deciderPtrs);
-    tester.run();
-
-    // push iff not found
-    if (!util::has(mRecords, action))
-        mRecords.push_back(action);
-
-    mEvents = mountTracker.getEvents();
-    popUpBy(table, PopUpMode::FV);
-    return mCrazyChoices;
-}
-
 std::string Toki::popUpStr() const
 {
     switch (mPopUpMode) {
@@ -123,6 +61,92 @@ std::string Toki::popUpStr() const
     default:
         unreached("Toki::popUpStr");
     }
+}
+
+Girl::IrsCtrlGetter Toki::attachIrsOnDrawn(const Table &table)
+{
+    const Choices &choices = table.getChoices(mSelf);
+
+    if (mCd > 0) {
+        mCd--;
+        return nullptr;
+    }
+
+    mIrsCtrl.setClickHost(choices);
+    return &Toki::mIrsCtrl;
+}
+
+std::array<Girl::Id, 4> Toki::makeIdArray(const Table &table)
+{
+    std::array<Girl::Id, 4> ids;
+
+    for (int w = 0; w < 4; w++)
+        ids[w] = table.getGirl(Who(w)).getId();
+
+    return ids;
+}
+
+const Choices &Toki::PredictCtrl::choices() const
+{
+    return mChoices;
+}
+
+IrsResult Toki::PredictCtrl::handle(Toki &toki, const Table &table, Mount &mount, const Action &action)
+{
+    return toki.handleIrs(table, mount, action);
+}
+
+void Toki::PredictCtrl::setClickHost(Choices normal)
+{
+    mChoices = normal;
+    mChoices.setExtra(true);
+}
+
+IrsResult Toki::handleIrs(const Table &table, Mount &mount, const Action &action)
+{
+    if (!mInFuture && !action.isIrs())
+        return { false, nullptr };
+
+    if (action.act() == ActCode::IRS_CLICK)
+        return handleIrsClick();
+
+    return handlePredict(table, mount, action);
+}
+
+IrsResult Toki::handleIrsClick()
+{
+    // to exit future
+    if (mInFuture) {
+        mInFuture = false;
+        mCheckNextAction = true;
+        return { true, nullptr };
+    }
+
+    // to enter future
+    mInFuture = true;
+    return { true, &Toki::mIrsCtrl };
+}
+
+IrsResult Toki::handlePredict(const Table &table, Mount &mount, const Action &action)
+{
+    popUpBy(table, PopUpMode::OO);
+
+    // clone the table, and attach a mount tracker
+    TokiMountTracker mountTracker(mount, mSelf);
+    Table future(table, { &mountTracker });
+
+    // run simulation
+    TokiHumanSimulator ths(action, makeIdArray(table));
+    TableTester tester(future, ths.makeDeciders());
+    tester.run(true);
+
+    if (!util::has(mRecords, action))
+        mRecords.push_back(action);
+
+    mEvents = mountTracker.getEvents();
+    popUpBy(table, PopUpMode::FV);
+
+    return { true, &Toki::mIrsCtrl };
 }
 
 void Toki::popUpBy(const Table &table, Toki::PopUpMode mode)

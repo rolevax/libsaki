@@ -1,16 +1,16 @@
 #include "girl.h"
 
-#include "girls_shiraitodai.h"
-#include "girls_achiga.h"
-#include "girls_senriyama.h"
-#include "girls_eisui.h"
-#include "girls_miyamori.h"
-#include "girls_kiyosumi.h"
-#include "girls_himematsu.h"
-#include "girls_usuzan.h"
-#include "girls_rinkai.h"
-#include "girls_asakumi.h"
-#include "girls_other.h"
+#include "../girl/girls_shiraitodai.h"
+#include "../girl/girls_achiga.h"
+#include "../girl/girls_senriyama.h"
+#include "../girl/girls_eisui.h"
+#include "../girl/girls_miyamori.h"
+#include "../girl/girls_kiyosumi.h"
+#include "../girl/girls_himematsu.h"
+#include "../girl/girls_usuzan.h"
+#include "../girl/girls_rinkai.h"
+#include "../girl/girls_asakumi.h"
+#include "../girl/girls_other.h"
 
 #include "../util/misc.h"
 
@@ -79,9 +79,9 @@ Girl::Id Girl::getId() const
     return mId;
 }
 
-void Girl::onDice(util::Rand &rand, const Table &table, Choices &choices)
+void Girl::onDice(util::Rand &rand, const Table &table)
 {
-    (void) rand; (void) table; (void) choices;
+    (void) rand; (void) table;
 }
 
 void Girl::onMonkey(std::array<Exist, 4> &exists, const Princess &princess)
@@ -92,11 +92,6 @@ void Girl::onMonkey(std::array<Exist, 4> &exists, const Princess &princess)
 bool Girl::checkInit(Who who, const Hand &init, const Princess &princess, int iter)
 {
     (void) who; (void) init; (void) iter; (void) princess; return true;
-}
-
-void Girl::onActivate(const Table &table, Choices &choices)
-{
-    (void) table; (void) choices;
 }
 
 void Girl::onInbox(Who who, const Action &action)
@@ -131,6 +126,45 @@ void Girl::onRoundEnded(const Table &table, RoundResult result,
     (void) table; (void) result; (void) openers; (void) gunner; (void) fs;
 }
 
+void Girl::onIrsChecked(const Table &table, Mount &mount)
+{
+    (void) table; (void) mount;
+}
+
+void Girl::onFilterChoice(const Table &table, Who who, ChoiceFilter &filter)
+{
+    filter.join(filterChoice(table, who));
+}
+
+void Girl::onActivateDice(const Table &table)
+{
+    if (!table.beforeEast1())
+        mIrsCtrlGetter = attachIrsOnDice();
+}
+
+void Girl::onActivate(const Table &table)
+{
+    const Choices &choices = table.getChoices(mSelf);
+    switch (choices.mode()) {
+    case Choices::Mode::DRAWN:
+        mIrsCtrlGetter = attachIrsOnDrawn(table);
+        break;
+    default:
+        break;
+    }
+}
+
+bool Girl::irsReady() const
+{
+    return mIrsCtrlGetter.ready();
+}
+
+const Choices &Girl::irsChoices() const
+{
+    // non-const in the middle, but eventually const
+    return mIrsCtrlGetter.get(*const_cast<Girl *>(this)).choices();
+}
+
 void Girl::nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
                      std::bitset<Girl::NUM_NM_SKILL> &presence,
                      const Princess &princess)
@@ -139,27 +173,18 @@ void Girl::nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
     unreached("unoverriden nonMonkey()");
 }
 
-const IrsCheckRow &Girl::irsCheckRow(int index) const
-{
-    (void) index;
-    unreached("unoverriden getIrsCheckRow()");
-}
-
-int Girl::irsCheckCount() const
-{
-    unreached("unoverriden irsCheckCount()");
-    return 0;
-}
-
-Choices Girl::forwardAction(const Table &table, Mount &mount, const Action &action)
-{
-    (void) table; (void) mount; (void) action;
-    unreached("unoverriden forwardAction()");
-}
-
 std::string Girl::popUpStr() const
 {
     unreached("unoverriden popUpStr()");
+}
+
+bool Girl::handleIrs(const Table &table, Mount &mount, const Action &action)
+{
+    auto icg = mIrsCtrlGetter;
+    mIrsCtrlGetter = nullptr;
+    IrsResult res = icg.get(*this).handle(*this, table, mount, action);
+    mIrsCtrlGetter = res.next;
+    return res.handled;
 }
 
 void Girl::eraseRivered(util::Stactor<T34, 34> &ts, const River &river)
@@ -185,6 +210,23 @@ void Girl::accelerate(Mount &mount, const Hand &hand, const River &river, int de
 
     for (T34 t : effs)
         mount.lightA(t, delta);
+}
+
+ChoiceFilter Girl::filterChoice(const Table &table, Who who)
+{
+    (void) table; (void) who;
+    return ChoiceFilter();
+}
+
+Girl::IrsCtrlGetter Girl::attachIrsOnDice()
+{
+    return nullptr;
+}
+
+Girl::IrsCtrlGetter Girl::attachIrsOnDrawn(const Table &table)
+{
+    (void) table;
+    return nullptr;
 }
 
 

@@ -14,7 +14,7 @@ class AiSawaya : public Ai
 {
 public:
     AI_CTORS(AiSawaya)
-    Action forward(const TableView &view) override;
+    Action thinkIrs(const TableView &view) override;
     Action think(const TableView &view, Limits &limits) override;
 };
 

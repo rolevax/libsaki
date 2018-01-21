@@ -227,7 +227,7 @@ void Princess::fixIndicator(Indic which, const std::array<bool, 34> &exceptId34s
 {
     int i = static_cast<int>(which);
     mImageIndics[i] = pickIndicator(exceptId34s, wall);
-    Mount::Exit exit = i % 2 == 0 ? Mount::DORA : Mount::URADORA;
+    Mount::Exit exit = i % 2 == 0 ? Mount::DORAHYOU : Mount::URAHYOU;
     int pos = i / 2 == 0 ? 0 : 1;
 
     T37 indic(mImageIndics[i].id34());

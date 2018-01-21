@@ -41,10 +41,24 @@ void Huiyu::skill(Mount &mount, const Hand &hand, const FormCtx &ctx)
             mount.lightA(t, 200);
 }
 
-void Huiyu::onActivate(const Table &table, Choices &choices)
+void Huiyu::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
 {
+    if (who != mSelf || rinshan)
+        return;
+
+    skill(mount, table.getHand(mSelf), table.getFormCtx(mSelf));
+}
+
+ChoiceFilter Huiyu::filterChoice(const Table &table, Who who)
+{
+    if (who != mSelf)
+        return ChoiceFilter();
+
+    const Choices &choices = table.getChoices(mSelf);
+
     // *INDENT-OFF*
     auto filterDrawn = [&]() {
+        ChoiceFilter filter;
         Choices::ModeDrawn drawn = choices.drawn();
 
         if (drawn.tsumo) {
@@ -52,48 +66,38 @@ void Huiyu::onActivate(const Table &table, Choices &choices)
             bool juezhang = table.riverRemain(hand.drawn()) == 0;
             FormGb f(hand, table.getFormCtx(mSelf), juezhang);
             if (f.fan() < 8)
-                drawn.tsumo = false;
+                filter.noTsumo = true;
         }
 
-        drawn.spinRiichi = false;
-        drawn.swapRiichis.clear();
+        filter.noRiichi = true;
 
-        choices.setDrawn(drawn);
+        return filter;
     };
 
     auto filterBark = [&]() {
+        ChoiceFilter filter;
+
         if (!choices.bark().ron)
-            return;
+            return filter;
 
         const T37 &pick = table.getFocusTile();
         bool juezhang = table.riverRemain(pick) == 0;
         FormGb f(table.getHand(mSelf), pick, table.getFormCtx(mSelf), juezhang);
-        if (f.fan() < 8) {
-            Choices::ModeBark bark = choices.bark();
-            bark.ron = false;
-            choices.setBark(bark);
-        }
+        if (f.fan() < 8)
+            filter.noRon = true;
+
+        return filter;
     };
     // *INDENT-ON*
 
     switch (choices.mode()) {
     case Choices::Mode::DRAWN:
-        filterDrawn();
-        break;
+        return filterDrawn();
     case Choices::Mode::BARK:
-        filterBark();
-        break;
+        return filterBark();
     default:
-        break;
+        return ChoiceFilter();
     }
-}
-
-void Huiyu::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
-{
-    if (who != mSelf || rinshan)
-        return;
-
-    skill(mount, table.getHand(mSelf), table.getFormCtx(mSelf));
 }
 
 bool Huiyu::expand(Mount &mount, const TileCount &total)

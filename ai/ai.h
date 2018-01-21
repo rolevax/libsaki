@@ -56,7 +56,7 @@ protected:
     Ai(Who who);
 
     Action maxHappy(const TableView &view);
-    virtual Action forward(const TableView &view);
+    virtual Action thinkIrs(const TableView &view);
     virtual Action think(const TableView &view, Limits &limits);
 
     Action placeHolder(const TableView &view);

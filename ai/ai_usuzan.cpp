@@ -10,7 +10,7 @@ namespace saki
 
 
 
-Action AiSawaya::forward(const TableView &view)
+Action AiSawaya::thinkIrs(const TableView &view)
 {
     if (view.myChoices().can(ActCode::IRS_CHECK)) {
         unsigned mask = 0;
@@ -25,7 +25,8 @@ Action AiSawaya::forward(const TableView &view)
 
         return Action(ActCode::IRS_CHECK, mask);
     } else {
-        return Action();
+        Limits limits;
+        return think(view, limits);
     }
 }
 

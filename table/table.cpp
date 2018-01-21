@@ -43,16 +43,12 @@ Table::Table(const std::array<int, 4> &points,
     mChoicess[mInitDealer.index()].setDice();
 }
 
-Table::Table(const Table &orig,
-             std::vector<TableObserver *> observers,
-             Who toki, Choices clean)
+Table::Table(const Table &orig, std::vector<TableObserver *> observers)
     : TablePrivate(orig)
     , mObservers(observers)
 {
     for (int w = 0; w < 4; w++)
         mGirls[w].reset(orig.mGirls[w]->clone());
-
-    mChoicess[toki.index()] = clean;
 }
 
 void Table::start()
@@ -62,16 +58,20 @@ void Table::start()
 
     activate();
 }
+
 void Table::action(Who who, const Action &act)
 {
     assert(check(who, act));
 
     int w = who.index();
-    bool reactivate = false;
-    // action forwarding (see note 16-10-02)
-    if (act.isIrs() || mChoicess[w].forwardAll()) {
-        mChoicess[w] = mGirls[w]->forwardAction(*this, mMount, act);
-        reactivate = mChoicess[w].mode() != Choices::Mode::WATCH;
+
+    if (mGirls[w]->irsReady()) {
+        bool handled = mGirls[w]->handleIrs(*this, mMount, act);
+        if (!handled) {
+            assert(!mGirls[w]->irsReady());
+            action(who, act);
+            return;
+        }
     } else {
         for (auto &g : mGirls)
             g->onInbox(who, act);
@@ -83,7 +83,7 @@ void Table::action(Who who, const Action &act)
         mChoicess[w] = Choices();
     }
 
-    if (!reactivate && !anyActivated()) {
+    if (!anyActivated()) {
         process();
         activate();
     }
@@ -93,7 +93,7 @@ bool Table::check(Who who, const Action &action) const
 {
     using AC = ActCode;
 
-    const Choices &choices = mChoicess[who.index()];
+    const Choices &choices = getChoices(who);
     if (!choices.can(action.act()))
         return false;
 
@@ -286,7 +286,7 @@ bool Table::inIppatsuCycle() const
 
 bool Table::anyActivated() const
 {
-    return util::any(mChoicess, [](const Choices &c) { return c.any(); });
+    return util::any(whos::ALL4, [this](Who who) { return getChoices(who).any(); });
 }
 
 Who Table::findGirl(Girl::Id id) const
@@ -339,7 +339,7 @@ FormCtx Table::getFormCtx(Who who) const
 
     ctx.bless = noBarkYet() && mRivers[who.index()].empty();
     ctx.duringKan = mKanContext.during();
-    ctx.emptyMount = mMount.wallRemain() == 0;
+    ctx.emptyMount = mMount.remainPii() == 0;
 
     ctx.roundWind = getRoundWind();
     ctx.selfWind = getSelfWind(who);
@@ -350,7 +350,8 @@ FormCtx Table::getFormCtx(Who who) const
 
 const Choices &Table::getChoices(Who who) const
 {
-    return mChoicess[who.index()];
+    int w = who.index();
+    return mGirls[w]->irsReady() ? mGirls[w]->irsChoices() : mChoicess[w];
 }
 
 const Mount &Table::getMount() const
@@ -493,8 +494,8 @@ void Table::nextRound()
     mMount = Mount(mRule.akadora);
 
     mChoicess[mDealer.index()].setDice();
-    for (int i = 0; i < 4; i++)
-        mGirls[i]->onDice(mRand, *this, mChoicess[i]);
+    for (auto &g : mGirls)
+        g->onDice(mRand, *this);
 }
 
 void Table::clean()
@@ -576,14 +577,14 @@ void Table::tryDraw(Who who)
         if (!finishRiichi())
             return;
 
-    bool dead = mKanContext.during();
+    bool rinshan = mKanContext.during();
     int w = who.index();
 
-    if (mMount.wallRemain() > 0) {
+    if (mMount.remainPii() > 0) {
         for (auto &g : mGirls)
-            g->onDraw(*this, mMount, who, dead);
+            g->onDraw(*this, mMount, who, rinshan);
 
-        T37 tile = dead ? mMount.deadPop(mRand) : mMount.wallPop(mRand);
+        T37 tile = mMount.pop(mRand, rinshan);
         mHands[w].draw(tile);
 
         Choices::ModeDrawn mode;
@@ -592,14 +593,14 @@ void Table::tryDraw(Who who)
         mode.tsumo = mHands[w].canTsumo(getFormCtx(who), mRule);
         mode.kskp = noBarkYet() && mRivers[w].empty() && mHands[w].nine9();
 
-        if (mMount.wallRemain() >= 4
+        if (mMount.remainPii() >= 4
             && mPoints[w] >= 1000
             && !riichiEstablished(who)) {
             mHands[w].canRiichi(mode.swapRiichis, mode.spinRiichi);
         }
 
         // must be able to maintain king-14, and forbid 5th kan
-        if (mMount.wallRemain() > 0 && mMount.deadRemain() > int(mToFlip)) {
+        if (mMount.remainPii() > 0 && mMount.remainRinshan() > int(mToFlip)) {
             mHands[w].canAnkan(mode.ankans, riichiEstablished(who));
             mHands[w].canKakan(mode.kakans);
         }
@@ -609,7 +610,7 @@ void Table::tryDraw(Who who)
         for (auto ob : mObservers)
             ob->onDrawn(*this, who);
     } else { // wall empty
-        assert(!dead);
+        assert(!rinshan);
 
         std::vector<Who> swimmers;
         for (int w = 0; w < 4; w++)
@@ -895,26 +896,53 @@ void Table::activate()
 {
     mActionInbox.fill(Action()); // clear
 
-    bool hadActivated = false;
-    for (int w = 0; w < 4; w++) {
-        // fitering, extra-attaching, and/or global-forwarding
-        if (mChoicess[w].mode() != Choices::Mode::WATCH) {
-            hadActivated = true;
-            bool couldRon = mChoicess[w].can(ActCode::RON);
-            mGirls[w]->onActivate(*this, mChoicess[w]);
-            if (couldRon && !mChoicess[w].can(ActCode::RON))
-                passRon(Who(w));
+    if (!filterChoices())
+        return;
+
+    auto isDice = [](const Choices &c) { return c.mode() == Choices::Mode::DICE; };
+    if (util::any(mChoicess, isDice))
+        for (auto &g : mGirls)
+            g->onActivateDice(*this);
+
+    for (int w = 0; w < 4; w++)
+        if (mChoicess[w].any())
+            mGirls[w]->onActivate(*this);
+}
+
+/// \return true iff still has actors after filtering
+bool Table::filterChoices()
+{
+    auto isBark = [](const Choices &c) { return c.mode() == Choices::Mode::BARK; };
+    bool hadBarker = util::any(mChoicess, isBark);
+
+    for (Who actor : whos::ALL4) {
+        Choices &choices = mChoicess[actor.index()];
+        if (choices.any()) {
+            bool couldRon = choices.can(ActCode::RON);
+
+            ChoiceFilter filter;
+            for (Who f : whos::ALL4)
+                mGirls[f.index()]->onFilterChoice(*this, actor, filter);
+
+            choices.filter(filter);
+
+            if (couldRon && !choices.can(ActCode::RON))
+                passRon(actor);
         }
     }
 
-    if (hadActivated && !anyActivated())
+    if (hadBarker && !anyActivated()) {
         tryDraw(mFocus.who().right());
+        return false;
+    }
+
+    return true;
 }
 
 bool Table::kanOverflow(Who kanner)
 {
     // sksr happens befor3e rinshan, so +1 in advance
-    int kanCt = (4 - mMount.deadRemain()) + 1;
+    int kanCt = (4 - mMount.remainRinshan()) + 1;
 
     if (kanCt == 5)
         return true;
@@ -987,9 +1015,9 @@ void Table::checkBarkRon()
         }
 
         // bark
-        if (mMount.wallRemain() > 0 && !riichiEstablished(Who(w))) {
+        if (mMount.remainPii() > 0 && !riichiEstablished(Who(w))) {
             mode.pon = mHands[w].canPon(focus);
-            mode.dmk = mMount.deadRemain() > 0 && mHands[w].canDaiminkan(focus);
+            mode.dmk = mMount.remainRinshan() > 0 && mHands[w].canDaiminkan(focus);
             if (Who(w) == mFocus.who().right()) {
                 mode.chiiL = mHands[w].canChiiAsLeft(focus);
                 mode.chiiM = mHands[w].canChiiAsMiddle(focus);

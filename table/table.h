@@ -7,7 +7,7 @@
 #include "table_env.h"
 #include "table_view.h"
 #include "table_observer.h"
-#include "../girl/girl.h"
+#include "girl.h"
 #include "../form/tile_count.h"
 #include "../util/rand.h"
 
@@ -88,9 +88,7 @@ public:
                    const std::vector<TableObserver *> &observers,
                    Rule rule, Who tempDealer, const TableEnv &env);
 
-    explicit Table(const Table &orig,
-                   std::vector<TableObserver *> observers,
-                   Who toki, Choices clean);
+    explicit Table(const Table &orig, std::vector<TableObserver *> observers);
 
     Table(const Table &copy) = delete;
     Table &operator=(const Table &assign) = delete;
@@ -159,6 +157,7 @@ private:
     void kakan(Who who, int barkId);
     void finishKan(Who who);
     void activate();
+    bool filterChoices();
     bool kanOverflow(Who kanner);
     bool noBarkYet() const;
     bool checkDeathWinds() const;

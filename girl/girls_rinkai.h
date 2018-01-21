@@ -1,7 +1,7 @@
 #ifndef SAKI_GIRLS_RINKAI_H
 #define SAKI_GIRLS_RINKAI_H
 
-#include "girl.h"
+#include "../table/girl.h"
 #include "../form/form_ctx.h"
 
 #include <bitset>
@@ -20,8 +20,9 @@ public:
 
     static void skill(Mount &mount, const Hand &hand, const FormCtx &ctx);
 
-    void onActivate(const Table &table, Choices &choices) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
+
+    ChoiceFilter filterChoice(const Table &table, Who who) override;
 
 private:
     struct SssbgSet

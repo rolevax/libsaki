@@ -1,7 +1,7 @@
 #ifndef SAKI_GIRLS_MIYAMORI_H
 #define SAKI_GIRLS_MIYAMORI_H
 
-#include "girl.h"
+#include "../table/girl.h"
 
 
 
@@ -15,7 +15,7 @@ class Toyone : public Girl
 public:
     GIRL_CTORS(Toyone)
 
-    void onDice(util::Rand &rand, const Table &table, Choices &choices) override;
+    void onDice(util::Rand &rand, const Table &table) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
     void onRiichiEstablished(const Table &table, Who who) override;
 

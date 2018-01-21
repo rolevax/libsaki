@@ -97,24 +97,12 @@ void Hatsumi::nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
         mount.loadB(3_f, 3);
 
         // prevent E/N to be dora
-        mount.power(Mount::Exit::DORA, 0, 1_f, -1000, false);
-        mount.power(Mount::Exit::DORA, 0, 4_f, -1000, false);
+        mount.power(Mount::Exit::DORAHYOU, 0, 1_f, -1000, false);
+        mount.power(Mount::Exit::DORAHYOU, 0, 4_f, -1000, false);
     }
 }
 
 
-
-
-void Kasumi::onDice(util::Rand &rand, const Table &table, Choices &choices)
-{
-    (void) rand;
-    (void) table;
-
-    if (mZim.able) {
-        mChoicesBackup = choices;
-        choices.setCut();
-    }
-}
 
 bool Kasumi::checkInit(Who who, const Hand &init, const Princess &princess, int iter)
 {
@@ -131,7 +119,7 @@ void Kasumi::onMonkey(std::array<Exist, 4> &exists, const Princess &princess)
 {
     (void) princess;
 
-    if (!mZim.on)
+    if (!mIrsCtrl.itemAt(0).on())
         return;
 
     for (int w = 0; w < 4; w++) {
@@ -150,7 +138,7 @@ void Kasumi::onMonkey(std::array<Exist, 4> &exists, const Princess &princess)
 
 void Kasumi::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
 {
-    if (rinshan || !mZim.on)
+    if (rinshan || !mIrsCtrl.itemAt(0).on())
         return;
 
     int turn = table.getRiver(mSelf).size();
@@ -179,28 +167,14 @@ void Kasumi::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     }
 }
 
-Choices Kasumi::forwardAction(const Table &table, Mount &mount, const Action &action)
+void Kasumi::onIrsChecked(const Table &table, Mount &mount)
 {
     (void) table;
     (void) mount;
-    assert(action.act() == ActCode::IRS_CHECK);
 
-    mZim.on = action.mask() & 0b1;
-    if (mZim.on)
-        mZim.able = false; // once on, never off
+    if (mIrsCtrl.itemAt(0).on())
+        mIrsCtrl.setAbleAt(0, false); // once on, never off
 
-    return mChoicesBackup;
-}
-
-const IrsCheckRow &Kasumi::irsCheckRow(int index) const
-{
-    assert(index == 0);
-    return mZim;
-}
-
-int Kasumi::irsCheckCount() const
-{
-    return 1;
 }
 
 void Kasumi::nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
@@ -210,7 +184,7 @@ void Kasumi::nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
     (void) init;
     (void) princess;
 
-    if (!mZim.on)
+    if (!mIrsCtrl.itemAt(0).on())
         return;
 
     std::vector<int> ofss = { 0, 9, 18 };
@@ -225,6 +199,12 @@ void Kasumi::nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
     // break wallability of zim-tiles
     for (int i = 0; i < 9; i++)
         mount.loadB(T37(begin + i), 1);
+}
+
+Girl::IrsCtrlGetter Kasumi::attachIrsOnDice()
+{
+    bool able = mIrsCtrl.itemAt(0).able();
+    return able ? &Kasumi::mIrsCtrl : nullptr;
 }
 
 

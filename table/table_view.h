@@ -4,7 +4,7 @@
 #include "table_focus.h"
 #include "../form/hand.h"
 #include "../unit/who.h"
-#include "../girl/girl.h"
+#include "../table/girl.h"
 
 
 

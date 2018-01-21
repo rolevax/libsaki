@@ -9,7 +9,7 @@ namespace saki
 
 
 
-void Sawaya::onDice(util::Rand &rand, const Table &table, Choices &choices)
+void Sawaya::onDice(util::Rand &rand, const Table &table)
 {
     (void) rand;
     (void) table;
@@ -17,28 +17,26 @@ void Sawaya::onDice(util::Rand &rand, const Table &table, Choices &choices)
     mPredice = true;
     mPaKorTarget = Who();
 
-    for (IrsCheckRow &r : mClouds)
-        if (!r.mono && !r.able)
-            r.on = false;
+    for (int i = 0; i < Cloud::NUM_CLOUD; i++) {
+        const IrsCheckItem &item = mCloudCtrl.itemAt(i);
+        if (!item.mono() && !item.able())
+            mCloudCtrl.setOnAt(i, false);
+    }
 
     for (int i = 0; i < Kamuy::NUM_KAMUY; i++) {
-        if (!mKamuys[i].mono && !mKamuys[i].able) {
+        const IrsCheckItem &item = mKamuyCtrl.itemAt(i);
+        if (!item.mono() && !item.able()) {
             if (i == Kamuy::HURI) {
                 if (!mConsumedSecondHuri) {
                     mConsumedSecondHuri = true;
-                    mKamuys[i].on = true;
+                    mKamuyCtrl.setOnAt(i, true);
                 } else {
-                    mKamuys[i].on = false;
+                    mKamuyCtrl.setOnAt(i, false);
                 }
             } else {
-                mKamuys[i].on = false; // TODO off hoyaw-kamuy by resist-time
+                mKamuyCtrl.setOnAt(i, false); // TODO off hoyaw-kamuy by resist-time
             }
         }
-    }
-
-    if (util::any(mClouds, [](const IrsCheckRow &r) { return r.able; })) {
-        mChoicesBackup = choices;
-        choices.setCut();
     }
 }
 
@@ -48,32 +46,18 @@ void Sawaya::onMonkey(std::array<Exist, 4> &exists, const Princess &princess)
 
     mPredice = false;
 
-    if (mClouds[Cloud::RED].on && mClouds[Cloud::RED_RIVALS].on) {
+    if (usingCloud(Cloud::RED) && usingCloud(Cloud::RED_RIVALS)) {
         for (T34 t : tiles34::Z7)
             for (int w = 0; w < 4; w++)
                 exists[w].inc(t, w == mSelf.index() ? 100 : -1000);
-    } else if (mClouds[Cloud::RED].on && mClouds[Cloud::RED_SELF].on) {
+    } else if (usingCloud(Cloud::RED) && usingCloud(Cloud::RED_SELF)) {
         for (T34 t : tiles34::Z7)
             exists[mSelf.index()].inc(t, -1000);
     }
 
-    if (mClouds[Cloud::WHITE].on)
+    if (usingCloud(Cloud::WHITE))
         for (int i = 18; i < 27; i++) // bamboo
             exists[mSelf.index()].inc(T34(i), 70);
-}
-
-void Sawaya::onActivate(const Table &table, Choices &choices)
-{
-    const Hand &hand = table.getHand(mSelf);
-    mKamuys[Kamuy::PA_KOR].able = !mConsumedPaKor && hand.ready();
-
-    if (util::none(mKamuys, [](const IrsCheckRow &r) { return r.able; }))
-        return;
-
-    if (choices.can(ActCode::SWAP_OUT) || choices.can(ActCode::SPIN_OUT)) {
-        mChoicesBackup = choices;
-        choices.setExtra(true);
-    }
 }
 
 void Sawaya::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
@@ -90,7 +74,7 @@ void Sawaya::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         return; // priority higher than clouds and other kamuy
     }
 
-    if (mKamuys[Kamuy::AT_KOR].on) {
+    if (usingKamuy(Kamuy::AT_KOR)) {
         if (who == mSelf) {
             for (T34 t : tiles34::ALL34) {
                 using namespace tiles34;
@@ -108,7 +92,7 @@ void Sawaya::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         }
     }
 
-    if (who == mSelf && mKamuys[Kamuy::HURI].on) {
+    if (who == mSelf && usingKamuy(Kamuy::HURI)) {
         for (int i = 1; i <= 4; i++) {
             if (i == table.getSelfWind(mSelf))
                 continue;
@@ -120,7 +104,7 @@ void Sawaya::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         }
     }
 
-    if (mClouds[Cloud::RED].on && mClouds[Cloud::RED_RIVALS].on) {
+    if (usingCloud(Cloud::RED) && usingCloud(Cloud::RED_RIVALS)) {
         if (who == mSelf) {
             int mk = table.getHand(mSelf).ready() ? 40 : 60;
             for (T34 t : tiles34::Z7) {
@@ -131,50 +115,64 @@ void Sawaya::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
             for (T34 t : tiles34::Z7)
                 mount.lightA(t, -1000, rinshan);
         }
-    } else if (mClouds[Cloud::RED].on && mClouds[Cloud::RED_SELF].on) {
-        if (who == mSelf) {
+    } else if (usingCloud(Cloud::RED) && usingCloud(Cloud::RED_SELF)) {
+        if (who == mSelf)
             for (T34 t : tiles34::Z7)
                 mount.lightA(t, -1000, rinshan);
-        }
     }
 
-    if (who == mSelf && mClouds[Cloud::WHITE].on)
+    if (who == mSelf && usingCloud(Cloud::WHITE))
         for (int i = 18; i < 27; i++) // bamboo
             mount.lightA(T34(i), 120, rinshan);
 }
 
-const IrsCheckRow &Sawaya::irsCheckRow(int index) const
+void Sawaya::onIrsChecked(const Table &table, Mount &mount)
 {
+    (void) table;
+
     if (mPredice) {
-        assert(0 <= index && index < Cloud::NUM_CLOUD);
-        return mClouds[index];
+        for (int i = 0; i < Cloud::NUM_CLOUD; i++) {
+            if (mCloudCtrl.itemAt(i).on()) { // consume cloud
+                mCloudCtrl.setAbleAt(i, false);
+                if (i == Cloud::RED) {
+                    mCloudCtrl.setAbleAt(Cloud::RED_SELF, false);
+                    mCloudCtrl.setAbleAt(Cloud::RED_RIVALS, false);
+                }
+            }
+        }
     } else {
-        assert(0 <= index && index < Kamuy::NUM_KAMUY);
-        return mKamuys[index];
-    }
-}
+        for (int i = 0; i < Kamuy::NUM_KAMUY; i++) {
+            if (mKamuyCtrl.itemAt(i).on()) { // consume kamuy
+                mKamuyCtrl.setAbleAt(i, false);
+                if (i == Kamuy::PA_KOR) {
+                    mKamuyCtrl.setAbleAt(Kamuy::PA_KOR_R, false);
+                    mKamuyCtrl.setAbleAt(Kamuy::PA_KOR_C, false);
+                    mKamuyCtrl.setAbleAt(Kamuy::PA_KOR_L, false);
+                }
+            }
+        }
 
-int Sawaya::irsCheckCount() const
-{
-    return mPredice ? static_cast<int>(Cloud::NUM_CLOUD)
-                    : static_cast<int>(Kamuy::NUM_KAMUY);
-}
+        if (usingKamuy(Kamuy::AT_KOR)) {
+            // make dora red
+            // too many Superposition does not matter
+            for (int pos = 0; pos < 5; pos++) {
+                for (T34 t : tiles34::ALL34) {
+                    int mk = t.suit() == Suit::M ? 1000 : -50;
+                    mount.power(Mount::DORAHYOU, pos, t, mk, false);
+                    mount.power(Mount::URAHYOU, pos, t, mk, false);
+                }
+            }
+        }
 
-Choices Sawaya::forwardAction(const Table &table, Mount &mount, const Action &action)
-{
-    assert(action.isIrs());
-
-    Choices cut;
-    cut.setCut();
-
-    switch (action.act()) {
-    case ActCode::IRS_CLICK:
-        return cut;
-    case ActCode::IRS_CHECK:
-        return handleIrsCheck(table, mount, action.mask());
-    default:
-        unreached("Sawaya::forwardAction");
-        break;
+        if (usingKamuy(Kamuy::PA_KOR)) {
+            mConsumedPaKor = true;
+            if (mKamuyCtrl.itemAt(Kamuy::PA_KOR_R).on())
+                mPaKorTarget = mSelf.right();
+            else if (mKamuyCtrl.itemAt(Kamuy::PA_KOR_C).on())
+                mPaKorTarget = mSelf.cross();
+            else if (mKamuyCtrl.itemAt(Kamuy::PA_KOR_L).on())
+                mPaKorTarget = mSelf.left();
+        }
     }
 }
 
@@ -186,7 +184,7 @@ void Sawaya::nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
     (void) init;
     (void) princess;
 
-    if (mClouds[Cloud::RED].on && mClouds[Cloud::RED_RIVALS].on) {
+    if (usingCloud(Cloud::RED) && usingCloud(Cloud::RED_RIVALS)) {
         // (foolish) prevent z-tiles from being wallable dora
         // to be compatable with kuro and awai
         // one possible smarter sol: use a who-is-here mask as condition
@@ -195,13 +193,13 @@ void Sawaya::nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
 
     }
 
-    if (mClouds[Cloud::WHITE].on)
+    if (usingCloud(Cloud::WHITE))
         presence.set(WHITE_CLOUD);
 }
 
 bool Sawaya::canUseRedCloud(unsigned &mask) const
 {
-    if (mPredice && mClouds[Cloud::RED].able) {
+    if (mPredice && mCloudCtrl.itemAt(Cloud::RED).able()) {
         mask = 0;
         mask |= (1 << Cloud::RED);
         mask |= (1 << Cloud::RED_RIVALS);
@@ -213,7 +211,7 @@ bool Sawaya::canUseRedCloud(unsigned &mask) const
 
 bool Sawaya::canUseWhiteCloud(unsigned &mask) const
 {
-    if (mPredice && mClouds[Cloud::WHITE].able) {
+    if (mPredice && mCloudCtrl.itemAt(Cloud::WHITE).able()) {
         mask = 0;
         mask |= (1 << Cloud::WHITE);
         return true;
@@ -222,63 +220,39 @@ bool Sawaya::canUseWhiteCloud(unsigned &mask) const
     }
 }
 
+// deprecated
 bool Sawaya::usingRedCloud() const
 {
-    return mClouds[Cloud::RED].on;
+    return usingCloud(Cloud::RED);
 }
 
-Choices Sawaya::handleIrsCheck(const Table &table, Mount &mount, unsigned mask)
+Girl::IrsCtrlGetter Sawaya::attachIrsOnDice()
 {
-    (void) table;
+    bool hasCloud = mCloudCtrl.choices().irsCheck().any();
+    return hasCloud ? &Sawaya::mCloudCtrl : nullptr;
+}
 
-    if (mPredice) {
-        for (int i = 0; i < Cloud::NUM_CLOUD; i++) {
-            mClouds[i].on = mask & (0b1 << (Cloud::NUM_CLOUD - 1 - i));
-            if (mClouds[i].on) { // consume cloud
-                mClouds[i].able = false;
-                if (i == Cloud::RED) {
-                    mClouds[Cloud::RED_SELF].able = false;
-                    mClouds[Cloud::RED_RIVALS].able = false;
-                }
-            }
-        }
-    } else {
-        for (int i = 0; i < Kamuy::NUM_KAMUY; i++) {
-            mKamuys[i].on = mask & (0b1 << (Kamuy::NUM_KAMUY - 1 - i));
-            if (mKamuys[i].on) { // consume kamuy
-                mKamuys[i].able = false;
-                if (i == Kamuy::PA_KOR) {
-                    mKamuys[Kamuy::PA_KOR_R].able = false;
-                    mKamuys[Kamuy::PA_KOR_C].able = false;
-                    mKamuys[Kamuy::PA_KOR_L].able = false;
-                }
-            }
-        }
+Girl::IrsCtrlGetter Sawaya::attachIrsOnDrawn(const Table &table)
+{
+    const Hand &hand = table.getHand(mSelf);
+    mKamuyCtrl.setAbleAt(Kamuy::PA_KOR, !mConsumedPaKor && hand.ready());
 
-        if (mKamuys[Kamuy::AT_KOR].on) {
-            // make dora red
-            // too many Superposition does not matter
-            for (int pos = 0; pos < 5; pos++) {
-                for (T34 t : tiles34::ALL34) {
-                    int mk = t.suit() == Suit::M ? 1000 : -50;
-                    mount.power(Mount::DORA, pos, t, mk, false);
-                    mount.power(Mount::URADORA, pos, t, mk, false);
-                }
-            }
-        }
-
-        if (mKamuys[Kamuy::PA_KOR].on) {
-            mConsumedPaKor = true;
-            if (mKamuys[Kamuy::PA_KOR_R].on)
-                mPaKorTarget = mSelf.right();
-            else if (mKamuys[Kamuy::PA_KOR_C].on)
-                mPaKorTarget = mSelf.cross();
-            else if (mKamuys[Kamuy::PA_KOR_L].on)
-                mPaKorTarget = mSelf.left();
-        }
+    if (mKamuyCtrl.choices().irsCheck().any()) {
+        mKamuyCtrl.setClickHost(table.getChoices(mSelf));
+        return &Sawaya::mKamuyCtrl;
     }
 
-    return mChoicesBackup;
+    return nullptr;
+}
+
+bool Sawaya::usingCloud(Sawaya::Cloud which) const
+{
+    return mCloudCtrl.itemAt(which).on();
+}
+
+bool Sawaya::usingKamuy(Sawaya::Kamuy which) const
+{
+    return mKamuyCtrl.itemAt(which).on();
 }
 
 
