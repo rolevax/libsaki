@@ -449,6 +449,9 @@ util::Stactor<Action, 14> Ai::listRiichisAsOut(const Hand &hand, const Choices::
     util::Stactor<Action, 14> res;
 
     assert(hand.hasDrawn());
+    if (limits.noRiichi())
+        return res;
+
     if (!limits.noOut(hand.drawn()) && mode.spinRiichi)
         res.pushBack(Action(ActCode::SPIN_OUT));
 
