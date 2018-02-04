@@ -62,8 +62,11 @@ void Shino::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     }
 }
 
-void Shino::onDiscarded(const Table &table, Who who)
+void Shino::onDiscarded(const Table &table, bool spin)
 {
+    (void) spin;
+
+    Who who = table.getFocus().who();
     if (who == mSelf) // self see what see?
         return;
 

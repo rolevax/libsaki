@@ -1,7 +1,7 @@
 #ifndef SAKI_GIRLS_SHIRAITODAI_H
 #define SAKI_GIRLS_SHIRAITODAI_H
 
-#include "../table/irs_chance.h"
+#include "../table/irs_ctrl.h"
 
 
 
@@ -87,7 +87,7 @@ class Takami : public Girl
 public:
     GIRL_CTORS(Takami)
 
-    void onDiscarded(const Table &table, Who who) override;
+    void onDiscarded(const Table &table, bool spin) override;
     void nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
                    std::bitset<NUM_NM_SKILL> &presence,
                    const Princess &princess) override;

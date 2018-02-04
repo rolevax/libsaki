@@ -1,7 +1,7 @@
 #ifndef SAKI_GIRLS_SENRIYAMA_H
 #define SAKI_GIRLS_SENRIYAMA_H
 
-#include "../table/irs_chance.h"
+#include "../table/irs_ctrl.h"
 #include "girls_util_toki.h"
 #include "../table/table_observer.h"
 

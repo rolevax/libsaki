@@ -346,9 +346,11 @@ void Sumire::shapeYaku(const Table &table, Mount &mount, bool rinshan)
 
 
 
-void Takami::onDiscarded(const Table &table, Who who)
+void Takami::onDiscarded(const Table &table, bool spin)
 {
-    if (who != mSelf)
+    (void) spin;
+
+    if (table.getFocus().who() != mSelf)
         return;
 
     if (table.getRiver(mSelf).size() == 1) {

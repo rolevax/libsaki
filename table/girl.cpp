@@ -69,7 +69,8 @@ Girl::Girl(Who who, Id id)
 }
 
 Girl::Girl(const Girl &copy)
-    : mSelf(copy.mSelf)
+    : TableObserver(copy)
+    , mSelf(copy.mSelf)
     , mId(copy.mId)
 {
 }
@@ -107,23 +108,6 @@ void Girl::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
 void Girl::onChooseFirstDealer(util::Rand &rand, Who tempDealer, int &die1, int &die2)
 {
     (void) rand; (void) tempDealer; (void) die1; (void) die2;
-}
-
-void Girl::onDiscarded(const Table &table, Who who)
-{
-    (void) table; (void) who;
-}
-
-void Girl::onRiichiEstablished(const Table &table, Who who)
-{
-    (void) table; (void) who;
-}
-
-void Girl::onRoundEnded(const Table &table, RoundResult result,
-                        const std::vector<Who> &openers, Who gunner,
-                        const std::vector<Form> &fs)
-{
-    (void) table; (void) result; (void) openers; (void) gunner; (void) fs;
 }
 
 void Girl::onIrsChecked(const Table &table, Mount &mount)

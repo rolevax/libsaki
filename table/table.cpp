@@ -15,7 +15,7 @@ namespace saki
 
 
 
-TablePrivate::TablePrivate(const std::array<int, 4> &points,
+TablePrivate::TablePrivate(std::array<int, 4> points,
                            Rule rule, Who tempDealer, const TableEnv &env)
     : mMount(rule.akadora)
     , mRule(rule)
@@ -27,28 +27,30 @@ TablePrivate::TablePrivate(const std::array<int, 4> &points,
 
 
 
-Table::Table(const std::array<int, 4> &points,
-             const std::array<int, 4> &girlIds,
-             const std::vector<TableObserver *> &observers,
+Table::Table(std::array<int, 4> points,
+             std::array<int, 4> girlIds,
+             std::vector<TableObserver *> obs,
              Rule rule, Who tempDealer, const TableEnv &env)
     : TablePrivate(points, rule, tempDealer, env)
-    , mObservers(observers)
 {
-    assert(!util::has(mObservers, static_cast<TableObserver *>(nullptr)));
+    assert(!util::has(mObservers, nullptr));
 
     for (int w = 0; w < 4; w++)
         mGirls[w].reset(Girl::create(Who(w), girlIds[w]));
+
+    setupObservers(obs);
 
     // to choose real init dealer
     mChoicess[mInitDealer.index()].setDice();
 }
 
-Table::Table(const Table &orig, std::vector<TableObserver *> observers)
+Table::Table(const Table &orig, std::vector<TableObserver *> obs)
     : TablePrivate(orig)
-    , mObservers(observers)
 {
     for (int w = 0; w < 4; w++)
         mGirls[w].reset(orig.mGirls[w]->clone());
+
+    setupObservers(obs);
 }
 
 void Table::start()
@@ -463,6 +465,16 @@ void Table::singleAction(Who who, const Action &act)
     }
 }
 
+void Table::setupObservers(const std::vector<TableObserver *> obs)
+{
+    // feature: girls are guaranteed to be the first observers
+    //          because other observer may observe girls' state
+    for (auto &g : mGirls)
+        mObservers.push_back(g.get());
+
+    mObservers.insert(mObservers.end(), obs.begin(), obs.end());
+}
+
 void Table::nextRound()
 {
     clean();
@@ -637,12 +649,7 @@ void Table::swapOut(Who who, const T37 &out)
     mRivers[who.index()].pushBack(out);
     mHands[who.index()].swapOut(out);
 
-    mFocus.focusOnDiscard(who);
-
-    for (auto ob : mObservers)
-        ob->onDiscarded(*this, false);
-
-    onDiscarded();
+    discardEffects(who, false);
 }
 
 void Table::spinOut(Who who)
@@ -653,12 +660,7 @@ void Table::spinOut(Who who)
     mRivers[who.index()].pushBack(out);
     mHands[who.index()].spinOut();
 
-    mFocus.focusOnDiscard(who);
-
-    for (auto ob : mObservers)
-        ob->onDiscarded(*this, true);
-
-    onDiscarded();
+    discardEffects(who, true);
 }
 
 void Table::barkOut(Who who, const T37 &out)
@@ -666,18 +668,15 @@ void Table::barkOut(Who who, const T37 &out)
     mRivers[who.index()].pushBack(out);
     mHands[who.index()].barkOut(out);
 
+    discardEffects(who, false);
+}
+
+void Table::discardEffects(Who who, bool spin)
+{
     mFocus.focusOnDiscard(who);
 
     for (auto ob : mObservers)
-        ob->onDiscarded(*this, false);
-
-    onDiscarded();
-}
-
-void Table::onDiscarded()
-{
-    for (auto &g : mGirls)
-        g->onDiscarded(*this, mFocus.who());
+        ob->onDiscarded(*this, spin);
 
     mIppatsuFlags.reset(mFocus.who().index());
     mFuritens[mFocus.who().index()].doujun = false;
@@ -734,12 +733,9 @@ bool Table::finishRiichi()
     mRiichiHans[w] = noBarkYet() && mRivers[w].size() == 1 ? 2 : 1;
     mIppatsuFlags.set(w);
 
-    for (auto &g : mGirls)
-        g->onRiichiEstablished(*this, mFocus.who());
-
     for (auto ob : mObservers) {
         ob->onPointsChanged(*this);
-        ob->onRiichiEstablished(mFocus.who());
+        ob->onRiichiEstablished(*this, mFocus.who());
     }
 
     if (util::all(mRiichiHans, [](int han) { return han != 0; })) {
@@ -1101,9 +1097,6 @@ void Table::exhaustRound(RoundResult result, const std::vector<Who> &openers)
     }
 
     std::vector<Form> forms; // empty
-    for (auto &g : mGirls)
-        g->onRoundEnded(*this, result, openers, Who(), forms);
-
     for (auto ob : mObservers)
         ob->onRoundEnded(*this, result, openers, Who(), forms);
 
@@ -1149,11 +1142,6 @@ void Table::finishRound(const std::vector<Who> &openers_, Who gunner)
             forms.emplace_back(mHands[w], getFormCtx(who), mRule,
                                mMount.getDrids(), mMount.getUrids());
         }
-    }
-
-    for (auto &g : mGirls) {
-        g->onRoundEnded(*this, isRon ? RoundResult::RON : RoundResult::TSUMO,
-                        openers, gunner, forms);
     }
 
     for (auto ob : mObservers) {

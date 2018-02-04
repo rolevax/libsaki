@@ -30,7 +30,7 @@ class IrsCtrl;
 
 
 
-class Girl
+class Girl : public TableObserver
 {
 public:
     // *INDENT-OFF*
@@ -70,11 +70,14 @@ public:
         NUM_NM_SKILL
     };
 
+    ///
     /// \brief Wrapper of a "T Girl::*" value where T implements IrsCtrl
+    ///
     /// benefits:
     /// - independent from Girl instance, safe to copy
     /// - transparent to the dynamic type of IrsCtrl implementation
     /// - clean syntax
+    ///
     class IrsCtrlGetter
     {
     public:
@@ -164,11 +167,6 @@ public:
     virtual void onInbox(Who who, const Action &action);
     virtual void onDraw(const Table &table, Mount &mount, Who who, bool rinshan);
     virtual void onChooseFirstDealer(util::Rand &rand, Who tempDealer, int &die1, int &die2);
-    virtual void onDiscarded(const Table &table, Who who);
-    virtual void onRiichiEstablished(const Table &table, Who who);
-    virtual void onRoundEnded(const Table &table, RoundResult result,
-                              const std::vector<Who> &openers, Who gunner,
-                              const std::vector<Form> &fs);
     virtual void onIrsChecked(const Table &table, Mount &mount);
 
     void onFilterChoice(const Table &table, Who who, ChoiceFilter &filter);

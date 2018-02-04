@@ -1,7 +1,7 @@
 #ifndef SAKI_GIRLS_USUZAN_H
 #define SAKI_GIRLS_USUZAN_H
 
-#include "../table/irs_chance.h"
+#include "../table/irs_ctrl.h"
 
 
 

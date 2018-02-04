@@ -94,9 +94,11 @@ void Kuro::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     }
 }
 
-void Kuro::onDiscarded(const Table &table, Who who)
+void Kuro::onDiscarded(const Table &table, bool spin)
 {
-    if (who != mSelf)
+    (void) spin;
+
+    if (table.getFocus().who() != mSelf)
         return;
 
     // for equalty, 34/37 not important

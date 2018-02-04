@@ -87,9 +87,9 @@ public:
         (void) who;
     }
 
-    virtual void onRiichiEstablished(Who who)
+    virtual void onRiichiEstablished(const Table &table, Who who)
     {
-        (void) who;
+        (void) table; (void) who;
     }
 
     virtual void onBarked(const Table &table, Who who, const M37 &bark, bool spin)

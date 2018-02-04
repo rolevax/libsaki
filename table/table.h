@@ -35,7 +35,7 @@ struct Furiten
 class TablePrivate
 {
 protected:
-    TablePrivate(const std::array<int, 4> &points,
+    TablePrivate(std::array<int, 4> points,
                  Rule rule, Who tempDealer, const TableEnv &env);
     explicit TablePrivate(const TablePrivate &copy) = default;
     TablePrivate &operator=(const TablePrivate &assign) = delete;
@@ -83,9 +83,9 @@ protected:
 class Table : private TablePrivate
 {
 public:
-    explicit Table(const std::array<int, 4> &points,
-                   const std::array<int, 4> &girlIds,
-                   const std::vector<TableObserver *> &observers,
+    explicit Table(std::array<int, 4> points,
+                   std::array<int, 4> girlIds,
+                   std::vector<TableObserver *> observers,
                    Rule rule, Who tempDealer, const TableEnv &env);
 
     explicit Table(const Table &orig, std::vector<TableObserver *> observers);
@@ -137,6 +137,7 @@ private:
     void process();
     void singleAction(Who who, const Action &act);
 
+    void setupObservers(const std::vector<TableObserver *> obs);
     void nextRound();
     void clean();
     void rollDice();
@@ -146,7 +147,7 @@ private:
     void swapOut(Who who, const T37 &out);
     void spinOut(Who who);
     void barkOut(Who who, const T37 &out);
-    void onDiscarded();
+    void discardEffects(Who who, bool spin);
     void declareRiichi(Who who, const Action &action);
     bool finishRiichi();
     void chii(Who who, ActCode dir, const T37 &out, bool showAka5);
