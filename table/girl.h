@@ -30,6 +30,12 @@ class IrsCtrl;
 
 
 
+///
+/// \brief Base class for skill implementation
+///
+/// Girl's TableObserver callbacks will be called before ordinary observers.
+/// It is not needed to add girls to the observer vector when constructing a Table.
+///
 class Girl : public TableObserver
 {
 public:

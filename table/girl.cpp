@@ -1,16 +1,31 @@
 #include "girl.h"
 
-#include "../girl/girls_shiraitodai.h"
-#include "../girl/girls_achiga.h"
-#include "../girl/girls_senriyama.h"
-#include "../girl/girls_eisui.h"
-#include "../girl/girls_miyamori.h"
-#include "../girl/girls_kiyosumi.h"
-#include "../girl/girls_himematsu.h"
-#include "../girl/girls_usuzan.h"
-#include "../girl/girls_rinkai.h"
-#include "../girl/girls_asakumi.h"
-#include "../girl/girls_other.h"
+#include "../girl/achiga_ako.h"
+#include "../girl/achiga_kuro.h"
+#include "../girl/achiga_yuu.h"
+#include "../girl/eisui_hatsumi.h"
+#include "../girl/eisui_kasumi.h"
+#include "../girl/himematsu_kyouko.h"
+#include "../girl/himematsu_suzu.h"
+#include "../girl/kiyosumi_nodoka.h"
+#include "../girl/kiyosumi_yuuki.h"
+#include "../girl/miyamori_toyone.h"
+#include "../girl/rinkai_huiyu.h"
+#include "../girl/senriyama_sera.h"
+#include "../girl/senriyama_toki.h"
+#include "../girl/shiraitodai_awai.h"
+#include "../girl/shiraitodai_seiko.h"
+#include "../girl/shiraitodai_sumire.h"
+#include "../girl/shiraitodai_takami.h"
+#include "../girl/shiraitodai_teru.h"
+#include "../girl/usuzan_sawaya.h"
+#include "../girl/x_kazue.h"
+#include "../girl/x_kyouka.h"
+#include "../girl/x_rio.h"
+#include "../girl/x_shino.h"
+#include "../girl/x_uta.h"
+#include "../girl/x_yue.h"
+#include "../girl/x_yui.h"
 
 #include "../util/misc.h"
 
@@ -80,6 +95,9 @@ Girl::Id Girl::getId() const
     return mId;
 }
 
+///
+/// \brief Called when someone is about to dice
+///
 void Girl::onDice(util::Rand &rand, const Table &table)
 {
     (void) rand; (void) table;
@@ -100,6 +118,9 @@ void Girl::onInbox(Who who, const Action &action)
     (void) who; (void) action;
 }
 
+///
+/// \brief Called when someone is about to draw a tile from the mountain
+///
 void Girl::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
 {
     (void) table; (void) mount; (void) who; (void) rinshan;
@@ -110,22 +131,34 @@ void Girl::onChooseFirstDealer(util::Rand &rand, Who tempDealer, int &die1, int 
     (void) rand; (void) tempDealer; (void) die1; (void) die2;
 }
 
+///
+/// \brief Called after self's IRS-check action
+///
 void Girl::onIrsChecked(const Table &table, Mount &mount)
 {
     (void) table; (void) mount;
 }
 
+///
+/// \brief Called on the choice-filtering stage
+///
 void Girl::onFilterChoice(const Table &table, Who who, ChoiceFilter &filter)
 {
     filter.join(filterChoice(table, who));
 }
 
+///
+/// \brief Called when the dealer (self or not) is about to dice
+///
 void Girl::onActivateDice(const Table &table)
 {
     if (!table.beforeEast1())
         mIrsCtrlGetter = attachIrsOnDice();
 }
 
+///
+/// \brief Called when self is about to be activated
+///
 void Girl::onActivate(const Table &table)
 {
     const Choices &choices = table.getChoices(mSelf);
@@ -138,11 +171,19 @@ void Girl::onActivate(const Table &table)
     }
 }
 
+///
+/// \brief Whether the girl is ready to process an IRS action input
+/// \return true if ready
+///
 bool Girl::irsReady() const
 {
     return mIrsCtrlGetter.ready();
 }
 
+///
+/// \brief IRS choice set if IRS-ready, undefined otherwise
+/// \return The IRS choice set
+///
 const Choices &Girl::irsChoices() const
 {
     // non-const in the middle, but eventually const
@@ -162,6 +203,10 @@ std::string Girl::popUpStr() const
     unreached("unoverriden popUpStr()");
 }
 
+///
+/// \brief Process an IRS action input
+/// \return true if handled, false if the action should be handled by Table
+///
 bool Girl::handleIrs(const Table &table, Mount &mount, const Action &action)
 {
     auto icg = mIrsCtrlGetter;
@@ -202,11 +247,21 @@ ChoiceFilter Girl::filterChoice(const Table &table, Who who)
     return ChoiceFilter();
 }
 
+///
+/// \brief Overriden to define a dice-time IRS's showing condition
+/// \return A valid IrsCtrlGetter if an IRS chance should be attached,
+///         nullptr if the ordinary Table flow should be taken.
+///
 Girl::IrsCtrlGetter Girl::attachIrsOnDice()
 {
     return nullptr;
 }
 
+///
+/// \brief Overriden to define a drawn-time IRS's showing condition
+/// \return A valid IrsCtrlGetter if an IRS chance should be attached,
+///         nullptr if the ordinary Table flow should be taken.
+///
 Girl::IrsCtrlGetter Girl::attachIrsOnDrawn(const Table &table)
 {
     (void) table;

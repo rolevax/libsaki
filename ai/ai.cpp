@@ -1,12 +1,15 @@
 #include "ai.h"
 
-#include "ai_shiraitodai.h"
-#include "ai_achiga.h"
-#include "ai_miyamori.h"
-#include "ai_senriyama.h"
-#include "ai_eisui.h"
-#include "ai_kiyosumi.h"
-#include "ai_usuzan.h"
+#include "ai_achiga_kuro.h"
+#include "ai_eisui_hatsumi.h"
+#include "ai_eisui_kasumi.h"
+#include "ai_kiyosumi_nodoka.h"
+#include "ai_miyamori_toyone.h"
+#include "ai_shiraitodai_awai.h"
+#include "ai_shiraitodai_seiko.h"
+#include "ai_shiraitodai_takami.h"
+#include "ai_usuzan_sawaya.h"
+
 #include "../util/debug_cheat.h"
 #include "../util/misc.h"
 
@@ -74,7 +77,6 @@ Ai *Ai::create(Who who, Girl::Id id)
     case Girl::Id::MATANO_SEIKO:        return new AiSeiko(who);
     case Girl::Id::OOHOSHI_AWAI:        return new AiAwai(who);
     case Girl::Id::MATSUMI_KURO:        return new AiKuro(who);
-    case Girl::Id::ONJOUJI_TOKI:        return new AiToki(who);
     case Girl::Id::USUZUMI_HATSUMI:     return new AiHatsumi(who);
     case Girl::Id::IWATO_KASUMI:        return new AiKasumi(who);
     case Girl::Id::ANETAI_TOYONE:       return new AiToyone(who);
