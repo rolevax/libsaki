@@ -320,7 +320,10 @@ void TokiMountTracker::onDrawn(const Table &table, Who who)
 {
     // fix the mount.
     // fixing random generator is not enough,
-    // because the mount should appears the same even order is different
+    // because the mount should be irrelavant from humans' drawing order.
+    // (i.e. the applying order of the four mount-exits)
+    // giving each exit a random seed is not enough either,
+    // because we have to consider remaining tiles.
     const T37 &t = table.getHand(who).drawn();
     mReal.pin(table.duringKan() ? Mount::RINSHAN : Mount::PII,
               table.duringKan() ? mDeadPos++ : mWallPos++, t);
@@ -584,11 +587,9 @@ IrsResult Toki::handlePredict(const Table &table, Mount &mount, const Action &ac
 {
     popUpBy(table, PopUpMode::OO);
 
-    // clone the table, and attach a mount tracker
     TokiMountTracker mountTracker(mount, mSelf);
     Table future(table, { &mountTracker });
 
-    // run simulation
     TokiHumanSimulator ths(action, makeIdArray(table));
     TableTester tester(future, ths.makeDeciders());
     tester.run(true);

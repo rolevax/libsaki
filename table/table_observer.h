@@ -19,13 +19,14 @@ namespace saki
 using River = util::Stactor<T37, 24>;
 
 class Table;
-class Player;
 
 enum class RoundResult
 {
     // *** SYNC with string_enum.cpp ***
     TSUMO, RON, HP, KSKP, SFRT, SKSR, SCRC, SCHR, NGSMG, ABORT, NUM_ROUNDRES
 };
+
+
 
 class TableObserver
 {
@@ -54,7 +55,6 @@ public:
 
     virtual void onCleaned()
     {
-
     }
 
     virtual void onDiced(const Table &table, int die1, int die2)

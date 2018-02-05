@@ -83,13 +83,6 @@ Girl::Girl(Who who, Id id)
 {
 }
 
-Girl::Girl(const Girl &copy)
-    : TableObserver(copy)
-    , mSelf(copy.mSelf)
-    , mId(copy.mId)
-{
-}
-
 Girl::Id Girl::getId() const
 {
     return mId;
@@ -209,10 +202,12 @@ std::string Girl::popUpStr() const
 ///
 bool Girl::handleIrs(const Table &table, Mount &mount, const Action &action)
 {
-    auto icg = mIrsCtrlGetter;
-    mIrsCtrlGetter = nullptr;
-    IrsResult res = icg.get(*this).handle(*this, table, mount, action);
-    mIrsCtrlGetter = res.next;
+    // guaranteed behavior:
+    // clear the attached getter before handling anything
+    auto getter = std::move(mIrsCtrlGetter);
+
+    IrsResult res = getter.get(*this).handle(*this, table, mount, action);
+    mIrsCtrlGetter = std::move(res.next);
     return res.handled;
 }
 

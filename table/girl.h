@@ -108,9 +108,14 @@ public:
         {
         }
 
-        IrsCtrlGetter &operator=(const IrsCtrlGetter &that)
+        IrsCtrlGetter(IrsCtrlGetter &&move)
+            : mImpl(std::move(move.mImpl))
         {
-            mImpl.reset(that.mImpl == nullptr ? nullptr : that.mImpl->clone());
+        }
+
+        IrsCtrlGetter &operator=(IrsCtrlGetter &&that)
+        {
+            mImpl = std::move(that.mImpl);
             return *this;
         }
 
@@ -192,7 +197,7 @@ public:
 
 protected:
     Girl(Who who, Id id);
-    Girl(const Girl &copy);
+    Girl(const Girl &copy) = default;
 
     static void eraseRivered(util::Stactor<T34, 34> &ts, const River &river);
     static void eraseRivered(std::bitset<34> &ts, const River &river);
