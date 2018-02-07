@@ -7,11 +7,6 @@ namespace saki
 
 
 
-AiStub::AiStub(Who who)
-    : Ai(who)
-{
-}
-
 Action AiStub::think(const TableView &view, Ai::Limits &limits)
 {
     (void) limits;

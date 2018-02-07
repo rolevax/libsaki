@@ -36,7 +36,7 @@ Table::Table(std::array<int, 4> points,
     assert(!util::has(mObservers, nullptr));
 
     for (int w = 0; w < 4; w++)
-        mGirls[w].reset(Girl::create(Who(w), girlIds[w]));
+        mGirls[w] = Girl::create(Who(w), girlIds[w]);
 
     setupObservers(obs);
 
@@ -48,15 +48,16 @@ Table::Table(const Table &orig, std::vector<TableObserver *> obs)
     : TablePrivate(orig)
 {
     for (int w = 0; w < 4; w++)
-        mGirls[w].reset(orig.mGirls[w]->clone());
+        mGirls[w] = orig.mGirls[w]->clone();
 
     setupObservers(obs);
 }
 
 void Table::start()
 {
+    TableEvent event = TableEvent::TableStarted { mRand.state() };
     for (auto ob : mObservers)
-        ob->onTableStarted(*this, mRand.state());
+        ob->onTableEvent(*this, event);
 
     activate();
 }
@@ -138,7 +139,7 @@ const River &Table::getRiver(Who who) const
 std::unique_ptr<TableView> Table::getView(Who who) const
 {
     // use polymorphic views in the future
-    return std::unique_ptr<TableView>(new TableViewReal(*this, who));
+    return util::unique<TableViewReal>(*this, who);
 }
 
 const Furiten &Table::getFuriten(Who who) const
@@ -368,8 +369,9 @@ const TableEnv &Table::getEnv() const
 
 void Table::popUp(Who who) const
 {
+    TableEvent event = TableEvent::PoppedUp { who };
     for (auto ob : mObservers)
-        ob->onPoppedUp(*this, who);
+        ob->onTableEvent(*this, event);
 }
 
 
@@ -379,9 +381,8 @@ void Table::popUp(Who who) const
 void Table::process()
 {
     // select out those actions with highest priority
-    std::vector<Who> actors;
+    util::Stactor<Who, 4> actors;
     ActCode maxAct = ActCode::NOTHING;
-    actors.reserve(4);
     for (int w = 0; w < 4; w++) {
         if (mActionInbox[w].act() > maxAct) {
             actors.clear();
@@ -389,7 +390,7 @@ void Table::process()
         }
 
         if (mActionInbox[w].act() == maxAct)
-            actors.push_back(Who(w));
+            actors.pushBack(Who(w));
     }
 
     assert(!actors.empty());
@@ -421,7 +422,7 @@ void Table::process()
 
 void Table::singleAction(Who who, const Action &act)
 {
-    std::vector<Who> openers = { who };
+    util::Stactor<Who, 4> openers = { who };
 
     switch (act.act()) {
     case ActCode::SWAP_OUT:
@@ -499,9 +500,13 @@ void Table::nextRound()
     mExtraRound = !mToChangeDealer || mPrevIsRyuu ? mExtraRound + 1 : 0;
 #endif
 
+    TableEvent event = TableEvent::RoundStarted {
+        mRound, mExtraRound, mDealer,
+        mAllLast, mDeposit, mRand.state()
+    };
+
     for (auto ob : mObservers)
-        ob->onRoundStarted(mRound, mExtraRound, mDealer,
-                           mAllLast, mDeposit, mRand.state());
+        ob->onTableEvent(*this, event);
 
     mMount = Mount(mRule.akadora);
 
@@ -530,8 +535,9 @@ void Table::clean()
     mKanContext = KanCtx();
     mDice = 0; // zero to mark not rolled yet
 
+    TableEvent event = TableEvent::Cleaned {};
     for (auto ob : mObservers)
-        ob->onCleaned();
+        ob->onTableEvent(*this, event);
 }
 
 void Table::rollDice()
@@ -546,15 +552,17 @@ void Table::rollDice()
 
     mDice = die1 + die2;
 
+    TableEvent event = TableEvent::Diced { die1, die2 };
     for (auto ob : mObservers)
-        ob->onDiced(*this, die1, die2);
+        ob->onTableEvent(*this, event);
 
     if (beforeEast1()) {
         mInitDealer = mInitDealer.byDice(mDice);
         mDealer = mInitDealer;
 
+        TableEvent event = TableEvent::FirstDealerChosen { mInitDealer };
         for (auto ob : mObservers)
-            ob->onFirstDealerChoosen(mInitDealer);
+            ob->onTableEvent(*this, event);
 
         nextRound(); // enter first round
     } else {
@@ -566,8 +574,9 @@ void Table::deal()
 {
     mHands = Princess(*this, mRand, mMount, mGirls).deal();
 
+    TableEvent event = TableEvent::Dealt {};
     for (auto ob : mObservers)
-        ob->onDealt(*this);
+        ob->onTableEvent(*this, event);
 
     flip();
 
@@ -578,8 +587,9 @@ void Table::flip()
 {
     mMount.flipIndic(mRand);
 
+    TableEvent event = TableEvent::Flipped {};
     for (auto ob : mObservers)
-        ob->onFlipped(*this);
+        ob->onTableEvent(*this, event);
 }
 
 void Table::tryDraw(Who who)
@@ -619,23 +629,24 @@ void Table::tryDraw(Who who)
 
         mChoicess[w].setDrawn(mode);
 
+        TableEvent event = TableEvent::Drawn { who };
         for (auto ob : mObservers)
-            ob->onDrawn(*this, who);
+            ob->onTableEvent(*this, event);
     } else { // wall empty
         assert(!rinshan);
 
-        std::vector<Who> swimmers;
+        util::Stactor<Who, 4> swimmers;
         for (int w = 0; w < 4; w++)
             if (nagashimangan(Who(w)))
-                swimmers.push_back(Who(w));
+                swimmers.pushBack(Who(w));
 
         if (mRule.nagashimangan && !swimmers.empty()) {
             exhaustRound(RoundResult::NGSMG, swimmers);
         } else {
-            std::vector<Who> openers;
+            util::Stactor<Who, 4> openers;
             for (int w = 0; w < 4; w++)
                 if (mHands[w].ready())
-                    openers.push_back(Who(w));
+                    openers.pushBack(Who(w));
 
             exhaustRound(RoundResult::HP, openers);
         }
@@ -675,17 +686,18 @@ void Table::discardEffects(Who who, bool spin)
 {
     mFocus.focusOnDiscard(who);
 
+    TableEvent event = TableEvent::Discarded { spin };
     for (auto ob : mObservers)
-        ob->onDiscarded(*this, spin);
+        ob->onTableEvent(*this, event);
 
     mIppatsuFlags.reset(mFocus.who().index());
     mFuritens[mFocus.who().index()].doujun = false;
 
     if (checkDeathWinds()) {
-        std::vector<Who> openers; // those who wasted 1000 points
+        util::Stactor<Who, 4> openers; // those who wasted 1000 points
         for (int w = 0; w < 4; w++)
             if (riichiEstablished(Who(w)))
-                openers.emplace_back(w);
+                openers.pushBack(Who(w));
 
         exhaustRound(RoundResult::SFRT, openers);
         return;
@@ -712,8 +724,10 @@ void Table::declareRiichi(Who who, const Action &action)
 {
     mToEstablishRiichi = true;
     mLayPositions[who.index()] = mRivers[who.index()].size();
+
+    TableEvent event = TableEvent::RiichiCalled { who };
     for (auto ob : mObservers)
-        ob->onRiichiCalled(who);
+        ob->onTableEvent(*this, event);
 
     if (action.act() == ActCode::SWAP_RIICHI)
         swapOut(who, action.t37());
@@ -733,13 +747,15 @@ bool Table::finishRiichi()
     mRiichiHans[w] = noBarkYet() && mRivers[w].size() == 1 ? 2 : 1;
     mIppatsuFlags.set(w);
 
+    TableEvent eventPoints = TableEvent::PointsChanged {};
+    TableEvent eventRiichi = TableEvent::RiichiEstablished { mFocus.who() };
     for (auto ob : mObservers) {
-        ob->onPointsChanged(*this);
-        ob->onRiichiEstablished(*this, mFocus.who());
+        ob->onTableEvent(*this, eventPoints);
+        ob->onTableEvent(*this, eventRiichi);
     }
 
     if (util::all(mRiichiHans, [](int han) { return han != 0; })) {
-        std::vector<Who> openers { Who(0), Who(1), Who(2), Who(3) };
+        util::Stactor<Who, 4> openers { Who(0), Who(1), Who(2), Who(3) };
         exhaustRound(RoundResult::SCRC, openers);
         return false;
     }
@@ -765,8 +781,9 @@ void Table::chii(Who who, ActCode dir, const T37 &out, bool showAka5)
 
     (mHands[who.index()].*pChii)(getFocusTile(), showAka5);
 
+    TableEvent event = TableEvent::Barked { who, mHands[who.index()].barks().back(), false };
     for (auto ob : mObservers)
-        ob->onBarked(*this, who, mHands[who.index()].barks().back(), false);
+        ob->onTableEvent(*this, event);
 
     barkOut(who, out);
 }
@@ -778,8 +795,9 @@ void Table::pon(Who who, const T37 &out, int showAka5)
     int layIndex = who.looksAt(mFocus.who());
     mHands[who.index()].pon(getFocusTile(), showAka5, layIndex);
 
+    TableEvent event = TableEvent::Barked { who, mHands[who.index()].barks().back(), false };
     for (auto ob : mObservers)
-        ob->onBarked(*this, who, mHands[who.index()].barks().back(), false);
+        ob->onTableEvent(*this, event);
 
     barkOut(who, out);
 }
@@ -793,8 +811,9 @@ void Table::daiminkan(Who who)
     int layIndex = who.looksAt(mFocus.who());
     mHands[who.index()].daiminkan(getFocusTile(), layIndex);
 
+    TableEvent event = TableEvent::Barked { who, mHands[who.index()].barks().back(), false };
     for (auto ob : mObservers)
-        ob->onBarked(*this, who, mHands[who.index()].barks().back(), false);
+        ob->onTableEvent(*this, event);
 
     finishKan(who);
 }
@@ -830,8 +849,9 @@ void Table::ankan(Who who, T34 tile)
     mHands[w].ankan(tile);
     mFocus.focusOnChankan(who, mHands[who.index()].barks().size() - 1);
 
+    TableEvent event = TableEvent::Barked { who, mHands[who.index()].barks().back(), spin };
     for (auto ob : mObservers)
-        ob->onBarked(*this, who, mHands[who.index()].barks().back(), spin);
+        ob->onTableEvent(*this, event);
 
     checkChankan(true);
 
@@ -857,8 +877,9 @@ void Table::kakan(Who who, int barkId)
     mFocus.focusOnChankan(who, barkId);
     const M37 &kanMeld = mHands[who.index()].barks()[barkId];
 
+    TableEvent event = TableEvent::Barked { who, kanMeld, spin };
     for (auto ob : mObservers)
-        ob->onBarked(*this, who, kanMeld, spin);
+        ob->onTableEvent(*this, event);
 
     checkChankan();
 
@@ -869,10 +890,10 @@ void Table::kakan(Who who, int barkId)
 void Table::finishKan(Who who)
 {
     if (kanOverflow(who)) {
-        std::vector<Who> openers;
+        util::Stactor<Who, 4> openers;
         for (int w = 0; w < 4; w++)
             if (riichiEstablished(Who(w)))
-                openers.emplace_back(w);
+                openers.pushBack(Who(w));
 
         exhaustRound(RoundResult::SKSR, openers);
         return;
@@ -1062,7 +1083,7 @@ bool Table::nagashimangan(Who who) const
            && mPickeds[w].none();
 }
 
-void Table::exhaustRound(RoundResult result, const std::vector<Who> &openers)
+void Table::exhaustRound(RoundResult result, const util::Stactor<Who, 4> &openers)
 {
     if (result == RoundResult::HP) {
         std::array<bool, 4> tenpai { false, false, false, false };
@@ -1097,19 +1118,21 @@ void Table::exhaustRound(RoundResult result, const std::vector<Who> &openers)
     }
 
     std::vector<Form> forms; // empty
+    TableEvent eventEnd = TableEvent::RoundEnded { result, openers, Who(), forms };
     for (auto ob : mObservers)
-        ob->onRoundEnded(*this, result, openers, Who(), forms);
+        ob->onTableEvent(*this, eventEnd);
 
+    TableEvent eventPoints = TableEvent::PointsChanged {};
     for (auto ob : mObservers)
-        ob->onPointsChanged(*this);
+        ob->onTableEvent(*this, eventPoints);
 
     endOrNext();
     mPrevIsRyuu = true;
 }
 
-void Table::finishRound(const std::vector<Who> &openers_, Who gunner)
+void Table::finishRound(const util::Stactor<Who, 4> &openers_, Who gunner)
 {
-    std::vector<Who> openers(openers_); // non-const copy
+    util::Stactor<Who, 4> openers(openers_); // non-const copy
     assert(!openers.empty());
 
     bool isRon = gunner.somebody();
@@ -1144,10 +1167,13 @@ void Table::finishRound(const std::vector<Who> &openers_, Who gunner)
         }
     }
 
-    for (auto ob : mObservers) {
-        ob->onRoundEnded(*this, isRon ? RoundResult::RON : RoundResult::TSUMO,
-                         openers, gunner, forms);
-    }
+    TableEvent eventEnd = TableEvent::RoundEnded {
+        isRon ? RoundResult::RON : RoundResult::TSUMO,
+        openers, gunner, forms
+    };
+
+    for (auto ob : mObservers)
+        ob->onTableEvent(*this, eventEnd);
 
     // the closest player (or the tsumo player) takes deposit
     mPoints[openers[0].index()] += mDeposit;
@@ -1175,8 +1201,9 @@ void Table::finishRound(const std::vector<Who> &openers_, Who gunner)
         }
     }
 
+    TableEvent eventPoints = TableEvent::PointsChanged {};
     for (auto ob : mObservers)
-        ob->onPointsChanged(*this);
+        ob->onTableEvent(*this, eventPoints);
 
     mToChangeDealer = !util::has(openers.begin(), openers.begin() + ticket, mDealer);
     endOrNext();
@@ -1220,8 +1247,9 @@ void Table::endTable()
         sc = sc > 0 ? q : -q;
     }
 
+    TableEvent event = TableEvent::TableEnded { rank, scores };
     for (auto ob : mObservers)
-        ob->onTableEnded(rank, scores);
+        ob->onTableEvent(*this, event);
 }
 
 

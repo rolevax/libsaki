@@ -4,6 +4,7 @@
 #include <functional>
 #include <algorithm>
 #include <iostream>
+#include <memory>
 
 
 
@@ -18,7 +19,18 @@ namespace util
 
 
 ///
-/// @brief same as boost:all_of
+/// \brief C++14 std::make_unique, but not forbidding arrays
+///
+/// Sadly, for compatibility reasons, we cannot directly use C++14/17.
+///
+template<typename T, typename... Args>
+std::unique_ptr<T> unique(Args && ... args)
+{
+    return std::unique_ptr<T>(new T(std::forward<Args>(args) ...));
+}
+
+///
+/// \brief same as boost:all_of
 ///
 template<typename V, typename Pred>
 inline bool all(const V &v, Pred f)
@@ -27,7 +39,7 @@ inline bool all(const V &v, Pred f)
 }
 
 ///
-/// @brief same as std::all_of
+/// \brief same as std::all_of
 ///
 template<typename Iter, typename Pred>
 inline bool all(Iter begin, Iter end, Pred f)
@@ -36,7 +48,7 @@ inline bool all(Iter begin, Iter end, Pred f)
 }
 
 ///
-/// @brief same as boost::any_of
+/// \brief same as boost::any_of
 ///
 template<typename V, typename Pred>
 inline bool any(const V &v, Pred f)
@@ -45,7 +57,7 @@ inline bool any(const V &v, Pred f)
 }
 
 ///
-/// @brief same as std::any_of
+/// \brief same as std::any_of
 ///
 template<typename Iter, typename Pred>
 inline bool any(Iter begin, Iter end, Pred f)
@@ -54,7 +66,7 @@ inline bool any(Iter begin, Iter end, Pred f)
 }
 
 ///
-/// @brief same as boost::none_of
+/// \brief same as boost::none_of
 ///
 template<typename V, typename Pred>
 inline bool none(const V &v, Pred f)
@@ -63,7 +75,7 @@ inline bool none(const V &v, Pred f)
 }
 
 ///
-/// @brief same as std::none_of
+/// \brief same as std::none_of
 ///
 template<typename Iter, typename Pred>
 inline bool none(Iter begin, Iter end, Pred f)
@@ -72,7 +84,7 @@ inline bool none(Iter begin, Iter end, Pred f)
 }
 
 ///
-/// @brief same as boost::any_of_equal
+/// \brief same as boost::any_of_equal
 ///
 template<typename V, typename T>
 inline bool has(const V &v, T e)
@@ -81,7 +93,7 @@ inline bool has(const V &v, T e)
 }
 
 ///
-/// @brief same as boost::any_of_equal
+/// \brief same as boost::any_of_equal
 ///
 template<typename Iter, typename T>
 inline bool has(Iter begin, Iter end, T e)
@@ -122,7 +134,7 @@ inline V maxs(V inputs, F measure, int floor)
 }
 
 ///
-/// @brief alias for 'std::cout << arg << std::endl;', just save typing
+/// \brief alias for 'std::cout << arg << std::endl;', just save typing
 ///
 template<typename T>
 inline void p(T arg)
@@ -131,7 +143,7 @@ inline void p(T arg)
 }
 
 ///
-/// @brief alias for 'std::cout << arg1 << arg2 << ... << std::endl;', just save typing
+/// \brief alias for 'std::cout << arg1 << arg2 << ... << std::endl;', just save typing
 ///
 template<typename T, typename... Args>
 inline void p(T t, Args... args)

@@ -1,10 +1,8 @@
-#ifndef SAKI_TABLEOBSERVER_H
-#define SAKI_TABLEOBSERVER_H
+#ifndef SAKI_TABLE_OBSERVER_H
+#define SAKI_TABLE_OBSERVER_H
 
-#include "../unit/action.h"
-#include "../form/form.h"
+#include "table_event.h"
 
-#include <cstdint>
 #include <vector>
 #include <array>
 
@@ -20,25 +18,72 @@ using River = util::Stactor<T37, 24>;
 
 class Table;
 
-enum class RoundResult
-{
-    // *** SYNC with string_enum.cpp ***
-    TSUMO, RON, HP, KSKP, SFRT, SKSR, SCRC, SCHR, NGSMG, ABORT, NUM_ROUNDRES
-};
-
 
 
 class TableObserver
 {
 public:
-    TableObserver() = default;
-    TableObserver(const TableObserver &copy) = default;
-    TableObserver &operator=(const TableObserver &assign) = default;
     virtual ~TableObserver() = default;
 
+    virtual void onTableEvent(const Table &table, const TableEvent &event)
+    {
+        (void) table; (void) event;
+    }
+};
+
+
+
+class TableObserverDispatched : public TableObserver
+{
+public:
+    virtual ~TableObserverDispatched() = default;
+
+    void onTableEvent(const Table &table, const TableEvent &event) final
+    {
+        using T = TableEvent::Type;
+        switch (event.type()) {
+        case T::TABLE_STARTED:
+            // onTableStarted(table, event.as<TableEvent::TableStarted>());
+            break;
+        case T::FIRST_DEALER_CHOSEN:
+            break;
+        case T::ROUND_STARTED:
+            break;
+        case T::CLEANED:
+            break;
+        case T::DICED:
+            break;
+        case T::DEALT:
+            break;
+        case T::FLIPPED:
+            break;
+        case T::DRAWN:
+            break;
+        case T::DISCARDED:
+            break;
+        case T::RIICHI_CALLED:
+            break;
+        case T::RIICHI_ESTABLISHED:
+            break;
+        case T::BARKED:
+            break;
+        case T::ROUND_ENDED:
+            break;
+        case T::POINTS_CHANGED:
+            break;
+        case T::TABLE_ENDED:
+            break;
+        case T::POPPED_UP:
+            break;
+        }
+    }
+
+    // virtual void onTableStarted(const Table &table, const TableEvent::TableStarted &event) = 0;
+
+    // deprecated
     virtual void onTableStarted(const Table &table, uint32_t seed)
     {
-        (void) table; (void) seed;
+        (void) seed;
     }
 
     virtual void onFirstDealerChoosen(Who initDealer)
@@ -128,4 +173,4 @@ public:
 
 
 
-#endif // SAKI_TABLEOBSERVER_H
+#endif // SAKI_TABLE_OBSERVER_H

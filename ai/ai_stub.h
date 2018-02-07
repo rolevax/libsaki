@@ -13,7 +13,6 @@ namespace saki
 class AiStub : public Ai
 {
 public:
-    explicit AiStub(Who who);
     Action think(const TableView &view, Limits &limits) override;
 };
 

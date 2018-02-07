@@ -70,25 +70,25 @@ void Ai::Limits::addNoOut(T34 t)
 
 
 
-Ai *Ai::create(Who who, Girl::Id id)
+std::unique_ptr<Ai> Ai::create(Girl::Id id)
 {
     switch (id) {
-    case Girl::Id::SHIBUYA_TAKAMI:      return new AiTakami(who);
-    case Girl::Id::MATANO_SEIKO:        return new AiSeiko(who);
-    case Girl::Id::OOHOSHI_AWAI:        return new AiAwai(who);
-    case Girl::Id::MATSUMI_KURO:        return new AiKuro(who);
-    case Girl::Id::USUZUMI_HATSUMI:     return new AiHatsumi(who);
-    case Girl::Id::IWATO_KASUMI:        return new AiKasumi(who);
-    case Girl::Id::ANETAI_TOYONE:       return new AiToyone(who);
-    case Girl::Id::HARAMURA_NODOKA:     return new AiNodoka(who);
-    case Girl::Id::SHISHIHARA_SAWAYA:   return new AiSawaya(who);
-    default: return new Ai(who);
+    case Girl::Id::SHIBUYA_TAKAMI:      return util::unique<AiTakami>();
+    case Girl::Id::MATANO_SEIKO:        return util::unique<AiSeiko>();
+    case Girl::Id::OOHOSHI_AWAI:        return util::unique<AiAwai>();
+    case Girl::Id::MATSUMI_KURO:        return util::unique<AiKuro>();
+    case Girl::Id::USUZUMI_HATSUMI:     return util::unique<AiHatsumi>();
+    case Girl::Id::IWATO_KASUMI:        return util::unique<AiKasumi>();
+    case Girl::Id::ANETAI_TOYONE:       return util::unique<AiToyone>();
+    case Girl::Id::HARAMURA_NODOKA:     return util::unique<AiNodoka>();
+    case Girl::Id::SHISHIHARA_SAWAYA:   return util::unique<AiSawaya>();
+    default: return util::unique<Ai>();
     }
 }
 
 Action Ai::thinkStdDrawnAttack(const TableView &view)
 {
-    Ai ai(view.self());
+    Ai ai;
     Limits limits;
 
     return ai.thinkDrawnAttack(view, limits);
@@ -113,11 +113,6 @@ TableDecider::Decision Ai::decide(const TableView &view)
 
     assert(decision.action.act() != ActCode::NOTHING);
     return decision;
-}
-
-Ai::Ai(Who who)
-{
-    (void) who; // historical, might be useless
 }
 
 Action Ai::thinkIrs(const TableView &view)

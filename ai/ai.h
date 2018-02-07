@@ -5,11 +5,6 @@
 
 
 
-#define AI_CTORS(Name) \
-    explicit Name(Who who) : Ai(who) {}
-
-
-
 namespace saki
 {
 
@@ -42,9 +37,10 @@ public:
         std::bitset<34> mNoOut34s;
     };
 
-    static Ai *create(Who who, Girl::Id id);
+    static std::unique_ptr<Ai> create(Girl::Id id);
     static Action thinkStdDrawnAttack(const TableView &view);
 
+    Ai() = default;
     virtual ~Ai() = default;
 
     Ai(const Ai &copy) = delete;
@@ -53,8 +49,6 @@ public:
     Decision decide(const TableView &view) final;
 
 protected:
-    Ai(Who who);
-
     Action maxHappy(const TableView &view);
     virtual Action thinkIrs(const TableView &view);
     virtual Action think(const TableView &view, Limits &limits);

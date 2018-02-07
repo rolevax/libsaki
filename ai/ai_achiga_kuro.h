@@ -13,7 +13,6 @@ namespace saki
 class AiKuro : public Ai
 {
 public:
-    AI_CTORS(AiKuro)
     Action think(const TableView &view, Limits &limits) override;
 };
 

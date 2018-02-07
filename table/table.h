@@ -167,8 +167,8 @@ private:
     void checkSutehaiFuriten();
     void passRon(Who who);
     bool nagashimangan(Who who) const;
-    void exhaustRound(RoundResult result, const std::vector<Who> &openers);
-    void finishRound(const std::vector<Who> &openers, Who gunner);
+    void exhaustRound(RoundResult result, const util::Stactor<Who, 4> &openers);
+    void finishRound(const util::Stactor<Who, 4> &openers, Who gunner);
     void endOrNext();
     void endTable();
 

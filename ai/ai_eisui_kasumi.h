@@ -13,7 +13,6 @@ namespace saki
 class AiKasumi : public Ai
 {
 public:
-    AI_CTORS(AiKasumi)
     Action thinkIrs(const TableView &view) override;
 };
 

@@ -13,7 +13,6 @@ namespace saki
 class AiSawaya : public Ai
 {
 public:
-    AI_CTORS(AiSawaya)
     Action thinkIrs(const TableView &view) override;
     Action think(const TableView &view, Limits &limits) override;
 };

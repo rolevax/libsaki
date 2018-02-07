@@ -111,7 +111,7 @@ private:
     util::Stactor<T37, 5> mUrids;
 };
 
-class TokiMountTracker : public TableObserver
+class TokiMountTracker : public TableObserverDispatched
 {
 public:
     explicit TokiMountTracker(Mount &mount, Who self);
@@ -403,9 +403,9 @@ TokiHumanSimulator::TokiHumanSimulator(const Action &firstAction,
 {
     for (int w = 0; w < 4; w++) {
         if (ids[w] == Girl::Id::ONJOUJI_TOKI)
-            mAis[w].reset(nullptr);
+            mAis[w] = nullptr;
         else
-            mAis[w].reset(Ai::create(Who(w), ids[w]));
+            mAis[w] = Ai::create(ids[w]);
     }
 }
 

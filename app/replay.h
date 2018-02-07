@@ -51,7 +51,7 @@ struct TableSnap
     const PlayerSnap &operator[](int w) const { return players[w]; }
 };
 
-class Replay : public TableObserver
+class Replay : public TableObserverDispatched
 {
 public:
     enum In

@@ -129,7 +129,7 @@ void testTable()
     for (int iter = 0; iter < 20; iter++) {
         util::p(iter);
         for (int w = 0; w < 4; w++) {
-            ais[w].reset(Ai::create(Who(w), Girl::Id(girlIds[w])));
+            ais[w] = Ai::create(Girl::Id(girlIds[w]));
             deciders[w] = ais[w].get();
         }
 

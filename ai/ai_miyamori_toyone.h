@@ -13,7 +13,6 @@ namespace saki
 class AiToyone : public Ai
 {
 public:
-    AI_CTORS(AiToyone)
     Action think(const TableView &view, Limits &limits) override;
 };
 

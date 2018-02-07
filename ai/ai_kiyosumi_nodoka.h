@@ -13,7 +13,6 @@ namespace saki
 class AiNodoka : public Ai
 {
 public:
-    AI_CTORS(AiNodoka)
     Action think(const TableView &view, Limits &limits) override;
 };
 

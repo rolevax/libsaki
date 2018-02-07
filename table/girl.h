@@ -5,6 +5,8 @@
 #include "../table/table_observer.h"
 #include "../table/choices.h"
 
+#include "../util/misc.h"
+
 #include <bitset>
 
 
@@ -12,7 +14,10 @@
 #define GIRL_CTORS(Name) \
     Name(Who who, Id id) : Girl(who, id) {} \
     Name(const Name &copy) = default; \
-    Name *clone() const override { return new Name(*this); }
+    std::unique_ptr<Girl> clone() const override \
+    { \
+        return util::unique<Name>(*this); \
+    }
 
 
 
@@ -36,7 +41,7 @@ class IrsCtrl;
 /// Girl's TableObserver callbacks will be called before ordinary observers.
 /// It is not needed to add girls to the observer vector when constructing a Table.
 ///
-class Girl : public TableObserver
+class Girl : public TableObserverDispatched
 {
 public:
     // *INDENT-OFF*
@@ -95,7 +100,7 @@ public:
 
         template<typename IrsCtrlImpl, typename GirlImpl>
         IrsCtrlGetter(IrsCtrlImpl GirlImpl::*mem)
-            : mImpl(mem == nullptr ? nullptr : new Impl<IrsCtrlImpl>(upcast(mem)))
+            : mImpl(mem == nullptr ? nullptr : util::unique<Impl<IrsCtrlImpl>>(upcast(mem)))
         {
         }
 
@@ -134,7 +139,7 @@ public:
         {
         public:
             virtual ~ImplBase() = default;
-            virtual ImplBase *clone() = 0;
+            virtual std::unique_ptr<ImplBase> clone() = 0;
             virtual IrsCtrl &get(Girl &girl) = 0;
         };
 
@@ -147,9 +152,9 @@ public:
             {
             }
 
-            ImplBase *clone() override
+            std::unique_ptr<ImplBase> clone() override
             {
-                return new Impl(*this);
+                return util::unique<Impl>(*this);
             }
 
             IrsCtrl &get(Girl &girl) override
@@ -165,10 +170,14 @@ public:
         std::unique_ptr<ImplBase> mImpl;
     };
 
-    static Girl *create(Who who, int id);
-    virtual Girl *clone() const;
+    static std::unique_ptr<Girl> create(Who who, int id);
+
+    Girl(Who who, Id id);
     virtual ~Girl() = default;
+    Girl(const Girl &copy) = default;
     Girl &operator=(const Girl &assign) = delete;
+
+    virtual std::unique_ptr<Girl> clone() const;
 
     Id getId() const;
 
@@ -196,9 +205,6 @@ public:
     bool handleIrs(const Table &table, Mount &mount, const Action &action);
 
 protected:
-    Girl(Who who, Id id);
-    Girl(const Girl &copy) = default;
-
     static void eraseRivered(util::Stactor<T34, 34> &ts, const River &river);
     static void eraseRivered(std::bitset<34> &ts, const River &river);
     void accelerate(Mount &mount, const Hand &hand, const River &river, int delta);
