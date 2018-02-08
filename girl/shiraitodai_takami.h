@@ -15,10 +15,12 @@ class Takami : public Girl
 public:
     GIRL_CTORS(Takami)
 
-    void onDiscarded(const Table &table, bool spin) override;
     void nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
                    std::bitset<NUM_NM_SKILL> &presence,
                    const Princess &princess) override;
+
+    void onTableEvent(const Table &table, const TableEvent &event) override;
+
     int d3gNeed(T34 t) const;
 
 private:

@@ -94,9 +94,10 @@ void Kuro::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     }
 }
 
-void Kuro::onDiscarded(const Table &table, bool spin)
+void Kuro::onTableEvent(const Table &table, const TableEvent &event)
 {
-    (void) spin;
+    if (event.type() != TableEvent::Type::DISCARDED)
+        return;
 
     if (table.getFocus().who() != mSelf)
         return;

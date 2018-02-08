@@ -17,7 +17,8 @@ public:
 
     void onDice(util::Rand &rand, const Table &table) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
-    void onRiichiEstablished(const Table &table, Who who) override;
+
+    void onTableEvent(const Table &table, const TableEvent &event) override;
 
 private:
     Who mFirstRiichi;

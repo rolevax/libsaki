@@ -33,25 +33,6 @@ void Teru::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     // TODO implement
 }
 
-void Teru::onRoundEnded(const Table &table, RoundResult result,
-                        const std::vector<Who> &openers, Who gunner,
-                        const std::vector<Form> &fs)
-{
-    (void) table;
-    (void) gunner;
-
-    if (result == RoundResult::TSUMO && openers[0] == mSelf) {
-        mPrevGain = fs[0].netGain();
-    } else if (result == RoundResult::RON) {
-        if (openers[0] == mSelf)
-            mPrevGain = fs[0].netGain();
-        else if (fs.size() == 2 && openers[1] == mSelf)
-            mPrevGain = fs[1].netGain();
-    } else {
-        mPrevGain = 0;
-    }
-}
-
 void Teru::nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
                      std::bitset<Girl::NUM_NM_SKILL> &presence,
                      const Princess &princess)
@@ -62,6 +43,27 @@ void Teru::nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
     (void) presence; // TODO care about zim and kuro
     (void) princess;
     // TODO implement
+}
+
+void Teru::onTableEvent(const Table &table, const TableEvent &event)
+{
+    (void) table;
+
+    if (event.type() != TableEvent::Type::ROUND_ENDED)
+        return;
+
+    const auto &args = event.as<TableEvent::RoundEnded>();
+
+    if (args.result == RoundResult::TSUMO && args.openers[0] == mSelf) {
+        mPrevGain = args.forms[0].netGain();
+    } else if (args.result == RoundResult::RON) {
+        if (args.openers[0] == mSelf)
+            mPrevGain = args.forms[0].netGain();
+        else if (args.forms.size() == 2 && args.openers[1] == mSelf)
+            mPrevGain = args.forms[1].netGain();
+    } else {
+        mPrevGain = 0;
+    }
 }
 
 

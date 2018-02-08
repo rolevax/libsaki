@@ -177,6 +177,7 @@ public:
     template<typename ArgsT>
     const ArgsT &as() const
     {
+        assert(mType == ArgsT::TYPE);
         return (static_cast<const ArgsCloneable<ArgsT> &>(*mArgs)).args;
     }
 

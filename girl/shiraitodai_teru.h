@@ -17,13 +17,12 @@ public:
 
     void onMonkey(std::array<Exist, 4> &exists, const Princess &princess) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
-    void onRoundEnded(const Table &table, RoundResult result,
-                      const std::vector<Who> &openers, Who gunner,
-                      const std::vector<Form> &fs) override;
 
     void nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
                    std::bitset<NUM_NM_SKILL> &presence,
                    const Princess &princess) override;
+
+    void onTableEvent(const Table &table, const TableEvent &event);
 
 private:
     TileCount mPlan;

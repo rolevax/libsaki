@@ -41,7 +41,7 @@ class IrsCtrl;
 /// Girl's TableObserver callbacks will be called before ordinary observers.
 /// It is not needed to add girls to the observer vector when constructing a Table.
 ///
-class Girl : public TableObserverDispatched
+class Girl : public TableObserver
 {
 public:
     // *INDENT-OFF*

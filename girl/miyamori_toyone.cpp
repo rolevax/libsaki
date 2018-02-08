@@ -62,11 +62,15 @@ void Toyone::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     }
 }
 
-void Toyone::onRiichiEstablished(const Table &table, Who who)
+void Toyone::onTableEvent(const Table &table, const TableEvent &event)
 {
     (void) table;
+
+    if (event.type() != TableEvent::Type::RIICHI_ESTABLISHED)
+        return;
+
     if (mFirstRiichi.nobody())
-        mFirstRiichi = who;
+        mFirstRiichi = event.as<TableEvent::RiichiEstablished>().who;
 }
 
 

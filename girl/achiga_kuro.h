@@ -17,7 +17,8 @@ public:
     void onMonkey(std::array<Exist, 4> &exists, const Princess &princess) override;
     bool checkInit(Who who, const Hand &init, const Princess &princess, int iter) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
-    void onDiscarded(const Table &table, bool spin) override;
+
+    void onTableEvent(const Table &table, const TableEvent &event) override;
 
 private:
     static const int EJECT_MK = 5000;

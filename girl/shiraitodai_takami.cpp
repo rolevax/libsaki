@@ -14,21 +14,6 @@ namespace saki
 
 
 
-void Takami::onDiscarded(const Table &table, bool spin)
-{
-    (void) spin;
-
-    if (table.getFocus().who() != mSelf)
-        return;
-
-    if (table.getRiver(mSelf).size() == 1) {
-        const T37 &last = table.getFocusTile();
-        // ignore if over-4
-        if (std::count(mSlots.begin(), mSlots.end(), last) < 4)
-            mSlots.push_back(last);
-    }
-}
-
 void Takami::nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
                        std::bitset<Girl::NUM_NM_SKILL> &presence,
                        const Princess &princess)
@@ -50,6 +35,22 @@ void Takami::nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
             t = t.toInverse5();
 
         init.inc(mount.initPopExact(t), 1);
+    }
+}
+
+void Takami::onTableEvent(const Table &table, const TableEvent &event)
+{
+    if (event.type() != TableEvent::Type::DISCARDED)
+        return;
+
+    if (table.getFocus().who() != mSelf)
+        return;
+
+    if (table.getRiver(mSelf).size() == 1) {
+        const T37 &last = table.getFocusTile();
+        // ignore if over-4
+        if (std::count(mSlots.begin(), mSlots.end(), last) < 4)
+            mSlots.push_back(last);
     }
 }
 

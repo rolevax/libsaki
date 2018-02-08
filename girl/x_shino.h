@@ -17,9 +17,10 @@ public:
 
     bool checkInit(Who who, const Hand &init, const Princess &princess, int iter) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
-    void onDiscarded(const Table &table, bool spin) override;
 
     std::string popUpStr() const override;
+
+    void onTableEvent(const Table &table, const TableEvent &event) override;
 
 private:
     void powerPinfu(const Hand &hand, const River &r, Mount &m, int posMk);

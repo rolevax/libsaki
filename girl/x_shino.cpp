@@ -62,9 +62,17 @@ void Shino::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     }
 }
 
-void Shino::onDiscarded(const Table &table, bool spin)
+std::string Shino::popUpStr() const
 {
-    (void) spin;
+    std::ostringstream oss;
+    oss << mBreakPair << "....";
+    return oss.str();
+}
+
+void Shino::onTableEvent(const Table &table, const TableEvent &event)
+{
+    if (event.type() != TableEvent::Type::DISCARDED)
+        return;
 
     Who who = table.getFocus().who();
     if (who == mSelf) // self see what see?
@@ -80,13 +88,6 @@ void Shino::onDiscarded(const Table &table, bool spin)
         mBreakPair = t;
         table.popUp(mSelf);
     }
-}
-
-std::string Shino::popUpStr() const
-{
-    std::ostringstream oss;
-    oss << mBreakPair << "....";
-    return oss.str();
 }
 
 void Shino::powerPinfu(const Hand &hand, const River &r, Mount &mount, int posMk)
