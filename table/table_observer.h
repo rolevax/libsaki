@@ -33,138 +33,86 @@ public:
 
 
 
+#define BLANK_DEF { (void) t; (void) e; }
+
 class TableObserverDispatched : public TableObserver
 {
 public:
     virtual ~TableObserverDispatched() = default;
 
-    void onTableEvent(const Table &table, const TableEvent &event) final
+    using TE = TableEvent;
+
+    void onTableEvent(const Table &table, const TE &event) final
     {
-        using T = TableEvent::Type;
+        using T = TE::Type;
         switch (event.type()) {
         case T::TABLE_STARTED:
-            // onTableStarted(table, event.as<TableEvent::TableStarted>());
+            onTableEvent(table, event.as<TE::TableStarted>());
             break;
         case T::FIRST_DEALER_CHOSEN:
+            onTableEvent(table, event.as<TE::FirstDealerChosen>());
             break;
         case T::ROUND_STARTED:
+            onTableEvent(table, event.as<TE::RoundStarted>());
             break;
         case T::CLEANED:
+            onTableEvent(table, event.as<TE::Cleaned>());
             break;
         case T::DICED:
+            onTableEvent(table, event.as<TE::Diced>());
             break;
         case T::DEALT:
+            onTableEvent(table, event.as<TE::Dealt>());
             break;
         case T::FLIPPED:
+            onTableEvent(table, event.as<TE::Flipped>());
             break;
         case T::DRAWN:
+            onTableEvent(table, event.as<TE::Drawn>());
             break;
         case T::DISCARDED:
+            onTableEvent(table, event.as<TE::Discarded>());
             break;
         case T::RIICHI_CALLED:
+            onTableEvent(table, event.as<TE::RiichiCalled>());
             break;
         case T::RIICHI_ESTABLISHED:
+            onTableEvent(table, event.as<TE::RiichiEstablished>());
             break;
         case T::BARKED:
+            onTableEvent(table, event.as<TE::Barked>());
             break;
         case T::ROUND_ENDED:
+            onTableEvent(table, event.as<TE::RoundEnded>());
             break;
         case T::POINTS_CHANGED:
+            onTableEvent(table, event.as<TE::PointsChanged>());
             break;
         case T::TABLE_ENDED:
+            onTableEvent(table, event.as<TE::TableEnded>());
             break;
         case T::POPPED_UP:
+            onTableEvent(table, event.as<TE::PoppedUp>());
             break;
         }
     }
 
-    // virtual void onTableStarted(const Table &table, const TableEvent::TableStarted &event) = 0;
-
-    // deprecated
-    virtual void onTableStarted(const Table &table, uint32_t seed)
-    {
-        (void) seed;
-    }
-
-    virtual void onFirstDealerChoosen(Who initDealer)
-    {
-        (void) initDealer;
-    }
-
-    virtual void onRoundStarted(int round, int extra, Who dealer,
-                                bool al, int deposit, uint32_t seed)
-    {
-        (void) round; (void) extra; (void) dealer;
-        (void) al; (void) deposit; (void) seed;
-    }
-
-    virtual void onCleaned()
-    {
-    }
-
-    virtual void onDiced(const Table &table, int die1, int die2)
-    {
-        (void) table; (void) die1; (void) die2;
-    }
-
-    virtual void onDealt(const Table &table)
-    {
-        (void) table;
-    }
-
-    virtual void onFlipped(const Table &table)
-    {
-        (void) table;
-    }
-
-    virtual void onDrawn(const Table &table, Who who)
-    {
-        (void) table; (void) who;
-    }
-
-    virtual void onDiscarded(const Table &table, bool spin)
-    {
-        (void) table; (void) spin;
-    }
-
-    virtual void onRiichiCalled(Who who)
-    {
-        (void) who;
-    }
-
-    virtual void onRiichiEstablished(const Table &table, Who who)
-    {
-        (void) table; (void) who;
-    }
-
-    virtual void onBarked(const Table &table, Who who, const M37 &bark, bool spin)
-    {
-        // M37 param is required to know if kakan or not
-        (void) table; (void) who; (void) bark; (void) spin;
-    }
-
-    virtual void onRoundEnded(const Table &table, RoundResult result,
-                              const std::vector<Who> &openers, Who gunner,
-                              const std::vector<Form> &fs)
-    {
-        (void) table; (void) result; (void) openers; (void) gunner; (void) fs;
-    }
-
-    virtual void onPointsChanged(const Table &table)
-    {
-        (void) table;
-    }
-
-    virtual void onTableEnded(const std::array<Who, 4> &rank,
-                              const std::array<int, 4> &scores)
-    {
-        (void) rank; (void) scores;
-    }
-
-    virtual void onPoppedUp(const Table &table, Who who)
-    {
-        (void) table; (void) who;
-    }
+    virtual void onTableEvent(const Table &t, const TE::TableStarted &e) BLANK_DEF
+    virtual void onTableEvent(const Table &t, const TE::FirstDealerChosen &e) BLANK_DEF
+    virtual void onTableEvent(const Table &t, const TE::RoundStarted &e) BLANK_DEF
+    virtual void onTableEvent(const Table &t, const TE::Cleaned &e) BLANK_DEF
+    virtual void onTableEvent(const Table &t, const TE::Diced &e) BLANK_DEF
+    virtual void onTableEvent(const Table &t, const TE::Dealt &e) BLANK_DEF
+    virtual void onTableEvent(const Table &t, const TE::Flipped &e) BLANK_DEF
+    virtual void onTableEvent(const Table &t, const TE::Drawn &e) BLANK_DEF
+    virtual void onTableEvent(const Table &t, const TE::Discarded &e) BLANK_DEF
+    virtual void onTableEvent(const Table &t, const TE::RiichiCalled &e) BLANK_DEF
+    virtual void onTableEvent(const Table &t, const TE::RiichiEstablished &e) BLANK_DEF
+    virtual void onTableEvent(const Table &t, const TE::Barked &e) BLANK_DEF
+    virtual void onTableEvent(const Table &t, const TE::RoundEnded &e) BLANK_DEF
+    virtual void onTableEvent(const Table &t, const TE::PointsChanged &e) BLANK_DEF
+    virtual void onTableEvent(const Table &t, const TE::TableEnded &e) BLANK_DEF
+    virtual void onTableEvent(const Table &t, const TE::PoppedUp &e) BLANK_DEF
 };
 
 

@@ -32,6 +32,9 @@ struct Furiten
 
 
 
+///
+/// \brief Default-copy-constructable part of Table
+///
 class TablePrivate
 {
 protected:
@@ -57,6 +60,7 @@ protected:
     std::array<std::bitset<24>, 4> mPickeds;
     std::array<Choices, 4> mChoicess;
     std::array<Action, 4> mActionInbox;
+    std::array<int, 4> mNonces;
 
     int mRound = 0;
     int mExtraRound = -1; // work with beforeEast1()
@@ -83,19 +87,25 @@ protected:
 class Table : private TablePrivate
 {
 public:
-    explicit Table(std::array<int, 4> points,
-                   std::array<int, 4> girlIds,
-                   std::vector<TableObserver *> observers,
-                   Rule rule, Who tempDealer, const TableEnv &env);
+    enum class CheckResult { OK, EXPIRED, ILLEGAL };
 
-    explicit Table(const Table &orig, std::vector<TableObserver *> observers);
+    struct InitConfig
+    {
+        std::array<int, 4> points;
+        std::array<int, 4> girlIds;
+        Rule rule;
+        Who tempDealer;
+    };
+
+    explicit Table(InitConfig config, std::vector<TableObserver *> obs, const TableEnv &env);
+    explicit Table(const Table &orig, std::vector<TableObserver *> obs);
 
     Table(const Table &copy) = delete;
     Table &operator=(const Table &assign) = delete;
 
     void start();
-    void action(Who who, const Action &act);
-    bool check(Who who, const Action &action) const;
+    void action(Who who, const Action &act, int nonce);
+    CheckResult check(Who who, const Action &action, int nonce) const;
 
     const Hand &getHand(Who who) const;
     const River &getRiver(Who who) const;
@@ -125,6 +135,7 @@ public:
     int getDeposit() const;
     int getSelfWind(Who who) const;
     int getRoundWind() const;
+    int getNonce(Who who) const;
     const Rule &getRule() const;
     FormCtx getFormCtx(Who who) const;
     const Choices &getChoices(Who who) const;
@@ -134,6 +145,7 @@ public:
     void popUp(Who who) const;
 
 private:
+    bool checkLegality(Who who, const Action &action) const;
     void process();
     void singleAction(Who who, const Action &act);
 
@@ -158,6 +170,7 @@ private:
     void kakan(Who who, int barkId);
     void finishKan(Who who);
     void activate();
+    void everyonePassed();
     bool filterChoices();
     bool kanOverflow(Who kanner);
     bool noBarkYet() const;
@@ -166,10 +179,10 @@ private:
     void checkBarkRon();
     void checkSutehaiFuriten();
     void passRon(Who who);
-    bool nagashimangan(Who who) const;
+    bool checkNagashimangan(Who who) const;
     void exhaustRound(RoundResult result, const util::Stactor<Who, 4> &openers);
     void finishRound(const util::Stactor<Who, 4> &openers, Who gunner);
-    void endOrNext();
+    void checkNextRound();
     void endTable();
 
 private:

@@ -23,20 +23,26 @@ TablePrivate::TablePrivate(std::array<int, 4> points,
     , mInitDealer(tempDealer)
     , mEnv(env)
 {
+    // feature: server nonce starts from 1
+    //          such that client nonce can simply start from 0
+    mNonces.fill(1);
 }
 
 
 
-Table::Table(std::array<int, 4> points,
-             std::array<int, 4> girlIds,
-             std::vector<TableObserver *> obs,
-             Rule rule, Who tempDealer, const TableEnv &env)
-    : TablePrivate(points, rule, tempDealer, env)
+///
+/// \brief Create a new table
+/// \param config Initial configuration
+/// \param obs Observers
+/// \param env Environment provider
+///
+Table::Table(InitConfig config, std::vector<TableObserver *> obs, const TableEnv &env)
+    : TablePrivate(config.points, config.rule, config.tempDealer, env)
 {
     assert(!util::has(mObservers, nullptr));
 
     for (int w = 0; w < 4; w++)
-        mGirls[w] = Girl::create(Who(w), girlIds[w]);
+        mGirls[w] = Girl::create(Who(w), config.girlIds[w]);
 
     setupObservers(obs);
 
@@ -44,6 +50,9 @@ Table::Table(std::array<int, 4> points,
     mChoicess[mInitDealer.index()].setDice();
 }
 
+///
+/// \brief Clone a table and replace all its observers
+///
 Table::Table(const Table &orig, std::vector<TableObserver *> obs)
     : TablePrivate(orig)
 {
@@ -53,6 +62,9 @@ Table::Table(const Table &orig, std::vector<TableObserver *> obs)
     setupObservers(obs);
 }
 
+///
+/// \brief Start the table
+///
 void Table::start()
 {
     TableEvent event = TableEvent::TableStarted { mRand.state() };
@@ -62,9 +74,12 @@ void Table::start()
     activate();
 }
 
-void Table::action(Who who, const Action &act)
+///
+/// \brief Input an action to the table
+///
+void Table::action(Who who, const Action &act, int nonce)
 {
-    assert(check(who, act));
+    assert(check(who, act, nonce) == CheckResult::OK);
 
     int w = who.index();
 
@@ -72,9 +87,11 @@ void Table::action(Who who, const Action &act)
         bool handled = mGirls[w]->handleIrs(*this, mMount, act);
         if (!handled) {
             assert(!mGirls[w]->irsReady());
-            action(who, act);
+            action(who, act, nonce);
             return;
         }
+
+        mNonces[w]++;
     } else {
         for (auto &g : mGirls)
             g->onInbox(who, act);
@@ -83,7 +100,8 @@ void Table::action(Who who, const Action &act)
             passRon(who);
 
         mActionInbox[w] = act;
-        mChoicess[w] = Choices();
+        mChoicess[w].setWatch();
+        mNonces[w]++;
     }
 
     if (!anyActivated()) {
@@ -92,38 +110,15 @@ void Table::action(Who who, const Action &act)
     }
 }
 
-bool Table::check(Who who, const Action &action) const
+///
+/// \brief Validate a user input
+///
+Table::CheckResult Table::check(Who who, const Action &action, int nonce) const
 {
-    using AC = ActCode;
+    if (nonce < getNonce(who))
+        return CheckResult::EXPIRED;
 
-    const Choices &choices = getChoices(who);
-    if (!choices.can(action.act()))
-        return false;
-
-    // check action arguments
-    switch (choices.mode()) {
-    case Choices::Mode::DRAWN:
-        switch (action.act()) {
-        case AC::SWAP_OUT:
-            return util::has(mHands[who.index()].closed().t37s13(), action.t37());
-        case AC::SWAP_RIICHI:
-            return util::has(choices.drawn().swapRiichis, action.t37());
-        case AC::ANKAN:
-            return util::has(choices.drawn().ankans, action.t34());
-        case AC::KAKAN:
-            return util::has(choices.drawn().kakans, action.barkId());
-        default:
-            return true;
-        }
-
-    case Choices::Mode::BARK:
-        if (action.isCp())
-            return mHands[who.index()].canCp(getFocusTile(), action);
-
-        return true;
-    default:
-        return true;
-    }
+    return checkLegality(who, action) ? CheckResult::OK : CheckResult::ILLEGAL;
 }
 
 const Hand &Table::getHand(Who who) const
@@ -215,7 +210,11 @@ int Table::riverRemain(T34 t) const
     return res;
 }
 
-// result 1 ~ 4
+///
+/// \brief Get the ranking of a player
+/// \param who The player
+/// \return 1 ~ 4
+///
 int Table::getRank(Who who) const
 {
     int rank = 1;
@@ -250,11 +249,18 @@ const T37 &Table::getFocusTile() const
                               : mHands[w].barks()[mFocus.barkId()][3];
 }
 
+///
+/// \deprecated Will be replaced by TableMirror and AiMemo
+///
 bool Table::genbutsu(Who whose, T34 t) const
 {
     return mGenbutsuFlags[whose.index()].test(t.id34());
 }
 
+///
+/// \return true if the last discard is a riichi-declaring tile
+///         or its replacing marker
+///
 bool Table::lastDiscardLay() const
 {
     assert(mFocus.isDiscard());
@@ -267,6 +273,9 @@ bool Table::riichiEstablished(Who who) const
     return mRiichiHans[who.index()] != 0;
 }
 
+///
+/// \return true iff someone is performing a kan
+///
 bool Table::duringKan() const
 {
     return mKanContext.during();
@@ -277,6 +286,9 @@ bool Table::isAllLast() const
     return mAllLast;
 }
 
+///
+/// \return true iff the very first has not started yet
+///
 bool Table::beforeEast1() const
 {
     return mExtraRound == -1;
@@ -287,6 +299,10 @@ bool Table::inIppatsuCycle() const
     return mIppatsuFlags.any();
 }
 
+///
+/// \brief Checks if the table is waiting for any user input
+/// \return true iff waiting
+///
 bool Table::anyActivated() const
 {
     return util::any(whos::ALL4, [this](Who who) { return getChoices(who).any(); });
@@ -306,6 +322,10 @@ Who Table::getDealer() const
     return mDealer;
 }
 
+///
+/// \brief Get the sum of the two dice numbers of this round
+/// \return The dice sum
+///
 int Table::getDice() const
 {
     return mDice;
@@ -326,11 +346,21 @@ int Table::getRoundWind() const
     return (mRound / 4) % 4 + 1;
 }
 
+int Table::getNonce(Who who) const
+{
+    return mNonces[who.index()];
+}
+
 const Rule &Table::getRule() const
 {
     return mRule;
 }
 
+///
+/// \brief Get the context for counting the points of a hand
+/// \param who The player whose hand is to be calculated
+/// \return The form context
+///
 FormCtx Table::getFormCtx(Who who) const
 {
     FormCtx ctx;
@@ -367,6 +397,10 @@ const TableEnv &Table::getEnv() const
     return mEnv;
 }
 
+///
+/// \brief Pop up extra texts onto the screen
+/// \param who Player to whom the text is visible
+///
 void Table::popUp(Who who) const
 {
     TableEvent event = TableEvent::PoppedUp { who };
@@ -374,10 +408,50 @@ void Table::popUp(Who who) const
         ob->onTableEvent(*this, event);
 }
 
+///
+/// \brief Checks if an action is legal at current timepoint
+/// \param who The player who performs this action
+/// \param action The action to be checked
+/// \return true iff legal
+///
+bool Table::checkLegality(Who who, const Action &action) const
+{
+    const Choices &choices = getChoices(who);
 
+    if (!choices.can(action.act()))
+        return false;
 
-// ---- private methods ----
+    using AC = ActCode;
 
+    // check action arguments
+    switch (choices.mode()) {
+    case Choices::Mode::DRAWN:
+        switch (action.act()) {
+        case AC::SWAP_OUT:
+            return util::has(mHands[who.index()].closed().t37s13(), action.t37());
+        case AC::SWAP_RIICHI:
+            return util::has(choices.drawn().swapRiichis, action.t37());
+        case AC::ANKAN:
+            return util::has(choices.drawn().ankans, action.t34());
+        case AC::KAKAN:
+            return util::has(choices.drawn().kakans, action.barkId());
+        default:
+            return true;
+        }
+
+    case Choices::Mode::BARK:
+        if (action.isCp())
+            return mHands[who.index()].canCp(getFocusTile(), action);
+
+        return true;
+    default:
+        return true;
+    }
+}
+
+///
+/// \brief Process user input
+///
 void Table::process()
 {
     // select out those actions with highest priority
@@ -390,7 +464,7 @@ void Table::process()
         }
 
         if (mActionInbox[w].act() == maxAct)
-            actors.pushBack(Who(w));
+            actors.emplaceBack(w);
     }
 
     assert(!actors.empty());
@@ -407,19 +481,19 @@ void Table::process()
         } else {
             finishRound(actors, mFocus.who());
         }
-    } else if (maxAct == ActCode::PASS) { // everyone pressed pass
-        if (mFocus.isDiscard()) { // pass a bark or an ordinary ron
-            tryDraw(mFocus.who().right());
-        } else { // pass a chankan
-            assert(mKanContext.during());
-            finishKan(mFocus.who());
-        }
+    } else if (maxAct == ActCode::PASS) {
+        everyonePassed();
     } else {
         assert(actors.size() == 1);
         singleAction(actors[0], mActionInbox[actors[0].index()]);
     }
 }
 
+///
+/// \brief Process an action performed by only one player
+/// \param who The acting player
+/// \param act The action
+///
 void Table::singleAction(Who who, const Action &act)
 {
     util::Stactor<Who, 4> openers = { who };
@@ -466,6 +540,10 @@ void Table::singleAction(Who who, const Action &act)
     }
 }
 
+///
+/// \brief Setup the observers
+/// \param obs Observers from the client code
+///
 void Table::setupObservers(const std::vector<TableObserver *> obs)
 {
     // feature: girls are guaranteed to be the first observers
@@ -476,6 +554,9 @@ void Table::setupObservers(const std::vector<TableObserver *> obs)
     mObservers.insert(mObservers.end(), obs.begin(), obs.end());
 }
 
+///
+/// \brief Start a new round
+///
 void Table::nextRound()
 {
     clean();
@@ -515,6 +596,9 @@ void Table::nextRound()
         g->onDice(mRand, *this);
 }
 
+///
+/// \brief Clean up the table
+///
 void Table::clean()
 {
     for (int w = 0; w < 4; w++) {
@@ -540,6 +624,9 @@ void Table::clean()
         ob->onTableEvent(*this, event);
 }
 
+///
+/// \brief Roll the dice, and enter the next stage
+///
 void Table::rollDice()
 {
     int die1 = mRand.gen(6) + 1;
@@ -570,6 +657,9 @@ void Table::rollDice()
     }
 }
 
+///
+/// \brief Give 14 or 13 initial tiles to the four players
+///
 void Table::deal()
 {
     mHands = Princess(*this, mRand, mMount, mGirls).deal();
@@ -583,6 +673,9 @@ void Table::deal()
     tryDraw(mDealer);
 }
 
+///
+/// \brief Flip a new dora indicator
+///
 void Table::flip()
 {
     mMount.flipIndic(mRand);
@@ -592,6 +685,11 @@ void Table::flip()
         ob->onTableEvent(*this, event);
 }
 
+///
+/// \brief Draw a tile from the mountain,
+///        and triggers ryuukyoku if the mountain is empty
+/// \param who The player receiving the tile
+///
 void Table::tryDraw(Who who)
 {
     // SCRC
@@ -637,8 +735,8 @@ void Table::tryDraw(Who who)
 
         util::Stactor<Who, 4> swimmers;
         for (int w = 0; w < 4; w++)
-            if (nagashimangan(Who(w)))
-                swimmers.pushBack(Who(w));
+            if (checkNagashimangan(Who(w)))
+                swimmers.emplaceBack(w);
 
         if (mRule.nagashimangan && !swimmers.empty()) {
             exhaustRound(RoundResult::NGSMG, swimmers);
@@ -646,13 +744,18 @@ void Table::tryDraw(Who who)
             util::Stactor<Who, 4> openers;
             for (int w = 0; w < 4; w++)
                 if (mHands[w].ready())
-                    openers.pushBack(Who(w));
+                    openers.emplaceBack(w);
 
             exhaustRound(RoundResult::HP, openers);
         }
     }
 }
 
+///
+/// \brief Performs discarding in a swap-out action
+/// \param who The swapping-out player
+/// \param out The tile to be swapped-out
+///
 void Table::swapOut(Who who, const T37 &out)
 {
     mKanContext.leave();
@@ -663,6 +766,10 @@ void Table::swapOut(Who who, const T37 &out)
     discardEffects(who, false);
 }
 
+///
+/// \brief Performs discarding in a spin-out action
+/// \param who The spinning-out player
+///
 void Table::spinOut(Who who)
 {
     mKanContext.leave();
@@ -674,6 +781,11 @@ void Table::spinOut(Who who)
     discardEffects(who, true);
 }
 
+///
+/// \brief Performs discarding in a bark action
+/// \param who The barking player
+/// \param out The discarding tile
+///
 void Table::barkOut(Who who, const T37 &out)
 {
     mRivers[who.index()].pushBack(out);
@@ -682,6 +794,11 @@ void Table::barkOut(Who who, const T37 &out)
     discardEffects(who, false);
 }
 
+///
+/// \brief Deal with matters when a discard happens
+/// \param who The player who discarded
+/// \param spin true if spin, false if swap
+///
 void Table::discardEffects(Who who, bool spin)
 {
     mFocus.focusOnDiscard(who);
@@ -697,7 +814,7 @@ void Table::discardEffects(Who who, bool spin)
         util::Stactor<Who, 4> openers; // those who wasted 1000 points
         for (int w = 0; w < 4; w++)
             if (riichiEstablished(Who(w)))
-                openers.pushBack(Who(w));
+                openers.emplaceBack(w);
 
         exhaustRound(RoundResult::SFRT, openers);
         return;
@@ -720,6 +837,11 @@ void Table::discardEffects(Who who, bool spin)
         tryDraw(mFocus.who().right());
 }
 
+///
+/// \brief Performs one's riichi declaration
+/// \param who The player who declares the riichi
+/// \param action Either SWAP_RIICHI or SPIN_RIICHI
+///
 void Table::declareRiichi(Who who, const Action &action)
 {
     mToEstablishRiichi = true;
@@ -737,6 +859,10 @@ void Table::declareRiichi(Who who, const Action &action)
         unreached("Table::declareRiichi: non-riichi action");
 }
 
+///
+/// \brief Deal with matters when a riichi is established
+/// \return true if ok, false on the 4-riichi problem (SCRC)
+///
 bool Table::finishRiichi()
 {
     assert(mFocus.isDiscard());
@@ -763,6 +889,13 @@ bool Table::finishRiichi()
     return true;
 }
 
+///
+/// \brief Make a chii happen
+/// \param who The player to chii
+/// \param dir The type of chii
+/// \param out The tile to discard in this chii
+/// \param showAka5 Maximal number of akadoro to show out
+///
 void Table::chii(Who who, ActCode dir, const T37 &out, bool showAka5)
 {
     // save typing
@@ -788,6 +921,12 @@ void Table::chii(Who who, ActCode dir, const T37 &out, bool showAka5)
     barkOut(who, out);
 }
 
+///
+/// \brief Make a pon happen
+/// \param who The player to pon
+/// \param out The discarded tile in this pon
+/// \param showAka5 Maximal number of akadoro to show out
+///
 void Table::pon(Who who, const T37 &out, int showAka5)
 {
     pick();
@@ -802,6 +941,10 @@ void Table::pon(Who who, const T37 &out, int showAka5)
     barkOut(who, out);
 }
 
+///
+/// \brief Make a daiminkan happen
+/// \param who The player to daiminkan
+///
 void Table::daiminkan(Who who)
 {
     mKanContext.enterDaiminkan(mFocus.who());
@@ -818,6 +961,11 @@ void Table::daiminkan(Who who)
     finishKan(who);
 }
 
+///
+/// \brief Mark the last-discarded tile as picked
+///
+/// The tile object still presents in the river after picked.
+///
 void Table::pick()
 {
     assert(mFocus.isDiscard());
@@ -833,6 +981,11 @@ void Table::pick()
     mIppatsuFlags.reset(); // AoE ippatsu canceling
 }
 
+///
+/// \brief Make an ankan happen
+/// \param who The player to ankan
+/// \param tile The tiles forming the new ankan
+///
 void Table::ankan(Who who, T34 tile)
 {
     mKanContext.enterAnkan();
@@ -859,6 +1012,11 @@ void Table::ankan(Who who, T34 tile)
         finishKan(who);
 }
 
+///
+/// \brief Make a kakan happen
+/// \param who The player to kakan
+/// \param barkId The index of the pon that will become a kakan
+///
 void Table::kakan(Who who, int barkId)
 {
     mKanContext.enterKakan();
@@ -887,13 +1045,17 @@ void Table::kakan(Who who, int barkId)
         finishKan(who);
 }
 
+///
+/// \brief Deal with various matters when a kan finished
+/// \param who The kanned player
+///
 void Table::finishKan(Who who)
 {
     if (kanOverflow(who)) {
         util::Stactor<Who, 4> openers;
         for (int w = 0; w < 4; w++)
             if (riichiEstablished(Who(w)))
-                openers.pushBack(Who(w));
+                openers.emplaceBack(w);
 
         exhaustRound(RoundResult::SKSR, openers);
         return;
@@ -909,6 +1071,9 @@ void Table::finishKan(Who who)
     tryDraw(who);
 }
 
+///
+/// \brief Activate players who need to act
+///
 void Table::activate()
 {
     mActionInbox.fill(Action()); // clear
@@ -926,7 +1091,23 @@ void Table::activate()
             mGirls[w]->onActivate(*this);
 }
 
+///
+/// \brief Process the case when everyone pressed the 'pass' button
+///
+void Table::everyonePassed()
+{
+    if (mFocus.isDiscard()) { // pass a bark or an ordinary ron
+        tryDraw(mFocus.who().right());
+    } else { // pass a chankan
+        assert(mKanContext.during());
+        finishKan(mFocus.who());
+    }
+}
+
+///
+/// \brief Performs the activation-filtering stage
 /// \return true iff still has actors after filtering
+///
 bool Table::filterChoices()
 {
     auto isBark = [](const Choices &c) { return c.mode() == Choices::Mode::BARK; };
@@ -949,13 +1130,18 @@ bool Table::filterChoices()
     }
 
     if (hadBarker && !anyActivated()) {
-        tryDraw(mFocus.who().right());
+        everyonePassed();
         return false;
     }
 
     return true;
 }
 
+///
+/// \brief Checks the 4-kan problem before 'kanner' finish a kan
+/// \param kanner The kanning player
+/// \return true iff round aborted
+///
 bool Table::kanOverflow(Who kanner)
 {
     // sksr happens befor3e rinshan, so +1 in advance
@@ -973,12 +1159,20 @@ bool Table::kanOverflow(Who kanner)
     return false;
 }
 
+///
+/// \brief Checks if no bark has happened this round
+/// \return true iff no bark
+///
 bool Table::noBarkYet() const
 {
     auto empty = [](const Hand &h) { return h.barks().empty(); };
     return util::all(mHands, empty);
 }
 
+///
+/// \brief Checks the 4-wind problem (SFRT)
+/// \return true iff round aborted
+///
 bool Table::checkDeathWinds() const
 {
     if (!noBarkYet())
@@ -995,6 +1189,10 @@ bool Table::checkDeathWinds() const
     return r[0][0] == r[1][0] && r[1][0] == r[2][0] && r[2][0] == r[3][0];
 }
 
+///
+/// \brief Checks for chankan
+/// \param only13 false in common cases, true to consider kokushimusou only
+///
 void Table::checkChankan(bool only13)
 {
     for (int w = 0; w < 4; w++) {
@@ -1013,6 +1211,9 @@ void Table::checkChankan(bool only13)
     }
 }
 
+///
+/// \brief Checks chii, pon, daiminkan, and ron after discarding
+///
 void Table::checkBarkRon()
 {
     const T37 &focus = getFocusTile();
@@ -1050,6 +1251,9 @@ void Table::checkBarkRon()
     }
 }
 
+///
+/// \brief Checks sutehai furiten after discarding
+///
 void Table::checkSutehaiFuriten()
 {
     Who dropper = mFocus.who();
@@ -1068,6 +1272,10 @@ void Table::checkSutehaiFuriten()
     mFuritens[w].sutehai = false;
 }
 
+///
+/// \brief Process the case when a player passed a ron chance
+/// \param who The player passed ron
+///
 void Table::passRon(Who who)
 {
     if (riichiEstablished(who))
@@ -1076,13 +1284,23 @@ void Table::passRon(Who who)
         mFuritens[who.index()].doujun = true;
 }
 
-bool Table::nagashimangan(Who who) const
+///
+/// \brief Checks if one's river forms nagashimangan
+/// \param who The owner of the river to check
+/// \return true iff nagashimangan confirmed
+///
+bool Table::checkNagashimangan(Who who) const
 {
     int w = who.index();
     return util::all(mRivers[w], [](const T37 &t) { return t.isYao(); })
            && mPickeds[w].none();
 }
 
+///
+/// \brief Make a ryuukyoku happen
+/// \param result Type of ryuukyoku
+/// \param openers Players who need to open their hand
+///
 void Table::exhaustRound(RoundResult result, const util::Stactor<Who, 4> &openers)
 {
     if (result == RoundResult::HP) {
@@ -1117,7 +1335,7 @@ void Table::exhaustRound(RoundResult result, const util::Stactor<Who, 4> &opener
         mToChangeDealer = false;
     }
 
-    std::vector<Form> forms; // empty
+    util::Stactor<Form, 2> forms;
     TableEvent eventEnd = TableEvent::RoundEnded { result, openers, Who(), forms };
     for (auto ob : mObservers)
         ob->onTableEvent(*this, eventEnd);
@@ -1126,10 +1344,15 @@ void Table::exhaustRound(RoundResult result, const util::Stactor<Who, 4> &opener
     for (auto ob : mObservers)
         ob->onTableEvent(*this, eventPoints);
 
-    endOrNext();
+    checkNextRound();
     mPrevIsRyuu = true;
 }
 
+///
+/// \brief Make a tsumo or ron happen
+/// \param openers_ Players who need to open their hands
+/// \param gunner Loser in a ron case
+///
 void Table::finishRound(const util::Stactor<Who, 4> &openers_, Who gunner)
 {
     util::Stactor<Who, 4> openers(openers_); // non-const copy
@@ -1154,16 +1377,16 @@ void Table::finishRound(const util::Stactor<Who, 4> &openers_, Who gunner)
     if (mRule.uradora && util::any(openers.begin(), openers.begin() + ticket, est))
         mMount.digIndic(mRand);
 
-    std::vector<Form> forms;
+    util::Stactor<Form, 2> forms;
     for (int i = 0; i < ticket; i++) {
         Who who = openers[i];
         int w = who.index();
         if (isRon) {
-            forms.emplace_back(mHands[w], getFocusTile(), getFormCtx(who), mRule,
-                               mMount.getDrids(), mMount.getUrids());
+            forms.emplaceBack(mHands[w], getFocusTile(), getFormCtx(who), mRule,
+                              mMount.getDrids(), mMount.getUrids());
         } else {
-            forms.emplace_back(mHands[w], getFormCtx(who), mRule,
-                               mMount.getDrids(), mMount.getUrids());
+            forms.emplaceBack(mHands[w], getFormCtx(who), mRule,
+                              mMount.getDrids(), mMount.getUrids());
         }
     }
 
@@ -1206,11 +1429,14 @@ void Table::finishRound(const util::Stactor<Who, 4> &openers_, Who gunner)
         ob->onTableEvent(*this, eventPoints);
 
     mToChangeDealer = !util::has(openers.begin(), openers.begin() + ticket, mDealer);
-    endOrNext();
+    checkNextRound();
     mPrevIsRyuu = false;
 }
 
-void Table::endOrNext()
+///
+/// \brief Checks if next round is available
+///
+void Table::checkNextRound()
 {
     bool fly = mRule.fly && util::any(mPoints, [](int p) { return p < 0; });
     bool hasWest = util::all(mPoints, [&](int p) { return p <= mRule.returnLevel; });
@@ -1226,6 +1452,9 @@ void Table::endOrNext()
     }
 }
 
+///
+/// \brief End up the table and calculate final points
+///
 void Table::endTable()
 {
     std::array<Who, 4> rank;

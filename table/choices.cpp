@@ -37,6 +37,10 @@ Choices::Mode Choices::mode() const
     return mMode;
 }
 
+///
+/// \brief Check ablity without nonce
+/// \return true if the action in in the choice set
+///
 bool Choices::can(ActCode act) const
 {
     using AC = ActCode;
@@ -157,6 +161,7 @@ Action Choices::timeout() const
 
 const Choices::ModeIrsCheck &Choices::irsCheck() const
 {
+    assert(mMode == Mode::IRS_CHECK);
     return mModeIrsCheck;
 }
 
@@ -170,6 +175,12 @@ const Choices::ModeBark &Choices::bark() const
 {
     assert(mMode == Mode::BARK);
     return mModeBark;
+}
+
+void Choices::setWatch()
+{
+    mMode = Mode::WATCH;
+    mIrsClick = false;
 }
 
 /// allow to set all items disabled, without switching mode to 'watch'
@@ -206,9 +217,10 @@ void Choices::setEnd(const Choices::ModeEnd &mode)
     mModeEnd = mode;
 }
 
-void Choices::setExtra(bool v)
+void Choices::setIrsClick(const Choices &from)
 {
-    mIrsClick = v;
+    *this = from;
+    mIrsClick = true;
 }
 
 void Choices::filter(const ChoiceFilter &f)

@@ -18,19 +18,25 @@ void TableTester::run(bool fromHalfWay)
     if (!fromHalfWay)
         mTable.start();
 
-    while (mTable.anyActivated()) {
-        for (Who who : whos::ALL4) {
-            auto view = mTable.getView(who);
-            if (view->myChoices().any()) {
-                auto decision = mDeciders[who.index()]->decide(*view);
+    // *INDENT-OFF*
+    auto pickBusy = [&]() {
+        for (Who who : whos::ALL4)
+            if (mTable.getView(who)->myChoices().any())
+                return who;
 
-                if (decision.action.act() != ActCode::NOTHING)
-                    mTable.action(who, decision.action);
+        return Who();
+    };
+    // *INDENT-ON*
 
-                if (decision.abortTable)
-                    return;
-            }
-        }
+    for (Who who = pickBusy(); who.somebody(); who = pickBusy()) {
+        auto view = mTable.getView(who);
+        auto decision = mDeciders[who.index()]->decide(*view);
+
+        if (decision.action.act() != ActCode::NOTHING)
+            mTable.action(who, decision.action, mTable.getNonce(who));
+
+        if (decision.abortTable)
+            return;
     }
 }
 

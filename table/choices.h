@@ -89,7 +89,7 @@ private:
     std::bitset<4> mBits;
 };
 
-// assume 16 isi enough
+// assume 16 is enough
 using IrsCheckList = util::Stactor<IrsCheckItem, 16>;
 
 
@@ -179,15 +179,19 @@ public:
     const ModeDrawn &drawn() const;
     const ModeBark &bark() const;
 
+    void setWatch();
     void setIrsCheck(const ModeIrsCheck &irsCheck);
     void setDice();
     void setDrawn(const ModeDrawn &mode);
     void setBark(const ModeBark &mode);
     void setEnd(const ModeEnd &mode);
 
-    void setExtra(bool v);
+    void setIrsClick(const Choices &from);
 
     void filter(const ChoiceFilter &f);
+
+private:
+    Choices &operator=(const Choices &assign) = default;
 
 private:
     Mode mMode = Mode::WATCH;

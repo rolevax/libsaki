@@ -40,8 +40,8 @@ public:
     int ctZ() const;
     int ctYao() const;
 
-    template<template<typename, size_t MAX> class ARR, size_t MAX>
-    int ct(const ARR<T34, MAX> &ts) const
+    template<typename V>
+    int ct(const V &ts) const
     {
         auto aux = [this](int s, T34 t) { return s + ct(t); };
         return std::accumulate(ts.begin(), ts.end(), 0, aux);

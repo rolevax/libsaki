@@ -92,10 +92,10 @@ class TokiEventResult : public TokiEvent
 {
 public:
     TokiEventResult(RoundResult result,
-                    const std::vector<Who> &openers,
+                    const util::Stactor<Who, 4> &openers,
                     const util::Stactor<util::Stactor<T37, 13>, 4> &closeds);
     TokiEventResult(RoundResult result,
-                    const std::vector<Who> &openers,
+                    const util::Stactor<Who, 4> &openers,
                     const util::Stactor<util::Stactor<T37, 13>, 4> &closeds,
                     const T37 &pick,
                     const util::Stactor<T37, 5> &urids);
@@ -105,7 +105,7 @@ public:
 
 private:
     RoundResult mResult;
-    std::vector<Who> mOpeners;
+    util::Stactor<Who, 4> mOpeners;
     util::Stactor<util::Stactor<T37, 13>, 4> mCloseds;
     T37 mPick;
     util::Stactor<T37, 5> mUrids;
@@ -119,14 +119,12 @@ public:
     explicit TokiMountTracker(const TokiMountTracker &copy) = delete;
     TokiMountTracker &operator=(const TokiMountTracker &assign) = delete;
 
-    void onDrawn(const Table &table, Who who) override;
-    void onFlipped(const Table &table) override;
-    void onDiscarded(const Table &table, bool spin) override;
-    void onRiichiCalled(Who who) override;
-    void onBarked(const Table &table, Who who, const M37 &bark, bool spin) override;
-    void onRoundEnded(const Table &table, RoundResult result,
-                      const std::vector<Who> &openers, Who gunner,
-                      const std::vector<Form> &fs) override;
+    void onTableEvent(const Table &table, const TE::Drawn &event) override;
+    void onTableEvent(const Table &table, const TE::Flipped &event) override;
+    void onTableEvent(const Table &table, const TE::Discarded &event) override;
+    void onTableEvent(const Table &table, const TE::RiichiCalled &event) override;
+    void onTableEvent(const Table &table, const TE::Barked &event) override;
+    void onTableEvent(const Table &table, const TE::RoundEnded &event) override;
 
     const TokiEvents &getEvents() const;
 
@@ -290,7 +288,7 @@ void TokiEventBarked::print(std::ostream &os, Who toki) const
 }
 
 TokiEventResult::TokiEventResult(RoundResult result,
-                                 const std::vector<Who> &openers,
+                                 const util::Stactor<Who, 4> &openers,
                                  const util::Stactor<util::Stactor<T37, 13>, 4> &closeds)
     : mResult(result)
     , mOpeners(openers)
@@ -299,7 +297,7 @@ TokiEventResult::TokiEventResult(RoundResult result,
 }
 
 TokiEventResult::TokiEventResult(RoundResult result,
-                                 const std::vector<Who> &openers,
+                                 const util::Stactor<Who, 4> &openers,
                                  const util::Stactor<util::Stactor<T37, 13>, 4> &closeds,
                                  const T37 &pick,
                                  const util::Stactor<T37, 5> &urids)
@@ -316,7 +314,7 @@ TokiEventResult *TokiEventResult::clone() const
     return new TokiEventResult(*this);
 }
 
-void TokiMountTracker::onDrawn(const Table &table, Who who)
+void TokiMountTracker::onTableEvent(const Table &table, const TE::Drawn &event)
 {
     // fix the mount.
     // fixing random generator is not enough,
@@ -324,6 +322,7 @@ void TokiMountTracker::onDrawn(const Table &table, Who who)
     // (i.e. the applying order of the four mount-exits)
     // giving each exit a random seed is not enough either,
     // because we have to consider remaining tiles.
+    Who who = event.who;
     const T37 &t = table.getHand(who).drawn();
     mReal.pin(table.duringKan() ? Mount::RINSHAN : Mount::PII,
               table.duringKan() ? mDeadPos++ : mWallPos++, t);
@@ -333,8 +332,10 @@ void TokiMountTracker::onDrawn(const Table &table, Who who)
         mEvents.emplace_back(new TokiEventDrawn(t));
 }
 
-void TokiMountTracker::onFlipped(const Table &table)
+void TokiMountTracker::onTableEvent(const Table &table, const TE::Flipped &event)
 {
+    (void) event;
+
     // fix the mount
     const T37 &newIndic = table.getMount().getDrids().back();
     mReal.pin(Mount::DORAHYOU, mDoraPos++, newIndic);
@@ -342,36 +343,35 @@ void TokiMountTracker::onFlipped(const Table &table)
     mEvents.emplace_back(new TokiEventFlipped(newIndic));
 }
 
-void TokiMountTracker::onDiscarded(const Table &table, bool spin)
+void TokiMountTracker::onTableEvent(const Table &table, const TE::Discarded &event)
 {
     bool riichi = mToRiichi;
     if (riichi)
         mToRiichi = false;
 
-    mEvents.emplace_back(new TokiEventDiscarded(table.getFocusTile(), spin, riichi));
+    mEvents.emplace_back(new TokiEventDiscarded(table.getFocusTile(), event.spin, riichi));
 }
 
-void TokiMountTracker::onRiichiCalled(Who who)
+void TokiMountTracker::onTableEvent(const Table &table, const TE::RiichiCalled &event)
 {
-    (void) who;
+    (void) table;
+    (void) event;
+
     mToRiichi = true;
 }
 
-void TokiMountTracker::onBarked(const Table &table, Who who, const M37 &bark, bool spin)
+void TokiMountTracker::onTableEvent(const Table &table, const TE::Barked &event)
 {
     (void) table;
-    (void) spin;
-    mEvents.emplace_back(new TokiEventBarked(who, bark));
+
+    mEvents.emplace_back(new TokiEventBarked(event.who, event.bark));
 }
 
-void TokiMountTracker::onRoundEnded(const Table &table, RoundResult result,
-                                    const std::vector<Who> &openers, Who gunner,
-                                    const std::vector<Form> &fs)
+void TokiMountTracker::onTableEvent(const Table &table, const TE::RoundEnded &event)
 {
-    (void) gunner;
-    (void) fs;
-
     util::Stactor<util::Stactor<T37, 13>, 4> closeds;
+    const auto &openers = event.openers;
+    RoundResult result = event.result;
     for (Who w : openers)
         closeds.pushBack(table.getHand(w).closed().t37s13(true));
 
@@ -554,8 +554,7 @@ IrsResult Toki::PredictCtrl::handle(Toki &toki, const Table &table, Mount &mount
 
 void Toki::PredictCtrl::setClickHost(Choices normal)
 {
-    mChoices = normal;
-    mChoices.setExtra(true);
+    mChoices.setIrsClick(normal);
 }
 
 IrsResult Toki::handleIrs(const Table &table, Mount &mount, const Action &action)

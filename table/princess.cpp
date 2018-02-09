@@ -239,7 +239,7 @@ void Princess::fixIndicator(Indic which, const std::array<bool, 34> &exceptId34s
     mHasImageIndics[static_cast<int>(which)] = true;
 
     for (T34 t : tiles34::ALL34) {
-        // TODO de-magic the '100's and parametize them
+        // '-100' is a non-documented temporary value
         mMount.power(exit, pos, t, -100, false);
         mMount.power(exit, pos, t, t == indic ? 100 : -100, true);
     }

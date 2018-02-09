@@ -9,8 +9,6 @@
 #include <cctype>
 #include <cstring>
 
-#define valid_id34(i) (0 <= i && i < 34)
-
 
 
 namespace saki
@@ -21,23 +19,6 @@ namespace saki
 enum class Suit { M = 0, P = 1, S = 2, F = 3, Y = 4 };
 
 enum class Wait { NONE, ISORIDE, BIBUMP, CLAMP, SIDE, BIFACE };
-
-inline int _tid34(Suit suit, int val)
-{
-    assert(1 <= val && val <= 9);
-    assume_opt_out(1 <= val && val <= 9);
-
-    return suit == Suit::F ? 27 + val - 1
-                           : suit == Suit::Y ? 31 + val - 1
-                                             : 9 * static_cast<int>(suit) + val - 1;
-}
-
-constexpr int _tid34(int val, Suit suit)
-{
-    return suit == Suit::F ? 27 + val - 1
-                           : suit == Suit::Y ? 31 + val - 1
-                                             : 9 * static_cast<int>(suit) + val - 1;
-}
 
 class T34
 {
@@ -77,24 +58,22 @@ public:
     explicit T34(int id34)
         : mId34(id34)
     {
-        assert(valid_id34(mId34));
-        assume_opt_out(valid_id34(mId34));
+        assert(0 <= id34 && id34 < 34);
+        assume_opt_out(0 <= id34 && id34 < 34);
     }
 
     explicit T34(Suit suit, int val)
-        : mId34(_tid34(suit, val))
+        : mId34(id34Of(suit, val))
     {
-        assert(valid_id34(mId34));
-        assume_opt_out(valid_id34(mId34));
     }
 
     constexpr explicit T34(int val, Suit suit)
-        : mId34(_tid34(val, suit))
+        : mId34(id34Of(val, suit))
     {
     }
 
     explicit T34(const char *str)
-        : mId34(_tid34(suitOf(str[1]), str[0] - '0'))
+        : mId34(id34Of(suitOf(str[1]), str[0] - '0'))
     {
         assert(str[2] == '\0');
     }
@@ -225,8 +204,6 @@ public:
 
     bool operator%(T34 dora) const
     {
-        // since max of val() ranges from 1 to period (not period - 1),
-        // there is nothing to worry about
         return suit() == dora.suit() && val() % period() + 1 == dora.val();
     }
 
@@ -296,6 +273,21 @@ public:
     }
 
 private:
+    static int id34Of(Suit suit, int val)
+    {
+        assert(1 <= val && val <= 9);
+        assume_opt_out(1 <= val && val <= 9);
+
+        return id34Of(val, suit);
+    }
+
+    static constexpr int id34Of(int val, Suit suit)
+    {
+        return suit == Suit::F ? 27 + val - 1
+                               : suit == Suit::Y ? 31 + val - 1
+                                                 : 9 * static_cast<int>(suit) + val - 1;
+    }
+
     int period() const
     {
         switch (suit()) {
@@ -326,20 +318,6 @@ inline std::ostream &operator<<(std::ostream &os, T34 t)
 
 template<size_t MAX>
 inline std::ostream &operator<<(std::ostream &os, const util::Stactor<T34, MAX> &ts)
-{
-    for (size_t i = 0; i < ts.size(); i++) {
-        os << ts[i].val();
-        if (i < ts.size() - 1 && ts[i].suit() != ts[i + 1].suit())
-            os << T34::charOf(ts[i].suit());
-    }
-
-    os << T34::charOf(ts.back().suit());
-
-    return os;
-}
-
-template<size_t N>
-inline std::ostream &operator<<(std::ostream &os, const std::array<T34, N> &ts)
 {
     for (size_t i = 0; i < ts.size(); i++) {
         os << ts[i].val();

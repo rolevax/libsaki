@@ -12,7 +12,9 @@ namespace saki
 
 
 
+///
 /// In-Round Skill handling result
+///
 struct IrsResult
 {
     bool handled;
@@ -21,7 +23,9 @@ struct IrsResult
 
 
 
+///
 /// In-Round Skill Controller
+///
 class IrsCtrl
 {
 public:
@@ -32,7 +36,9 @@ public:
 
 
 
+///
 /// In-Round Skill Controller, improved
+///
 template<typename G>
 class IrsCtrlPlus : public IrsCtrl
 {
@@ -47,7 +53,9 @@ public:
 
 
 
+///
 /// Controller of simple IRS-Check (typically before dice)
+///
 template<typename G>
 class IrsCtrlCheck : public IrsCtrlPlus<G>
 {
@@ -106,7 +114,9 @@ private:
 
 
 
+///
 /// Controller of simple IRS-Click-and-Check (typically after drawn)
+///
 template<typename G>
 class IrsCtrlClickCheck : public IrsCtrlCheck<G>
 {
@@ -119,7 +129,12 @@ public:
 
     const Choices &choices() const override
     {
-        return mCheck ? IrsCtrlCheck<G>::choices() : mChoicesClick;
+        return mCheck ? checkChoices() : mChoicesClick;
+    }
+
+    const Choices &checkChoices() const
+    {
+        return IrsCtrlCheck<G>::choices();
     }
 
     IrsResult handle(G &girl, const Table &table, Mount &mount, const Action &action) override
@@ -138,8 +153,7 @@ public:
 
     void setClickHost(Choices normal)
     {
-        mChoicesClick = normal;
-        mChoicesClick.setExtra(true);
+        mChoicesClick.setIrsClick(normal);
     }
 
 private:

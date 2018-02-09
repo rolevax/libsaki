@@ -134,7 +134,8 @@ void testTable()
         }
 
         TableEnvStub env;
-        Table table(points, girlIds, obs, rule, Who(0), env);
+        Table::InitConfig config { points, girlIds, rule, Who(0) };
+        Table table(config, obs, env);
         TableTester tester(table, deciders);
         tester.run();
     }

@@ -220,7 +220,9 @@ bool Sawaya::canUseWhiteCloud(unsigned &mask) const
     }
 }
 
-// deprecated
+///
+/// \deprecated Reduced to 'usingCloud'
+///
 bool Sawaya::usingRedCloud() const
 {
     return usingCloud(Cloud::RED);
@@ -237,7 +239,7 @@ Girl::IrsCtrlGetter Sawaya::attachIrsOnDrawn(const Table &table)
     const Hand &hand = table.getHand(mSelf);
     mKamuyCtrl.setAbleAt(Kamuy::PA_KOR, !mConsumedPaKor && hand.ready());
 
-    if (mKamuyCtrl.choices().irsCheck().any()) {
+    if (mKamuyCtrl.checkChoices().irsCheck().any()) {
         mKamuyCtrl.setClickHost(table.getChoices(mSelf));
         return &Sawaya::mKamuyCtrl;
     }

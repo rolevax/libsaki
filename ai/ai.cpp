@@ -20,6 +20,30 @@ namespace saki
 
 
 
+///
+/// \brief Pick all max values according to 'measure'
+///
+util::Stactor<Action, 44> allMaxs(const util::Range<Action> &range,
+                                  std::function<int(const Action &)> measure, int floor)
+{
+    int max = floor;
+    util::Stactor<Action, 44> res;
+
+    for (const auto &a : range) {
+        int comax = measure(a);
+
+        if (comax > max) {
+            max = comax;
+            res.clear();
+        }
+
+        if (comax == max)
+            res.pushBack(a);
+    }
+
+    return res;
+}
+
 bool Ai::Limits::noBark() const
 {
     return mNoBark;
@@ -287,7 +311,7 @@ Action Ai::thinkAttackStep(const TableView &view, const util::Range<Action> &out
     };
     // *INDENT-ON*
 
-    auto minSteps = util::Stactor<Action, 44>::allMaxs(outs, stepHappy, 0);
+    auto minSteps = allMaxs(outs, stepHappy, 0);
     if (minSteps.size() == 1)
         return minSteps[0];
 
@@ -312,7 +336,7 @@ Action Ai::thinkAttackEff(const TableView &view, const util::Range<Action> &outs
     };
     // *INDENT-ON*
 
-    auto maxHappys = util::Stactor<Action, 44>::allMaxs(outs, happy, 0);
+    auto maxHappys = allMaxs(outs, happy, 0);
     return maxHappys[0];
 }
 
@@ -333,7 +357,7 @@ Action Ai::thinkDefendChance(const TableView &view, const util::Range<Action> &o
     };
     // *INDENT-ON*
 
-    auto maxHappys = util::Stactor<Action, 44>::allMaxs(outs, happy, 0);
+    auto maxHappys = allMaxs(outs, happy, 0);
     assert(!maxHappys.empty());
     return maxHappys[0];
 }

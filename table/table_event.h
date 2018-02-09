@@ -123,7 +123,7 @@ public:
     {
         static const Type TYPE = Type::BARKED;
         Who who;
-        M37 bark;
+        M37 bark; ///< M37 param is required to denote kakan
         bool spin;
     };
 
@@ -133,7 +133,7 @@ public:
         RoundResult result;
         util::Stactor<Who, 4> openers;
         Who gunner;
-        std::vector<Form> forms; // FUCK change to stactor
+        util::Stactor<Form, 2> forms;
     };
 
     struct PointsChanged

@@ -59,41 +59,44 @@ namespace saki
 
 
 
-void Replay::onTableStarted(const Table &table, uint32_t sd)
+void Replay::onTableEvent(const Table &table, const TE::TableStarted &event)
 {
     for (int w = 0; w < 4; w++)
         girls[w] = table.getGirl(Who(w)).getId();
 
     initPoints = table.getPoints();
     rule = table.getRule();
-    seed = sd;
+    seed = event.seed;
 }
 
-void Replay::onRoundStarted(int round, int extra, Who dealer,
-                            bool al, int deposit, uint32_t seed)
+void Replay::onTableEvent(const Table &table, const TableEvent::RoundStarted &event)
 {
+    (void) table;
+
     rounds.emplace_back();
 
-    rounds.back().round = round;
-    rounds.back().extraRound = extra;
-    rounds.back().dealer = dealer;
-    rounds.back().allLast = al;
-    rounds.back().deposit = deposit;
-    rounds.back().state = seed;
+    rounds.back().round = event.round;
+    rounds.back().extraRound = event.extraRound;
+    rounds.back().dealer = event.dealer;
+    rounds.back().allLast = event.allLast;
+    rounds.back().deposit = event.deposit;
+    rounds.back().state = event.seed;
 }
 
-void Replay::onDiced(const Table &table, int die1, int die2)
+void Replay::onTableEvent(const Table &table, const TE::Diced &event)
 {
     (void) table;
 
     if (!rounds.empty()) { // else init-dealer choosing dice
-        rounds.back().die1 = die1;
-        rounds.back().die2 = die2;
+        rounds.back().die1 = event.die1;
+        rounds.back().die2 = event.die2;
     }
 }
 
-void Replay::onDealt(const Table &table)
+void Replay::onTableEvent(const Table &table, const TE::Dealt &event)
 {
+    (void) event;
+
     for (int w = 0; w < 4; w++) {
         const auto &ts = table.getHand(Who(w)).closed().t37s13(true);
         assert(ts.size() == 13);
@@ -102,49 +105,53 @@ void Replay::onDealt(const Table &table)
     }
 }
 
-void Replay::onFlipped(const Table &table)
+void Replay::onTableEvent(const Table &table, const TE::Flipped &event)
 {
+    (void) event;
+
     const T37 &newIndic = table.getMount().getDrids().back();
     rounds.back().drids.emplace_back(newIndic);
 }
 
-void Replay::onDrawn(const Table &table, Who who)
+void Replay::onTableEvent(const Table &table, const TE::Drawn &event)
 {
-    const T37 &drawn = table.getHand(who).drawn();
-    rounds.back().tracks[who.index()].in.emplace_back(In::DRAW, drawn);
+    const T37 &drawn = table.getHand(event.who).drawn();
+    rounds.back().tracks[event.who.index()].in.emplace_back(In::DRAW, drawn);
 }
 
-void Replay::onDiscarded(const Table &table, bool spin)
+void Replay::onTableEvent(const Table &table, const TE::Discarded &event)
 {
     Who who = table.getFocus().who();
 
     Out act;
     if (mToEstablishRiichi) {
         mToEstablishRiichi = false;
-        act = spin ? Out::RIICHI_SPIN : Out::RIICHI_ADVANCE;
+        act = event.spin ? Out::RIICHI_SPIN : Out::RIICHI_ADVANCE;
     } else {
-        act = spin ? Out::SPIN : Out::ADVANCE;
+        act = event.spin ? Out::SPIN : Out::ADVANCE;
     }
 
-    if (spin)
+    if (event.spin)
         rounds.back().tracks[who.index()].out.emplace_back(act);
     else
         rounds.back().tracks[who.index()].out.emplace_back(act, table.getFocusTile());
 }
 
-void Replay::onRiichiCalled(Who who)
+void Replay::onTableEvent(const Table &table, const TE::RiichiCalled &event)
 {
-    (void) who;
+    (void) table;
+    (void) event;
 
     mToEstablishRiichi = true;
 }
 
-void Replay::onBarked(const Table &table, Who who, const M37 &bark, bool spin)
+void Replay::onTableEvent(const Table &table, const TE::Barked &event)
 {
-    (void) spin;
+    int w = event.who.index();
+    const auto &bark = event.bark;
 
     if (bark.isCpdmk())
-        addSkip(who, table.getFocus().who());
+        addSkip(event.who, table.getFocus().who());
 
     if (bark.type() == M37::Type::CHII) {
         bool showAka5 = false;
@@ -160,45 +167,44 @@ void Replay::onBarked(const Table &table, Who who, const M37 &bark, bool spin)
         std::array<In, 3> chiis { In::CHII_AS_LEFT, In::CHII_AS_MIDDLE, In::CHII_AS_RIGHT };
         In act = chiis[lay];
 
-        rounds.back().tracks[who.index()].in.emplace_back(act, showAka5);
+        rounds.back().tracks[w].in.emplace_back(act, showAka5);
     } else if (bark.type() == M37::Type::PON) {
         int showAka5 = 0;
         for (int i = 0; i < static_cast<int>(bark.tiles().size()); i++)
             showAka5 += (i != bark.layIndex() && bark.tiles().at(i).isAka5());
 
-        rounds.back().tracks[who.index()].in.emplace_back(In::PON, showAka5);
+        rounds.back().tracks[w].in.emplace_back(In::PON, showAka5);
     } else if (bark.type() == M37::Type::DAIMINKAN) {
-        rounds.back().tracks[who.index()].in.emplace_back(In::DAIMINKAN);
-        rounds.back().tracks[who.index()].out.emplace_back(Out::SKIP_OUT);
+        rounds.back().tracks[w].in.emplace_back(In::DAIMINKAN);
+        rounds.back().tracks[w].out.emplace_back(Out::SKIP_OUT);
     } else if (bark.type() == M37::Type::ANKAN) {
         T37 t(bark[0].id34()); // use id34 for ankan
-        rounds.back().tracks[who.index()].out.emplace_back(Out::ANKAN, t);
+        rounds.back().tracks[w].out.emplace_back(Out::ANKAN, t);
     } else if (bark.type() == M37::Type::KAKAN) {
-        rounds.back().tracks[who.index()].out.emplace_back(Out::KAKAN, bark[3]);
+        rounds.back().tracks[w].out.emplace_back(Out::KAKAN, bark[3]);
     }
 }
 
-void Replay::onRoundEnded(const Table &table, RoundResult result, const std::vector<Who> &openers,
-                          Who gunner, const std::vector<Form> &forms)
+void Replay::onTableEvent(const Table &table, const TE::RoundEnded &event)
 {
-    rounds.back().result = result;
+    rounds.back().result = event.result;
 
     for (const T37 &t : table.getMount().getUrids())
         rounds.back().urids.emplace_back(t);
 
-    for (const auto &form : forms) {
+    for (const auto &form : event.forms) {
         rounds.back().spells.emplace_back(form.spell());
         rounds.back().charges.emplace_back(form.charge());
     }
 
-    if (result == RoundResult::KSKP) {
-        rounds.back().tracks[openers[0].index()].out.emplace_back(Out::RYUUKYOKU);
-    } else if (result == RoundResult::TSUMO) {
-        rounds.back().tracks[openers[0].index()].out.emplace_back(Out::TSUMO);
-    } else if (result == RoundResult::RON || result == RoundResult::SCHR) {
+    if (event.result == RoundResult::KSKP) {
+        rounds.back().tracks[event.openers[0].index()].out.emplace_back(Out::RYUUKYOKU);
+    } else if (event.result == RoundResult::TSUMO) {
+        rounds.back().tracks[event.openers[0].index()].out.emplace_back(Out::TSUMO);
+    } else if (event.result == RoundResult::RON || event.result == RoundResult::SCHR) {
         // no need to add skip from gunner because there is nothing after ron
-        for (Who who = gunner.right(); who != gunner; who = who.right()) {
-            if (util::has(openers, who)) {
+        for (Who who = event.gunner.right(); who != event.gunner; who = who.right()) {
+            if (util::has(event.openers, who)) {
                 rounds.back().tracks[who.index()].in.emplace_back(In::RON);
             } else { // not an opener, turn-fly
                 rounds.back().tracks[who.index()].in.emplace_back(In::SKIP_IN);
@@ -208,8 +214,10 @@ void Replay::onRoundEnded(const Table &table, RoundResult result, const std::vec
     }
 }
 
-void Replay::onPointsChanged(const Table &table)
+void Replay::onTableEvent(const Table &table, const TE::PointsChanged &event)
 {
+    (void) event;
+
     rounds.back().resultPoints = table.getPoints();
 }
 
@@ -241,7 +249,7 @@ TableSnap Replay::look(int roundId, int turn)
 
     // flip first indicator
     if (!round.drids.empty())
-        snap.drids.emplace_back(round.drids[0]);
+        snap.drids.pushBack(round.drids[0]);
 
     Who who = round.dealer;
     auto next = [&who]() { who = who.right(); };
@@ -318,7 +326,7 @@ TableSnap Replay::look(int roundId, int turn)
             // *INDENT-OFF*
             auto checkFlip = [&snap, &round, &toFlip]() {
                 if (toFlip && snap.drids.size() < round.drids.size()) {
-                    snap.drids.emplace_back(round.drids[snap.drids.size()]);
+                    snap.drids.pushBack(round.drids[snap.drids.size()]);
                     toFlip = false;
                 }
             };
@@ -403,7 +411,7 @@ TableSnap Replay::look(int roundId, int turn)
         snap.charges = round.charges;
         snap.points = round.resultPoints;
         for (const T37 &t : round.urids)
-            snap.urids.emplace_back(t);
+            snap.urids.pushBack(t);
     }
 
     return snap;

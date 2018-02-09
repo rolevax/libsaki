@@ -26,8 +26,8 @@ struct TableSnap
     Who whoDrawn;
     T37 drawn;
     std::array<int, 4> points;
-    std::vector<T37> drids;
-    std::vector<T37> urids;
+    util::Stactor<T37, 5> drids;
+    util::Stactor<T37, 5> urids;
     int wallRemain;
     int deadRemain;
 
@@ -119,20 +119,17 @@ public:
     ~Replay() = default;
     Replay &operator=(const Replay &assign) = default;
 
-    void onTableStarted(const Table &table, uint32_t seed) override;
-    void onRoundStarted(int round, int extra, Who dealer,
-                        bool al, int deposit, uint32_t seed) override;
-    void onDiced(const Table &table, int die1, int die2) override;
-    void onDealt(const Table &table) override;
-    void onFlipped(const Table &table) override;
-    void onDrawn(const Table &table, Who who) override;
-    void onDiscarded(const Table &table, bool spin) override;
-    void onRiichiCalled(Who who) override;
-    void onBarked(const Table &table, Who who, const M37 &bark, bool spin) override;
-    void onRoundEnded(const Table &table, RoundResult result,
-                      const std::vector<Who> &openers, Who gunner,
-                      const std::vector<Form> &fs) override;
-    void onPointsChanged(const Table &table) override;
+    void onTableEvent(const Table &table, const TE::TableStarted &event) override;
+    void onTableEvent(const Table &table, const TE::RoundStarted &event) override;
+    void onTableEvent(const Table &table, const TE::Diced &event) override;
+    void onTableEvent(const Table &table, const TE::Dealt &event) override;
+    void onTableEvent(const Table &table, const TE::Flipped &event) override;
+    void onTableEvent(const Table &table, const TE::Drawn &event) override;
+    void onTableEvent(const Table &table, const TE::Discarded &event) override;
+    void onTableEvent(const Table &table, const TE::RiichiCalled &event) override;
+    void onTableEvent(const Table &table, const TE::Barked &event) override;
+    void onTableEvent(const Table &table, const TE::RoundEnded &event) override;
+    void onTableEvent(const Table &table, const TE::PointsChanged &event) override;
 
     TableSnap look(int roundId, int turn);
 

@@ -1,7 +1,7 @@
 #ifndef SAKI_UTIL_STACTOR_H
 #define SAKI_UTIL_STACTOR_H
 
-#include <array>
+#include <type_traits>
 #include <functional>
 #include <cassert>
 
@@ -31,73 +31,54 @@ private:
     const T *mEnd;
 };
 
-/// Stactor = statically allocated vector
-/// similar as boost::static_vector, re-inventing wheels
+
+
 template<typename T, size_t MAX>
-class Stactor
+class StactorBase
 {
 public:
-    Stactor() = default;
-    Stactor(const Stactor &copy) = default;
-    Stactor &operator=(const Stactor &assign) = default;
-    ~Stactor() = default;
+    StactorBase() = default;
+    StactorBase(const StactorBase &copy) = default;
+    StactorBase &operator=(const StactorBase &assign) = default;
+    ~StactorBase() = default;
 
-    Stactor(std::initializer_list<T> inits)
+    StactorBase(std::initializer_list<T> inits) noexcept
     {
         for (const auto &e : inits)
             pushBack(e);
     }
 
-    // FIXIT
-    // not good to place this func as static member
-    // extract it to somewhere else
-    static Stactor<T, MAX> allMaxs(const Range<T> &range,
-                                   std::function<int(const T &)> measure, int floor)
-    {
-        int max = floor;
-        Stactor<T, MAX> res;
-
-        for (const auto &a : range) {
-            int comax = measure(a);
-
-            if (comax > max) {
-                max = comax;
-                res.clear();
-            }
-
-            if (comax == max)
-                res.pushBack(a);
-        }
-
-        return res;
-    }
-
-    using ArrayType = std::array<T, MAX>;
-
-    using Iterator = typename ArrayType::iterator;
-    using ConstIterator = typename ArrayType::const_iterator;
-
     /// enable std funcs
     using value_type = T;
 
-    T &operator[](size_t i)
+    const T *data() const noexcept
     {
-        assert(i < mSize);
-        return mArray[i];
+        return static_cast<const T *>(static_cast<const void *>(&mData));
     }
 
-    const T &operator[](size_t i) const
+    T *data() noexcept
     {
-        assert(i < mSize);
-        return mArray[i];
+        return static_cast<T *>(static_cast<void *>(&mData));
     }
 
-    T &at(size_t i)
+    T &operator[](size_t i) noexcept
+    {
+        assert(i < mSize);
+        return data()[i];
+    }
+
+    const T &operator[](size_t i) const noexcept
+    {
+        assert(i < mSize);
+        return data()[i];
+    }
+
+    T &at(size_t i) noexcept
     {
         return (*this)[i];
     }
 
-    const T &at(size_t i) const
+    const T &at(size_t i) const noexcept
     {
         return (*this)[i];
     }
@@ -112,113 +93,191 @@ public:
         return mSize;
     }
 
-    Iterator begin() noexcept
+    T *begin() noexcept
     {
-        return mArray.begin();
+        return data();
     }
 
-    ConstIterator begin() const noexcept
+    const T *begin() const noexcept
     {
-        return mArray.begin();
+        return data();
     }
 
-    Iterator end() noexcept
+    T *end() noexcept
     {
-        return mArray.begin() + mSize;
+        return begin() + mSize;
     }
 
-    ConstIterator end() const noexcept
+    const T *end() const noexcept
     {
-        return mArray.begin() + mSize;
+        return begin() + mSize;
     }
 
     Range<T> range() const noexcept
     {
-        return Range<T>(mArray.data(), mArray.data() + mSize);
+        return Range<T>(begin(), end());
     }
 
-    T &front()
+    T &front() noexcept
     {
         assert(!empty());
         return operator[](0);
     }
 
-    const T &front() const
+    const T &front() const noexcept
     {
         assert(!empty());
         return operator[](0);
     }
 
-    T &back()
+    T &back() noexcept
     {
         assert(!empty());
         return operator[](mSize - 1);
     }
 
-    const T &back() const
+    const T &back() const noexcept
     {
         assert(!empty());
         return operator[](mSize - 1);
     }
 
-    void pushBack(const T &elem)
+    template<typename... Args>
+    void emplaceBack(Args && ... elem) noexcept
     {
         assert(mSize + 1 <= MAX);
-        mArray[mSize++] = elem;
+        new (data() + mSize) T(std::forward<Args>(elem) ...);
+        mSize++;
     }
 
-    void pushBack(T &&elem)
+    void pushBack(const T &elem) noexcept
     {
         assert(mSize + 1 <= MAX);
-        mArray[mSize++] = elem;
+        new (data() + mSize) T(elem);
+        mSize++;
     }
 
-    void pushBack(const Range<T> &range)
+    void pushBack(T &&elem) noexcept
+    {
+        assert(mSize + 1 <= MAX);
+        new (data() + mSize) T(std::move(elem));
+        mSize++;
+    }
+
+    void pushBack(const Range<T> &range) noexcept
     {
         for (const T &v : range)
             pushBack(v);
     }
 
     /// alias to enable std::back_inserter
-    void push_back(const T &elem)
+    void push_back(const T &elem) noexcept
     {
         pushBack(elem);
     }
 
     /// alias to enable std::back_inserter
-    void push_back(T &&elem)
+    void push_back(T &&elem) noexcept
     {
-        pushBack(elem);
+        pushBack(std::forward<T>(elem));
     }
 
-    void popBack()
+    void popBack() noexcept
     {
         assert(!empty());
+        (data() + mSize - 1)->T::~T();
         mSize--;
     }
 
-    void clear()
+    void clear() noexcept
     {
+        for (size_t i = 0; i < mSize; i++)
+            (data() + i)->T::~T();
+
         mSize = 0;
     }
 
-    void exile(size_t i)
+    void exile(size_t i) noexcept
     {
         assert(i < mSize);
-        mArray[i] = back();
-        mSize--;
+        data()[i] = back();
+        popBack();
     }
 
-    void exileAllIf(std::function<bool(const T &)> pred)
+    void exileAllIf(std::function<bool(const T &)> pred) noexcept
     {
         for (size_t i = 0; i < mSize; i++)
-            if (pred(mArray[i]))
+            if (pred(data()[i]))
                 exile(i--);
     }
 
-private:
-    ArrayType mArray;
+protected:
+    static const size_t BYTES = sizeof(T) * MAX;
+    static const size_t ALIGN = std::alignment_of<T>::value;
+    typename std::aligned_storage<BYTES, ALIGN>::type mData;
     size_t mSize = 0;
+};
+
+
+
+///
+/// \brief Stactor = statically allocated vector
+///
+/// Similar to boost::static_vector, re-inventing wheels
+///
+/// Strength compared to std::vector<T> or std::vector<T, StaticAllocator<T>>:
+/// - No dynamic allocation or resizing
+/// - No buffer pointer cost
+/// - Trivially copyable if T is trivially copyable
+///
+/// Strength compared to std::array<T, MAX>:
+/// - Variable size
+/// - No need to fill all elements (by default ctor or explicit init)
+///
+/// Style difference between STL containers:
+/// - Using assertion instead of exception
+/// - Naming by camel cases
+///
+template<typename T, size_t MAX, typename SFINAE = void>
+class Stactor;
+
+
+
+template<typename T, size_t MAX>
+class Stactor<T, MAX, typename std::enable_if<std::is_trivially_copyable<T>::value>::type>
+    : public StactorBase<T, MAX>
+{
+public:
+    using StactorBase<T, MAX>::StactorBase;
+    ~Stactor() = default;
+};
+
+
+
+template<typename T, size_t MAX>
+class Stactor<T, MAX, typename std::enable_if<!std::is_trivially_copyable<T>::value>::type>
+    : public StactorBase<T, MAX>
+{
+public:
+    using StactorBase<T, MAX>::StactorBase;
+
+    ~Stactor()
+    {
+        StactorBase<T, MAX>::clear();
+    }
+
+    Stactor(const Stactor &copy)
+    {
+        for (const auto &e : copy)
+            pushBack(e);
+    }
+
+    Stactor &operator=(const Stactor &that)
+    {
+        StactorBase<T, MAX>::clear();
+        for (const auto &e : that)
+            pushBack(e);
+    }
 };
 
 
