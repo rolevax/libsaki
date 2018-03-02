@@ -8,6 +8,7 @@
 #include <ostream>
 #include <cctype>
 #include <cstring>
+#include <array>
 
 
 
