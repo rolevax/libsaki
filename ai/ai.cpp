@@ -123,7 +123,7 @@ TableDecider::Decision Ai::decide(const TableView &view)
     TableDecider::Decision decision;
 
 #ifdef LIBSAKI_CHEAT_AI
-    decision = placeHolder(*view);
+    decision.action = placeHolder(view);
 #else
     if (view.me().irsReady())
         decision.action = thinkIrs(view);
