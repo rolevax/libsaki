@@ -142,7 +142,7 @@ TableDecider::Decision Ai::decide(const TableView &view)
 Action Ai::thinkIrs(const TableView &view)
 {
     (void) view;
-    unreached("unoverriden Ai::thinkIrs");
+    return Action();
 }
 
 Action Ai::think(const TableView &view, Limits &limits)
