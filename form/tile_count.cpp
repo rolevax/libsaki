@@ -84,6 +84,11 @@ int TileCount::ctYao() const
     return ct(1_m) + ct(9_m) + ct(1_p) + ct(9_p) + ct(1_s) + ct(9_s) + ctZ();
 }
 
+int TileCount::ctS() const
+{
+    return std::accumulate(mCounts.begin() + 18, mCounts.begin() + 27, 0);
+}
+
 bool TileCount::hasZ() const
 {
     return std::any_of(mCounts.begin() + 27, mCounts.end(), [](int i) { return i > 0; });

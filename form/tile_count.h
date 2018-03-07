@@ -39,6 +39,7 @@ public:
     int ctAka5() const;
     int ctZ() const;
     int ctYao() const;
+    int ctS() const;
 
     template<typename V>
     int ct(const V &ts) const
