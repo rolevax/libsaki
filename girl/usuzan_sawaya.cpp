@@ -7,7 +7,15 @@
 namespace saki
 {
 
+bool Sawaya::checkInit(Who who, const Hand &init, const Princess &princess, int iter)
+{
+    (void) princess;
 
+    if (who != mSelf || iter > 100 || !usingCloud(Cloud::WHITE))
+        return true;
+
+    return init.closed().ctS() >= 8;
+}
 
 void Sawaya::onDice(util::Rand &rand, const Table &table)
 {
