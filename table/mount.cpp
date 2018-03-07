@@ -183,43 +183,43 @@ const util::Stactor<T37, 5> &Mount::getUrids() const
 
 void Mount::lightA(T34 t, int delta, bool rinshan)
 {
-    power(rinshan ? Exit::RINSHAN : Exit::PII, 0, t, delta, false);
+    incMk(rinshan ? Exit::RINSHAN : Exit::PII, 0, t, delta, false);
 }
 
 void Mount::lightA(const T37 &t, int delta, bool rinshan)
 {
-    power(rinshan ? Exit::RINSHAN : Exit::PII, 0, t, delta, false);
+    incMk(rinshan ? Exit::RINSHAN : Exit::PII, 0, t, delta, false);
 }
 
 void Mount::lightB(T34 t, int delta, bool rinshan)
 {
-    power(rinshan ? Exit::RINSHAN : Exit::PII, 0, t, delta, true);
+    incMk(rinshan ? Exit::RINSHAN : Exit::PII, 0, t, delta, true);
 }
 
 void Mount::lightB(const T37 &t, int delta, bool rinshan)
 {
-    power(rinshan ? Exit::RINSHAN : Exit::PII, 0, t, delta, true);
+    incMk(rinshan ? Exit::RINSHAN : Exit::PII, 0, t, delta, true);
 }
 
-void Mount::power(Exit exit, size_t pos, T34 t, int delta, bool bSpace)
+void Mount::incMk(Exit exit, size_t pos, T34 t, int delta, bool bSpace)
 {
     auto &ptr = prepareSuperpos(exit, pos);
-    if (ptr->state == Erwin::SUPERPOS) {
-        Exist &exist = *(bSpace ? ptr->exB : ptr->exA);
+    if (!ptr->earlyCollapse) {
+        Exist &exist = bSpace ? ptr->exB : ptr->exA;
         exist.inc(t, delta);
     }
 }
 
-void Mount::power(Mount::Exit exit, size_t pos, const T37 &t, int delta, bool bSpace)
+void Mount::incMk(Mount::Exit exit, size_t pos, const T37 &t, int delta, bool bSpace)
 {
     auto &ptr = prepareSuperpos(exit, pos);
-    if (ptr->state == Erwin::SUPERPOS) {
-        Exist &exist = *(bSpace ? ptr->exB : ptr->exA);
+    if (!ptr->earlyCollapse) {
+        Exist &exist = bSpace ? ptr->exB : ptr->exA;
         exist.inc(t, delta);
     }
 }
 
-void Mount::pin(Exit exit, std::size_t pos, const T37 &tile)
+void Mount::collapse(Exit exit, std::size_t pos, const T37 &tile)
 {
     ErwinQueue &eq = mErwinQueues[exit];
 
@@ -233,17 +233,9 @@ void Mount::pin(Exit exit, std::size_t pos, const T37 &tile)
     if (ptr == nullptr) {
         (mStochA.ct(tile) > 0 ? mStochA : mStochB).inc(tile, -1);
         ptr.reset(new Erwin(tile));
-    } else {
-        switch (ptr->state) {
-        case Erwin::State::DEFINITE:
-            // second pinning ignored
-            break;
-        case Erwin::State::SUPERPOS:
-            // override stochastic chocolate
-            (mStochA.ct(tile) > 0 ? mStochA : mStochB).inc(tile, -1);
-            ptr.reset(new Erwin(tile));
-            break;
-        }
+    } else if (!ptr->earlyCollapse) { // first come first collapse
+        (mStochA.ct(tile) > 0 ? mStochA : mStochB).inc(tile, -1);
+        ptr.reset(new Erwin(tile));
     }
 }
 
@@ -297,17 +289,7 @@ T37 Mount::popFrom(util::Rand &rand, Exit exit)
         return popScientific(rand);
     } else {
         Erwin &e = *eq.front();
-        T37 res;
-
-        switch (e.state) {
-        case Erwin::SUPERPOS:
-            res = popExist(rand, *e.exA, *e.exB);
-            break;
-        case Erwin::DEFINITE:
-            res = e.tile;
-            break;
-        }
-
+        T37 res = e.earlyCollapse ? e.tile : popExist(rand, e.exA, e.exB);
         eq.pop_front();
         return res;
     }

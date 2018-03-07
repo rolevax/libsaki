@@ -94,9 +94,9 @@ public:
     void lightA(const T37 &t, int delta, bool rinshan = false);
     void lightB(T34 t, int delta, bool rinshan = false);
     void lightB(const T37 &t, int delta, bool rinshan = false);
-    void power(Exit exit, size_t pos, T34 t, int delta, bool bSpace);
-    void power(Exit exit, size_t pos, const T37 &t, int delta, bool bSpace);
-    void pin(Exit exit, std::size_t pos, const T37 &t);
+    void incMk(Exit exit, size_t pos, T34 t, int delta, bool bSpace);
+    void incMk(Exit exit, size_t pos, const T37 &t, int delta, bool bSpace);
+    void collapse(Exit exit, std::size_t pos, const T37 &t);
     void loadB(const T37 &t, int count);
 
     void flipIndic(util::Rand &rand);
@@ -105,19 +105,12 @@ public:
 private:
     struct Erwin
     {
-        enum State { SUPERPOS, DEFINITE };
-
-        const State state;
-        const T37 tile;
-        const std::unique_ptr<Exist> exA; // const-ptr, not ptr-to-const
-        const std::unique_ptr<Exist> exB; // const-ptr, not ptr-to-const
-        Erwin() : state(SUPERPOS), exA(new Exist), exB(new Exist) {}
-        Erwin(const T37 &t) : state(DEFINITE), tile(t) {}
-        Erwin(const Erwin &copy)
-            : state(copy.state), tile(copy.tile)
-            , exA(copy.state == SUPERPOS ? new Exist(*copy.exA) : nullptr)
-            , exB(copy.state == SUPERPOS ? new Exist(*copy.exB) : nullptr)
-        {}
+        Exist exA;
+        Exist exB;
+        T37 tile;
+        bool earlyCollapse;
+        Erwin() : earlyCollapse(false) {}
+        Erwin(const T37 &t) : tile(t), earlyCollapse(true) {}
     };
 
 

@@ -166,8 +166,8 @@ void Sawaya::onIrsChecked(const Table &table, Mount &mount)
             for (int pos = 0; pos < 5; pos++) {
                 for (T34 t : tiles34::ALL34) {
                     int mk = t.suit() == Suit::M ? 1000 : -50;
-                    mount.power(Mount::DORAHYOU, pos, t, mk, false);
-                    mount.power(Mount::URAHYOU, pos, t, mk, false);
+                    mount.incMk(Mount::DORAHYOU, pos, t, mk, false);
+                    mount.incMk(Mount::URAHYOU, pos, t, mk, false);
                 }
             }
         }

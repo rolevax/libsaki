@@ -324,8 +324,8 @@ void TokiMountTracker::onTableEvent(const Table &table, const TE::Drawn &event)
     // because we have to consider remaining tiles.
     Who who = event.who;
     const T37 &t = table.getHand(who).drawn();
-    mReal.pin(table.duringKan() ? Mount::RINSHAN : Mount::PII,
-              table.duringKan() ? mDeadPos++ : mWallPos++, t);
+    mReal.collapse(table.duringKan() ? Mount::RINSHAN : Mount::PII,
+                   table.duringKan() ? mDeadPos++ : mWallPos++, t);
 
     // see self's draw, output to expr
     if (table.getGirl(who).getId() == Girl::Id::ONJOUJI_TOKI)
@@ -338,7 +338,7 @@ void TokiMountTracker::onTableEvent(const Table &table, const TE::Flipped &event
 
     // fix the mount
     const T37 &newIndic = table.getMount().getDrids().back();
-    mReal.pin(Mount::DORAHYOU, mDoraPos++, newIndic);
+    mReal.collapse(Mount::DORAHYOU, mDoraPos++, newIndic);
 
     mEvents.emplace_back(new TokiEventFlipped(newIndic));
 }
@@ -382,7 +382,7 @@ void TokiMountTracker::onTableEvent(const Table &table, const TE::RoundEnded &ev
 
         const auto &urids = table.getMount().getUrids();
         for (size_t i = 0; i < urids.size(); i++)
-            mReal.pin(Mount::URAHYOU, i, urids[i]);
+            mReal.collapse(Mount::URAHYOU, i, urids[i]);
 
         mEvents.emplace_back(new TokiEventResult(result, openers, closeds, pick, urids));
     } else { // ryuukyoku

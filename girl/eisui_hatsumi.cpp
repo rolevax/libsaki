@@ -97,8 +97,8 @@ void Hatsumi::nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
         mount.loadB(3_f, 3);
 
         // prevent E/N to be dora
-        mount.power(Mount::Exit::DORAHYOU, 0, 1_f, -1000, false);
-        mount.power(Mount::Exit::DORAHYOU, 0, 4_f, -1000, false);
+        mount.incMk(Mount::Exit::DORAHYOU, 0, 1_f, -1000, false);
+        mount.incMk(Mount::Exit::DORAHYOU, 0, 4_f, -1000, false);
     }
 }
 
