@@ -26,12 +26,13 @@ namespace saki
 
 
 
-class Princess;
 class Hand;
 class Table;
 class Choices;
 class Action;
 class IrsCtrl;
+class HrhInitFix;
+class HrhBargainer;
 
 
 
@@ -74,12 +75,6 @@ public:
         KAJINO_YUI = 990024
     };
     // *INDENT-ON*
-
-    enum NmSkill
-    {
-        WHITE_CLOUD, ZIM_M, ZIM_P, ZIM_S,
-        NUM_NM_SKILL
-    };
 
     ///
     /// \brief Wrapper of a "T Girl::*" value where T implements IrsCtrl
@@ -182,8 +177,8 @@ public:
     Id getId() const;
 
     virtual void onDice(util::Rand &rand, const Table &table);
-    virtual void onMonkey(std::array<Exist, 4> &exists, const Princess &princess);
-    virtual bool checkInit(Who who, const Hand &init, const Princess &princess, int iter);
+    virtual void onMonkey(std::array<Exist, 4> &exists, const Table &table);
+    virtual bool checkInit(Who who, const Hand &init, const Table &table, int iter);
     virtual void onInbox(Who who, const Action &action);
     virtual void onDraw(const Table &table, Mount &mount, Who who, bool rinshan);
     virtual void onChooseFirstDealer(util::Rand &rand, Who tempDealer, int &die1, int &die2);
@@ -196,9 +191,9 @@ public:
     bool irsReady() const;
     const Choices &irsChoices() const;
 
-    virtual void nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
-                           std::bitset<NUM_NM_SKILL> &presence,
-                           const Princess &princess);
+    virtual HrhInitFix *onHrhRaid(const Table &table);
+    virtual HrhBargainer *onHrhBargain();
+    virtual HrhInitFix *onHrhBeg(util::Rand &rand, const TileCount &stock);
 
     virtual std::string popUpStr() const;
 

@@ -1,6 +1,7 @@
 #ifndef SAKI_GIRL_SHIRAITODAI_AWAI_H
 #define SAKI_GIRL_SHIRAITODAI_AWAI_H
 
+#include "../table/princess.h"
 #include "../table/irs_ctrl.h"
 
 
@@ -10,18 +11,21 @@ namespace saki
 
 
 
-class Awai : public Girl
+class Awai : public Girl, public HrhBargainer
 {
 public:
     GIRL_CTORS(Awai)
 
-    bool checkInit(Who who, const Hand &init, const Princess &princess, int iter) override;
-    void onMonkey(std::array<Exist, 4> &exists, const Princess &princess) override;
+    bool checkInit(Who who, const Hand &init, const Table &table, int iter) override;
+    void onMonkey(std::array<Exist, 4> &exists, const Table &table) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
+    void onIrsChecked(const Table &table, Mount &mount) override;
 
-    void nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
-                   std::bitset<NUM_NM_SKILL> &presence,
-                   const Princess &princess) override;
+    HrhBargainer *onHrhBargain() override;
+    Claim hrhBargainClaim(int plan, T34 t) override;
+    int hrhBargainPlanCt() override;
+    void onHrhBargained(int plan, Mount &mount) override;
+    HrhInitFix *onHrhBeg(util::Rand &rand, const TileCount &stock) override;
 
 protected:
     IrsCtrlGetter attachIrsOnDice() override;
@@ -35,9 +39,12 @@ private:
         TileCount need;
     };
 
+    bool usingDaburii() const;
+    T34 kanuraOfPlan(int plan) const;
     static int lastCorner(int dice, int kanCt);
-    InitSketch sketch(util::Rand &rand, const std::vector<Suit> &avaiSuits) const;
-    bool pickWait(util::Rand &rand, InitSketch &ske, Mount &mount);
+    void begIter(util::Rand &rand, const TileCount &stock);
+    InitSketch sketch(util::Rand &rand, const util::Stactor<Suit, 3> &avaiSuits) const;
+    bool pickWait(util::Rand &rand, InitSketch &ske, const TileCount &stock);
 
 private:
     static const int DRAG_MK = 100;
@@ -52,10 +59,12 @@ private:
             }
         }
     };
+    T34 mSomeGuestWind;
     T37 mFirstDraw;
     bool mNeedFirstDraw = false;
     T34 mKanura;
     std::vector<T34> mLastWaits;
+    HrhInitFix mInitFix;
 };
 
 

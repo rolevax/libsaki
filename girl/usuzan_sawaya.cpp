@@ -7,14 +7,14 @@
 namespace saki
 {
 
-bool Sawaya::checkInit(Who who, const Hand &init, const Princess &princess, int iter)
+bool Sawaya::checkInit(Who who, const Hand &init, const Table &table, int iter)
 {
-    (void) princess;
+    (void) table;
 
     if (who != mSelf || iter > 100 || !usingCloud(Cloud::WHITE))
         return true;
 
-    return init.closed().ctS() >= 8;
+    return init.closed().ct(Suit::S) >= 8;
 }
 
 void Sawaya::onDice(util::Rand &rand, const Table &table)
@@ -48,9 +48,9 @@ void Sawaya::onDice(util::Rand &rand, const Table &table)
     }
 }
 
-void Sawaya::onMonkey(std::array<Exist, 4> &exists, const Princess &princess)
+void Sawaya::onMonkey(std::array<Exist, 4> &exists, const Table &table)
 {
-    (void) princess;
+    (void) table;
 
     mPredice = false;
 
@@ -184,25 +184,43 @@ void Sawaya::onIrsChecked(const Table &table, Mount &mount)
     }
 }
 
-void Sawaya::nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
-                       std::bitset<Girl::NUM_NM_SKILL> &presence,
-                       const Princess &princess)
+HrhBargainer *Sawaya::onHrhBargain()
 {
-    (void) rand;
-    (void) init;
-    (void) princess;
-
-    if (usingCloud(Cloud::RED) && usingCloud(Cloud::RED_RIVALS)) {
-        // (foolish) prevent z-tiles from being wallable dora
-        // to be compatable with kuro and awai
-        // one possible smarter sol: use a who-is-here mask as condition
-        for (T34 t : tiles34::Z7)
-            mount.loadB(T37(t.id34()), 1); // one is enough to make it non-wallable
-
-    }
+    if (usingCloud(Cloud::RED) && usingCloud(Cloud::RED_RIVALS))
+        return this;
 
     if (usingCloud(Cloud::WHITE))
-        presence.set(WHITE_CLOUD);
+        return this;
+
+    return nullptr;
+}
+
+HrhBargainer::Claim Sawaya::hrhBargainClaim(int plan, T34 t)
+{
+    (void) plan;
+
+    Claim claim = Claim::NONE;
+
+    if (usingCloud(Cloud::RED) && usingCloud(Cloud::RED_RIVALS))
+        if (t.isZ())
+            claim = Claim::ANY;
+
+    if (usingCloud(Cloud::WHITE))
+        if (t.suit() == Suit::S)
+            claim = Claim::ANY;
+
+    return claim;
+}
+
+int Sawaya::hrhBargainPlanCt()
+{
+    return 1;
+}
+
+void Sawaya::onHrhBargained(int plan, Mount &mount)
+{
+    (void) plan;
+    (void) mount;
 }
 
 bool Sawaya::canUseRedCloud(unsigned &mask) const

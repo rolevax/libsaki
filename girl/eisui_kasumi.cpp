@@ -10,9 +10,9 @@ namespace saki
 
 
 
-bool Kasumi::checkInit(Who who, const Hand &init, const Princess &princess, int iter)
+bool Kasumi::checkInit(Who who, const Hand &init, const Table &table, int iter)
 {
-    (void) princess;
+    (void) table;
 
     if (who != mSelf || iter > 100)
         return true;
@@ -21,9 +21,9 @@ bool Kasumi::checkInit(Who who, const Hand &init, const Princess &princess, int 
     return init.step() >= 2 && (iter > 50 || init.closed().ctZ() <= 5);
 }
 
-void Kasumi::onMonkey(std::array<Exist, 4> &exists, const Princess &princess)
+void Kasumi::onMonkey(std::array<Exist, 4> &exists, const Table &table)
 {
-    (void) princess;
+    (void) table;
 
     if (!mIrsCtrl.itemAt(0).on())
         return;
@@ -83,28 +83,27 @@ void Kasumi::onIrsChecked(const Table &table, Mount &mount)
 
 }
 
-void Kasumi::nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
-                       std::bitset<Girl::NUM_NM_SKILL> &presence,
-                       const Princess &princess)
+HrhBargainer *Kasumi::onHrhBargain()
 {
-    (void) init;
-    (void) princess;
+    return mIrsCtrl.itemAt(0).on() ? this : nullptr;
+}
 
-    if (!mIrsCtrl.itemAt(0).on())
-        return;
+HrhBargainer::Claim Kasumi::hrhBargainClaim(int plan, T34 t)
+{
+    Suit suit = static_cast<Suit>(plan);
+    assert(suit == Suit::M || suit == Suit::P || suit == Suit::S);
+    return t.suit() == suit ? Claim::ALL : Claim::NONE;
+}
 
-    std::vector<int> ofss = { 0, 9, 18 };
-    if (presence[WHITE_CLOUD])
-        ofss.pop_back(); // exclude suit-S
+int Kasumi::hrhBargainPlanCt()
+{
+    return 3; // three kinds of number suits
+}
 
-    int door = rand.gen(ofss.size());
-    mZimSuit = static_cast<Suit>(door); // ok since popped S is the last
-    presence.set(ZIM_M + door); // assuming order of enum
-    int begin = ofss[door];
-
-    // break wallability of zim-tiles
-    for (int i = 0; i < 9; i++)
-        mount.loadB(T37(begin + i), 1);
+void Kasumi::onHrhBargained(int plan, Mount &mount)
+{
+    (void) mount;
+    mZimSuit = static_cast<Suit>(plan);
 }
 
 Girl::IrsCtrlGetter Kasumi::attachIrsOnDice()

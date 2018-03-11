@@ -3,13 +3,65 @@
 
 #include "table.h"
 
-#include <array>
-#include <memory>
-
 
 
 namespace saki
 {
+
+
+
+///
+/// \brief Data object for directly assigning init-hand
+///
+struct HrhInitFix
+{
+public:
+    enum class Priority { HIGH, LOW, NONE };
+
+    struct LoadArgs
+    {
+        LoadArgs(T37 t, int c) : tile(t), ct(c) {}
+        T37 tile;
+        int ct;
+    };
+
+    bool empty() const
+    {
+        return priority == Priority::NONE;
+    }
+
+    void clear()
+    {
+        targets.clear();
+        loads.clear();
+    }
+
+    Priority priority = Priority::NONE;
+    util::Stactor<T37, 13> targets;
+    util::Stactor<LoadArgs, 8> loads;
+};
+
+
+
+///
+/// \brief Interface for working with the 'bargain' stage
+///
+class HrhBargainer
+{
+public:
+    ///
+    /// NONE: don't care
+    /// ANY: nobody shall claim this tile
+    /// ALL: claim all this tile except raided ones
+    /// FOUR: claim all four of this tile
+    ///
+    enum class Claim { NONE, ANY, ALL, FOUR };
+
+    virtual ~HrhBargainer() = default;
+    virtual Claim hrhBargainClaim(int plan, T34 t) = 0;
+    virtual int hrhBargainPlanCt() = 0;
+    virtual void onHrhBargained(int plan, Mount &mount) = 0;
+};
 
 
 
@@ -22,37 +74,36 @@ public:
     Princess(const Princess &copy) = delete;
     Princess &operator=(const Princess &assign) = delete;
 
-    std::array<Hand, 4> deal();
-
-    // the number '4' is hard-coded everywhere within this class
-    // it is also assumed within this class that the four enums
-    // is defined in exactly this order such that raw ints are used
-    // and casted everywhere.
-    // be cautious if this enum is modified.
-    enum class Indic { DORA, URADORA, KANDORA, KANURA };
-
-    bool imagedAsDora(T34 t, Indic which) const;
-    bool mayHaveDora(T34 t) const;
-    bool hasImageIndic(Indic which) const;
-    T34 getImageIndic(Indic which) const;
-
-    const Table &getTable() const;
+    std::array<Hand, 4> dealAndFlip();
 
 private:
-    std::array<TileCount, 4> nonMonkey();
+    void debugCheat(std::array<TileCount, 4> &res);
+    void raid(std::array<TileCount, 4> &inits);
+    void bargain();
+    void beg(std::array<TileCount, 4> &inits);
+    util::Stactor<int, 34> permutation(int size);
     std::array<Hand, 4> monkey(std::array<TileCount, 4> &nonMonkeys);
-    void doraMatters();
-    T34 pickIndicator(const std::array<bool, 34> &exceptId34s, bool wall);
-    void fixIndicator(Indic which, const std::array<bool, 34> &exceptId34s, bool wall);
+    void fixInit(TileCount &init, const HrhInitFix &fix);
 
 private:
+    class BargainResult
+    {
+    public:
+        int plan() const;
+        HrhBargainer *bargainer() const;
+        void set(HrhBargainer *b, int p);
+        bool active() const;
+
+    private:
+        int mPlan = -1;
+        HrhBargainer *mBargainer = nullptr;
+    };
+
     const Table &mTable;
     util::Rand &mRand;
     Mount &mMount;
-    const std::array<std::unique_ptr<Girl>, 4> &mGirls; // const array but modifying pointer
-
-    std::array<bool, 4> mHasImageIndics;
-    std::array<T34, 4> mImageIndics;
+    const std::array<std::unique_ptr<Girl>, 4> &mGirls;
+    std::array<BargainResult, 4> mBargainResults;
 };
 
 

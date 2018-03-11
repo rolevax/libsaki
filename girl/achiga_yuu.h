@@ -14,7 +14,7 @@ class Yuu : public Girl
 {
 public:
     GIRL_CTORS(Yuu)
-    void onMonkey(std::array<Exist, 4> &exists, const Princess &princess) override;
+    void onMonkey(std::array<Exist, 4> &exists, const Table &table) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
 
 private:

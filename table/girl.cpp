@@ -96,14 +96,14 @@ void Girl::onDice(util::Rand &rand, const Table &table)
     (void) rand; (void) table;
 }
 
-void Girl::onMonkey(std::array<Exist, 4> &exists, const Princess &princess)
+void Girl::onMonkey(std::array<Exist, 4> &exists, const Table &table)
 {
-    (void) exists; (void) princess;
+    (void) exists; (void) table;
 }
 
-bool Girl::checkInit(Who who, const Hand &init, const Princess &princess, int iter)
+bool Girl::checkInit(Who who, const Hand &init, const Table &table, int iter)
 {
-    (void) who; (void) init; (void) iter; (void) princess; return true;
+    (void) who; (void) init; (void) iter; (void) table; return true;
 }
 
 void Girl::onInbox(Who who, const Action &action)
@@ -183,12 +183,22 @@ const Choices &Girl::irsChoices() const
     return mIrsCtrlGetter.get(*const_cast<Girl *>(this)).choices();
 }
 
-void Girl::nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
-                     std::bitset<Girl::NUM_NM_SKILL> &presence,
-                     const Princess &princess)
+HrhInitFix *Girl::onHrhRaid(const Table &table)
 {
-    (void) rand; (void) init; (void) mount; (void) presence; (void) princess;
-    unreached("unoverriden nonMonkey()");
+    (void) table;
+    return nullptr;
+}
+
+HrhBargainer *Girl::onHrhBargain()
+{
+    return nullptr;
+}
+
+HrhInitFix *Girl::onHrhBeg(util::Rand &rand, const TileCount &stock)
+{
+    (void) rand;
+    (void) stock;
+    return nullptr;
 }
 
 std::string Girl::popUpStr() const

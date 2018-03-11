@@ -1,6 +1,7 @@
 #ifndef SAKI_GIRL_EISUI_KASUMI_H
 #define SAKI_GIRL_EISUI_KASUMI_H
 
+#include "../table/princess.h"
 #include "../table/irs_ctrl.h"
 
 
@@ -10,19 +11,20 @@ namespace saki
 
 
 
-class Kasumi : public Girl
+class Kasumi : public Girl, public HrhBargainer
 {
 public:
     GIRL_CTORS(Kasumi)
 
-    bool checkInit(Who who, const Hand &init, const Princess &princess, int iter) override;
-    void onMonkey(std::array<Exist, 4> &exists, const Princess &princess) override;
+    bool checkInit(Who who, const Hand &init, const Table &table, int iter) override;
+    void onMonkey(std::array<Exist, 4> &exists, const Table &table) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
     void onIrsChecked(const Table &table, Mount &mount) override;
 
-    void nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
-                   std::bitset<NUM_NM_SKILL> &presence,
-                   const Princess &princess) override;
+    HrhBargainer *onHrhBargain() override;
+    Claim hrhBargainClaim(int plan, T34 t) override;
+    int hrhBargainPlanCt() override;
+    void onHrhBargained(int plan, Mount &mount) override;
 
 protected:
     IrsCtrlGetter attachIrsOnDice() override;

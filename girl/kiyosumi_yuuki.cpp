@@ -9,10 +9,8 @@ namespace saki
 
 
 
-bool Yuuki::checkInit(Who who, const Hand &init, const Princess &princess, int iter)
+bool Yuuki::checkInit(Who who, const Hand &init, const Table &table, int iter)
 {
-    const Table &table = princess.getTable();
-
     if (!(table.getRound() == 0 && table.getExtraRound() < 3))
         return true;
 

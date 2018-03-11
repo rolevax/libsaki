@@ -16,7 +16,7 @@ public:
     GIRL_CTORS(Sumire)
 
     void onDice(util::Rand &rand, const Table &table) override;
-    bool checkInit(Who who, const Hand &init, const Princess &princess, int iter) override;
+    bool checkInit(Who who, const Hand &init, const Table &table, int iter) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
     void onIrsChecked(const Table &table, Mount &mount) override;
 

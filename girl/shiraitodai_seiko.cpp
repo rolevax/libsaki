@@ -14,9 +14,9 @@ namespace saki
 
 
 
-bool Seiko::checkInit(Who who, const Hand &init, const Princess &princess, int iter)
+bool Seiko::checkInit(Who who, const Hand &init, const Table &table, int iter)
 {
-    (void) princess;
+    (void) table;
 
     if (who != mSelf || iter > 100)
         return true;

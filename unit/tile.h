@@ -250,6 +250,22 @@ public:
         return T34(suit(), (val() - 1 + period() - 1) % period() + 1);
     }
 
+    int period() const
+    {
+        switch (suit()) {
+        case Suit::M:
+        case Suit::P:
+        case Suit::S:
+            return 9;
+        case Suit::F:
+            return 4;
+        case Suit::Y:
+            return 3;
+        default:
+            unreached("T34::period");
+        }
+    }
+
     Wait waitAsSequence(T34 pick) const
     {
         if (suit() != pick.suit())
@@ -287,22 +303,6 @@ private:
         return suit == Suit::F ? 27 + val - 1
                                : suit == Suit::Y ? 31 + val - 1
                                                  : 9 * static_cast<int>(suit) + val - 1;
-    }
-
-    int period() const
-    {
-        switch (suit()) {
-        case Suit::M:
-        case Suit::P:
-        case Suit::S:
-            return 9;
-        case Suit::F:
-            return 4;
-        case Suit::Y:
-            return 3;
-        default:
-            unreached("T34::period");
-        }
     }
 
 private:

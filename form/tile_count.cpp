@@ -68,6 +68,14 @@ int TileCount::ct(const T37 &t) const
     return mCounts[t.id34()];
 }
 
+int TileCount::ct(Suit s) const
+{
+    T34 head(s, 1);
+    auto begin = mCounts.begin() + head.id34();
+    auto end = begin + head.period();
+    return std::accumulate(begin, end, 0);
+}
+
 int TileCount::ctAka5() const
 {
     return std::accumulate(mAka5s.begin(), mAka5s.end(), 0);
@@ -84,9 +92,12 @@ int TileCount::ctYao() const
     return ct(1_m) + ct(9_m) + ct(1_p) + ct(9_p) + ct(1_s) + ct(9_s) + ctZ();
 }
 
-int TileCount::ctS() const
+bool TileCount::has(Suit s) const
 {
-    return std::accumulate(mCounts.begin() + 18, mCounts.begin() + 27, 0);
+    T34 head(s, 1);
+    auto begin = mCounts.begin() + head.id34();
+    auto end = begin + head.period();
+    return std::any_of(begin, end, [](int i) { return i > 0; });
 }
 
 bool TileCount::hasZ() const
@@ -103,6 +114,14 @@ bool TileCount::hasYao() const
            || hasZ();
 }
 
+///
+/// \return true if 'that' is a subset of 'this'
+///
+bool TileCount::covers(const TileCount &that) const
+{
+    return util::all(tiles37::ORDER37, [&](const T37 &t) { return ct(t) >= that.ct(t); });
+}
+
 void TileCount::inc(const T37 &t, int delta)
 {
     assert(ct(t) + delta >= 0);
@@ -110,6 +129,13 @@ void TileCount::inc(const T37 &t, int delta)
     mCounts[t.id34()] += delta;
     if (t.isAka5())
         mAka5s[static_cast<int>(t.suit())] += delta;
+}
+
+void TileCount::clear(T34 t)
+{
+    mCounts[t.id34()] = 0;
+    if (t.val() == 5)
+        mAka5s[static_cast<int>(t.suit())] = 0;
 }
 
 TileCount &TileCount::operator-=(const TileCount &rhs)

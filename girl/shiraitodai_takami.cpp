@@ -14,28 +14,25 @@ namespace saki
 
 
 
-void Takami::nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
-                       std::bitset<Girl::NUM_NM_SKILL> &presence,
-                       const Princess &princess)
+HrhInitFix *Takami::onHrhRaid(const Table &table)
 {
-    (void) rand;
-    (void) presence;
-    (void) princess;
+    if (!table.isAllLast())
+        return nullptr;
 
-    if (!princess.getTable().isAllLast())
-        return;
+    Mount mount(table.getMount()); // copy
 
-    // assume seed slots has no vertical overflow
-    // assume Takami::nonMonkey() is executed before any other
-    // non-monkey such that initPopExact always works
-    int slotCt = std::min(13, static_cast<int>(mSlots.size()));
-    for (int i = 0; i < slotCt; i++) {
-        T37 t = mSlots[i];
-        if (mount.remainA(t) == 0)
-            t = t.toInverse5();
+    if (mRaider.empty()) {
+        for (const T37 &seed : mSlots) {
+            // use black if no red, use red if no black
+            T37 bud = mount.remainA(seed) > 0 ? seed : seed.toInverse5();
+            mount.initPopExact(bud);
+            mRaider.targets.emplaceBack(bud);
+        }
 
-        init.inc(mount.initPopExact(t), 1);
+        mRaider.priority = HrhInitFix::Priority::HIGH;
     }
+
+    return &mRaider;
 }
 
 void Takami::onTableEvent(const Table &table, const TableEvent &event)
@@ -43,14 +40,14 @@ void Takami::onTableEvent(const Table &table, const TableEvent &event)
     if (event.type() != TableEvent::Type::DISCARDED)
         return;
 
-    if (table.getFocus().who() != mSelf)
+    if (table.getFocus().who() != mSelf || mSlots.full())
         return;
 
     if (table.getRiver(mSelf).size() == 1) {
         const T37 &last = table.getFocusTile();
         // ignore if over-4
         if (std::count(mSlots.begin(), mSlots.end(), last) < 4)
-            mSlots.push_back(last);
+            mSlots.pushBack(last);
     }
 }
 

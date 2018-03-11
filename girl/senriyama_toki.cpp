@@ -469,9 +469,9 @@ void TokiEventResult::print(std::ostream &os, Who toki) const
 
 
 
-bool Toki::checkInit(Who who, const Hand &init, const Princess &princess, int iter)
+bool Toki::checkInit(Who who, const Hand &init, const Table &table, int iter)
 {
-    (void) princess;
+    (void) table;
 
     return who != mSelf || iter > 10 || init.step4() <= 4;
 }

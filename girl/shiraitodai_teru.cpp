@@ -14,10 +14,10 @@ namespace saki
 
 
 
-void Teru::onMonkey(std::array<Exist, 4> &exists, const Princess &princess)
+void Teru::onMonkey(std::array<Exist, 4> &exists, const Table &table)
 {
     (void) exists;
-    (void) princess;
+    (void) table;
     // TODO implement
 }
 
@@ -30,18 +30,6 @@ void Teru::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     if (who != mSelf)
         return;
 
-    // TODO implement
-}
-
-void Teru::nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
-                     std::bitset<Girl::NUM_NM_SKILL> &presence,
-                     const Princess &princess)
-{
-    (void) rand;
-    (void) init;
-    (void) mount;
-    (void) presence; // TODO care about zim and kuro
-    (void) princess;
     // TODO implement
 }
 

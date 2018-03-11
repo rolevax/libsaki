@@ -24,9 +24,9 @@ void Suzu::onDice(util::Rand &rand, const Table &table)
     }
 }
 
-void Suzu::onMonkey(std::array<Exist, 4> &exists, const Princess &princess)
+void Suzu::onMonkey(std::array<Exist, 4> &exists, const Table &table)
 {
-    (void) princess;
+    (void) table;
 
     if (!mExploded)
         return;
@@ -39,9 +39,9 @@ void Suzu::onMonkey(std::array<Exist, 4> &exists, const Princess &princess)
         exists[mSelf.index()].inc(t, Z_POWER);
 }
 
-bool Suzu::checkInit(Who who, const Hand &init, const Princess &princess, int iter)
+bool Suzu::checkInit(Who who, const Hand &init, const Table &table, int iter)
 {
-    (void) princess;
+    (void) table;
 
     if (who != mSelf || iter > 10)
         return true;

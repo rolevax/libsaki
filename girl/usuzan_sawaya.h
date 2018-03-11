@@ -1,6 +1,7 @@
 #ifndef SAKI_GIRL_USUZAN_SAWAYA_H
 #define SAKI_GIRL_USUZAN_SAWAYA_H
 
+#include "../table/princess.h"
 #include "../table/irs_ctrl.h"
 
 
@@ -10,20 +11,21 @@ namespace saki
 
 
 
-class Sawaya : public Girl
+class Sawaya : public Girl, public HrhBargainer
 {
 public:
     GIRL_CTORS(Sawaya)
 
-    bool checkInit(Who who, const Hand &init, const Princess &princess, int iter) override;
+    bool checkInit(Who who, const Hand &init, const Table &table, int iter) override;
     void onDice(util::Rand &rand, const Table &table) override;
-    void onMonkey(std::array<Exist, 4> &exists, const Princess &princess) override;
+    void onMonkey(std::array<Exist, 4> &exists, const Table &table) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
     void onIrsChecked(const Table &table, Mount &mount) override;
 
-    void nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
-                   std::bitset<NUM_NM_SKILL> &presence,
-                   const Princess &princess) override;
+    HrhBargainer *onHrhBargain() override;
+    Claim hrhBargainClaim(int plan, T34 t) override;
+    int hrhBargainPlanCt() override;
+    void onHrhBargained(int plan, Mount &mount) override;
 
     bool canUseRedCloud(unsigned &mask) const;
     bool canUseWhiteCloud(unsigned &mask) const;

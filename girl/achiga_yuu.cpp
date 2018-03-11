@@ -17,9 +17,9 @@ const std::vector<T34> Yuu::LV5_TARS { 1_m, 2_m, 3_m, 4_m, 5_m, 6_m, 7_m, 8_m, 9
 const std::vector<T34> Yuu::LV4_TARS { 6_p, 7_p, 9_p, 9_s };
 const std::vector<T34> Yuu::LV3_TARS { 1_p, 3_p, 5_p, 1_s, 5_s, 7_s };
 
-void Yuu::onMonkey(std::array<Exist, 4> &exists, const Princess &princess)
+void Yuu::onMonkey(std::array<Exist, 4> &exists, const Table &table)
 {
-    (void) princess;
+    (void) table;
 
     for (T34 t : LV5_TARS)
         exists[mSelf.index()].inc(t, LV5_VAL);

@@ -36,10 +36,10 @@ public:
 
     int ct(T34 t) const;
     int ct(const T37 &t) const;
+    int ct(Suit s) const;
     int ctAka5() const;
     int ctZ() const;
     int ctYao() const;
-    int ctS() const;
 
     template<typename V>
     int ct(const V &ts) const
@@ -48,10 +48,14 @@ public:
         return std::accumulate(ts.begin(), ts.end(), 0, aux);
     }
 
+    bool has(Suit s) const;
     bool hasZ() const;
     bool hasYao() const;
 
+    bool covers(const TileCount &that) const;
+
     void inc(const T37 &t, int delta);
+    void clear(T34 t);
 
     TileCount &operator-=(const TileCount &rhs);
 

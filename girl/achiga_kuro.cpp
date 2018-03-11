@@ -12,9 +12,9 @@ namespace saki
 
 
 
-void Kuro::onMonkey(std::array<Exist, 4> &exists, const Princess &princess)
+void Kuro::onMonkey(std::array<Exist, 4> &exists, const Table &table)
 {
-    T34 dora = princess.getImageIndic(Princess::Indic::DORA).dora();
+    T34 dora = table.getMount().getDrids().front().dora();
 
     using namespace tiles37;
 
@@ -36,13 +36,14 @@ void Kuro::onMonkey(std::array<Exist, 4> &exists, const Princess &princess)
     }
 }
 
-bool Kuro::checkInit(Who who, const Hand &init, const Princess &princess, int iter)
+bool Kuro::checkInit(Who who, const Hand &init, const Table &table, int iter)
 {
     if (who != mSelf || iter > 100)
         return true;
 
     // drop extreme cases
-    int doraCt = princess.getImageIndic(Princess::Indic::DORA) % init;
+    T34 drid = table.getMount().getDrids().front();
+    int doraCt = drid % init;
     int akaCt = init.ctAka5();
     return (1 <= doraCt && doraCt <= 2) && (1 <= akaCt && akaCt <= 3);
 }
@@ -108,6 +109,37 @@ void Kuro::onTableEvent(const Table &table, const TableEvent &event)
     const auto &indics = table.getMount().getDrids();
     if (util::has(indics, lastIndicator) || last.isAka5())
         mCd = true;
+}
+
+HrhBargainer *Kuro::onHrhBargain()
+{
+    return mCd ? nullptr : this;
+}
+
+HrhBargainer::Claim Kuro::hrhBargainClaim(int plan, T34 t)
+{
+    T34 dora(plan);
+    return t == dora ? Claim::FOUR : (t % dora ? Claim::ANY : Claim::NONE);
+}
+
+int Kuro::hrhBargainPlanCt()
+{
+    return 34;
+}
+
+void Kuro::onHrhBargained(int plan, Mount &mount)
+{
+    T34 dora(plan);
+    T37 indic(dora.indicator().id34());
+    if (mount.remainA(indic) == 0)
+        indic = indic.toAka5();
+
+    mount.loadB(indic, 1);
+
+    for (T34 t : tiles34::ALL34) {
+        mount.incMk(Mount::DORAHYOU, 0, t, -100, false);
+        mount.incMk(Mount::DORAHYOU, 0, t, t == indic ? 100 : -100, true);
+    }
 }
 
 

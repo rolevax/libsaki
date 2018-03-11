@@ -88,6 +88,11 @@ public:
         return mSize == 0;
     }
 
+    bool full() const noexcept
+    {
+        return mSize == MAX;
+    }
+
     size_t size() const noexcept
     {
         return mSize;

@@ -22,15 +22,13 @@ void Sumire::onDice(util::Rand &rand, const Table &table)
     mTarget = Who();
 }
 
-bool Sumire::checkInit(Who who, const Hand &init, const Princess &princess, int iter)
+bool Sumire::checkInit(Who who, const Hand &init, const Table &table, int iter)
 {
-    (void) princess;
-
     if (who != mSelf || iter > 100)
         return true;
 
-    int sw = princess.getTable().getSelfWind(mSelf);
-    int rw = princess.getTable().getRoundWind();
+    int sw = table.getSelfWind(mSelf);
+    int rw = table.getRoundWind();
     if (iter < 5)
         for (T34 z : tiles34::Z7)
             if (z.isYakuhai(sw, rw) && init.closed().ct(z) >= 2)

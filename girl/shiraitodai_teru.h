@@ -15,14 +15,10 @@ class Teru : public Girl
 public:
     GIRL_CTORS(Teru)
 
-    void onMonkey(std::array<Exist, 4> &exists, const Princess &princess) override;
+    void onMonkey(std::array<Exist, 4> &exists, const Table &table) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
 
-    void nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
-                   std::bitset<NUM_NM_SKILL> &presence,
-                   const Princess &princess) override;
-
-    void onTableEvent(const Table &table, const TableEvent &event);
+    void onTableEvent(const Table &table, const TableEvent &event) override;
 
 private:
     TileCount mPlan;

@@ -1,7 +1,8 @@
 #include "princess.h"
 #include "../util/rand.h"
-#include "../util/misc.h"
 #include "../util/debug_cheat.h"
+
+#include <algorithm>
 
 
 
@@ -17,49 +18,29 @@ Princess::Princess(const Table &table, util::Rand &rand, Mount &mount,
     , mMount(mount)
     , mGirls(girls)
 {
-    mHasImageIndics.fill(false);
 }
 
-std::array<Hand, 4> Princess::deal()
+///
+/// \brief Deal and flip the first dora indicator
+///
+std::array<Hand, 4> Princess::dealAndFlip()
 {
-    std::array<TileCount, 4> inits = nonMonkey();
+    std::array<TileCount, 4> inits;
+
+#ifdef LIBSAKI_CHEAT_PRINCESS
+    debugCheat(inits);
+#else
+    raid(inits);
+    bargain();
+    mMount.flipIndic(mRand);
+    beg(inits);
+#endif
+
     return monkey(inits);
 }
 
-bool Princess::imagedAsDora(T34 t, Princess::Indic which) const
+void Princess::debugCheat(std::array<TileCount, 4> &res)
 {
-    int i = static_cast<int>(which);
-    return mHasImageIndics[i] && mImageIndics[i] % t;
-}
-
-bool Princess::mayHaveDora(T34 t) const
-{
-    return imagedAsDora(t, Indic::DORA)
-           || imagedAsDora(t, Indic::URADORA)
-           || imagedAsDora(t, Indic::KANDORA)
-           || imagedAsDora(t, Indic::KANURA);
-}
-
-bool Princess::hasImageIndic(Indic which) const
-{
-    return mHasImageIndics[static_cast<int>(which)];
-}
-
-T34 Princess::getImageIndic(Indic which) const
-{
-    assert(hasImageIndic(which));
-    return mImageIndics[static_cast<int>(which)];
-}
-
-const Table &Princess::getTable() const
-{
-    return mTable;
-}
-
-std::array<TileCount, 4> Princess::nonMonkey()
-{
-    std::array<TileCount, 4> res;
-
 #ifdef LIBSAKI_CHEAT_PRINCESS
     for (size_t pos = 0; pos < cheat::wall.size(); pos++)
         mMount.collapse(Mount::PII, pos, cheat::wall[pos]);
@@ -72,37 +53,143 @@ std::array<TileCount, 4> Princess::nonMonkey()
             res[w].inc(mMount.initPopExact(t), 1);
 
 #else
-    std::bitset<Girl::NUM_NM_SKILL> presence;
-
-    using Id = Girl::Id;
-    static const std::vector<Id> CHECK_ORDER1 {
-        Id::SHIBUYA_TAKAMI,
-        Id::USUZUMI_HATSUMI,
-        Id::SHISHIHARA_SAWAYA,
-        Id::IWATO_KASUMI
-    };
-
-    for (Id id : CHECK_ORDER1) {
-        Who who = mTable.findGirl(id);
-        if (who.somebody())
-            mGirls[who.index()]->nonMonkey(mRand, res[who.index()], mMount, presence, *this);
-    }
-
-    doraMatters();
-
-    static const std::vector<Id> CHECK_ORDER2 {
-        Id::OOHOSHI_AWAI,
-        Id::MIYANAGA_TERU
-    };
-
-    for (Id id : CHECK_ORDER2) {
-        Who who = mTable.findGirl(id);
-        if (who.somebody())
-            mGirls[who.index()]->nonMonkey(mRand, res[who.index()], mMount, presence, *this);
-    }
-
+    (void) res;
 #endif
+}
 
+void Princess::raid(std::array<TileCount, 4> &inits)
+{
+    std::array<HrhInitFix *, 4> fixes;
+    for (int w = 0; w < 4; w++)
+        fixes[w] = mGirls[w]->onHrhRaid(mTable);
+
+    using Pri = HrhInitFix::Priority;
+    for (Pri pri : { Pri::HIGH, Pri::LOW }) {
+        for (int w = 0; w < 4; w++) {
+            HrhInitFix *fix = fixes[w];
+            if (fix != nullptr && fix->priority == pri) {
+                fixInit(inits[w], *fix);
+            }
+        }
+    }
+}
+
+void Princess::bargain()
+{
+    util::Stactor<HrhBargainer *, 4> bargainers;
+    util::Stactor<Who, 4> whos;
+    int totalPlanCt = 1;
+    for (int w = 0; w < 4; w++) {
+        auto bargainer = mGirls[w]->onHrhBargain();
+        if (bargainer != nullptr) {
+            assert(bargainer->hrhBargainPlanCt() > 0);
+            totalPlanCt *= bargainer->hrhBargainPlanCt();
+            bargainers.pushBack(bargainer);
+            whos.pushBack(Who(w));
+        }
+    }
+
+    util::Stactor<util::Stactor<int, 34>, 4> perms;
+    for (HrhBargainer *bar : bargainers)
+        perms.emplaceBack(permutation(bar->hrhBargainPlanCt()));
+
+    // *INDENT-OFF*
+    auto getCurrPlans = [&perms](int bigPlan) {
+        util::Stactor<int, 4> currPlans;
+
+        for (const auto &perm : perms) {
+            int planSize = perm.size();
+            int index = bigPlan % planSize;
+            bigPlan /= planSize;
+            currPlans.pushBack(perm[index]);
+        }
+
+        return currPlans;
+    };
+
+    auto checkPlans = [&](const util::Stactor<int, 4> &plans) {
+        for (T34 t : tiles34::ALL34) {
+            using Claim = HrhBargainer::Claim;
+            util::Stactor<Claim, 4> claims;
+            for (size_t i = 0; i < bargainers.size(); i++)
+                claims.pushBack(bargainers[i]->hrhBargainClaim(plans[i], t));
+
+            int any = std::count(claims.begin(), claims.end(), Claim::ANY);
+            int all = std::count(claims.begin(), claims.end(), Claim::ALL);
+            int four = std::count(claims.begin(), claims.end(), Claim::FOUR);
+
+            // claimer must be unique
+            if (all + four > 1)
+                return false;
+
+            // some disclaimers disclaim the claimer
+            if (all + four == 1 && any > 0)
+                return false;
+
+            // at least one for each
+            if (mMount.remainA(t) < any)
+                return false;
+
+            if (four == 1 && mMount.remainA(t) != 4)
+                return false;
+        }
+
+        return true;
+    };
+    // *INDENT-ON*
+
+    for (int bigPlan = 0; bigPlan < totalPlanCt; bigPlan++) {
+        auto currPlans = getCurrPlans(bigPlan);
+        if (checkPlans(currPlans)) {
+            for (size_t i = 0; i < bargainers.size(); i++) {
+                HrhBargainer *bargainer = bargainers[i];
+                int plan = currPlans[i];
+                bargainer->onHrhBargained(plan, mMount);
+                mBargainResults[whos[i].index()].set(bargainer, plan);
+            }
+
+            return;
+        }
+    }
+
+    util::p("princess: bargain failure");
+}
+
+void Princess::beg(std::array<TileCount, 4> &inits)
+{
+    for (Who begger : whos::ALL4) {
+        TileCount stock(mMount.getStockA());
+        for (Who rival : whos::ALL4) {
+            if (begger == rival)
+                continue;
+
+            int r = rival.index();
+            if (!mBargainResults[r].active())
+                continue;
+
+            int plan = mBargainResults[r].plan();
+            HrhBargainer *bar = mBargainResults[r].bargainer();
+            for (T34 t : tiles34::ALL34) {
+                using Claim = HrhBargainer::Claim;
+                Claim claim = bar->hrhBargainClaim(plan, t);
+                if (claim == Claim::ALL || claim == Claim::FOUR)
+                    stock.clear(t);
+            }
+        }
+
+        HrhInitFix *fix = mGirls[begger.index()]->onHrhBeg(mRand, stock);
+        if (fix != nullptr) // ppriority ignored in 'beg' stage
+            fixInit(inits[begger.index()], *fix);
+    }
+}
+
+util::Stactor<int, 34> Princess::permutation(int size)
+{
+    util::Stactor<int, 34> res;
+    for (int i = 0; i < size; i++)
+        res.pushBack(i);
+
+    std::shuffle(res.begin(), res.end(), mRand.getUrbg());
     return res;
 }
 
@@ -112,7 +199,7 @@ std::array<Hand, 4> Princess::monkey(std::array<TileCount, 4> &inits)
     std::array<Exist, 4> exists;
 
     for (auto &g : mGirls)
-        g->onMonkey(exists, *this);
+        g->onMonkey(exists, mTable);
 
     // checkInit() should never rely on a moutain remaining status
     // because hands are checked sequentially but not globally
@@ -127,7 +214,7 @@ std::array<Hand, 4> Princess::monkey(std::array<TileCount, 4> &inits)
 
             // *INDENT-OFF*
             auto pass = [w, &hand, this, &mount, iter](int checker) {
-                return mGirls[checker]->checkInit(Who(w), hand, *this, iter);
+                return mGirls[checker]->checkInit(Who(w), hand, mTable, iter);
             };
             // *INDENT-ON*
 
@@ -142,126 +229,38 @@ std::array<Hand, 4> Princess::monkey(std::array<TileCount, 4> &inits)
     return res;
 }
 
-void Princess::doraMatters()
+void Princess::fixInit(TileCount &init, const HrhInitFix &fix)
 {
-    using namespace tiles37;
-
-    // NONE: the indicator will be scientifically choosen
-    // ANY:  the indicator will be choosen from B-space by a one-hot distro
-    // WALL: same as ANY, and the indicated dora must remain 4 in A-space
-    enum class Fix { NONE, ANY, WALL };
-
-    std::array<Fix, 4> fixes;
-    fixes.fill(Fix::NONE);
-
-    // *INDENT-OFF*
-    auto update = [&fixes](Indic which, Fix rhs) {
-        Fix &lhs = fixes[int(which)];
-        // overwrite by priority
-        lhs = std::max(lhs, rhs);
-    };
-    // *INDENT-ON*
-
-    // exluded by numeric value, regardless of red/black
-    std::array<std::array<bool, 34>, 4> ex34ss;
-    for (auto &ex34s : ex34ss)
-        ex34s.fill(false);
-
-    Who kuro = mTable.findGirl(Girl::Id::MATSUMI_KURO);
-    Who awai = mTable.findGirl(Girl::Id::OOHOSHI_AWAI);
-
-    if (awai.somebody()) {
-        update(Indic::DORA, Fix::ANY);
-        update(Indic::URADORA, Fix::ANY);
-        update(Indic::KANDORA, Fix::ANY);
-        update(Indic::KANURA, Fix::WALL);
-
-        // prevent yakuhai to ensure Awai::checkInit() always return
-        auto &ex34s = ex34ss[static_cast<int>(Indic::KANURA)];
-        ex34s[(1_y).id34()] = true;
-        ex34s[(2_y).id34()] = true;
-        ex34s[(3_y).id34()] = true;
-        ex34s[T34(Suit::F, mTable.getSelfWind(awai)).indicator().id34()] = true;
-        ex34s[T34(Suit::F, mTable.getRoundWind()).indicator().id34()] = true;
-
-        // exclude akadoras to limit awai's point
-        if (mTable.getRule().akadora != TileCount::AKADORA0) {
-            ex34s[(4_m).id34()] = true;
-            ex34s[(4_p).id34()] = true;
-            ex34s[(4_s).id34()] = true;
+    for (const T37 &t : fix.targets) {
+        if (mMount.remainA(t) > 0) {
+            init.inc(t, 1);
+            mMount.initPopExact(t);
         }
     }
 
-    if (kuro.somebody()) {
-        update(Indic::DORA, Fix::WALL);
-
-        // prevent akadora from being pilfered by awai or someone
-        // by exluding number-4 to be an indicator
-        if (mTable.getRule().akadora != TileCount::AKADORA0) {
-            // start from '1' since the normal dora lives or dies
-            // together with akadoras
-            for (int i = 1; i < 4; i++) {
-                ex34ss[i][(4_m).id34()] = true;
-                ex34ss[i][(4_p).id34()] = true;
-                ex34ss[i][(4_s).id34()] = true;
-            }
-        }
-    }
-
-    for (int i = 0; i < 4; i++) {
-        if (fixes[i] != Fix::NONE) {
-            fixIndicator(Indic(i), ex34ss[i], fixes[i] == Fix::WALL);
-
-            // make fixed doras always unique for redundant safety
-            // (needed by at least awai)
-            // use id34() instread of id37() to ensure uniqueness
-            // note that a fixed indicator might equal to a non-fixed
-            // scientific indicator.
-            for (int j = i; j < 4; j++)
-                ex34ss[j][mImageIndics[i].id34()] = true;
-        }
-    }
+    for (const auto &load : fix.loads)
+        mMount.loadB(load.tile, load.ct);
 }
 
-void Princess::fixIndicator(Indic which, const std::array<bool, 34> &exceptId34s, bool wall)
+int Princess::BargainResult::plan() const
 {
-    int i = static_cast<int>(which);
-    mImageIndics[i] = pickIndicator(exceptId34s, wall);
-    Mount::Exit exit = i % 2 == 0 ? Mount::DORAHYOU : Mount::URAHYOU;
-    int pos = i / 2 == 0 ? 0 : 1;
-
-    T37 indic(mImageIndics[i].id34());
-    if (mMount.remainA(indic) == 0)
-        indic = indic.toAka5();
-
-    mMount.loadB(indic, 1);
-    mImageIndics[static_cast<int>(which)] = indic;
-    mHasImageIndics[static_cast<int>(which)] = true;
-
-    for (T34 t : tiles34::ALL34) {
-        // '-100' is a non-documented temporary value
-        mMount.incMk(exit, pos, t, -100, false);
-        mMount.incMk(exit, pos, t, t == indic ? 100 : -100, true);
-    }
+    return mPlan;
 }
 
-T34 Princess::pickIndicator(const std::array<bool, 34> &ex34s, bool wall)
+HrhBargainer *Princess::BargainResult::bargainer() const
 {
-    // be careful with the 34/37 problem
-    // equality is checked by id34, and indicator is choosen in 37-domain
+    return mBargainer;
+}
 
-    std::vector<T34> indicatable;
+void Princess::BargainResult::set(HrhBargainer *b, int p)
+{
+    mBargainer = b;
+    mPlan = p;
+}
 
-    for (T34 t : tiles34::ALL34) {
-        if (!ex34s[t.id34()]
-            && mMount.remainA(t) > 0
-            && (!wall || mMount.remainA(t.dora()) == 4)) {
-            indicatable.push_back(t);
-        }
-    }
-
-    assert(!indicatable.empty());
-    return indicatable[mRand.gen(indicatable.size())];
+bool Princess::BargainResult::active() const
+{
+    return mBargainer != nullptr;
 }
 
 

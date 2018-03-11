@@ -50,6 +50,14 @@ void Rand::set(uint32_t state)
     ss >> mGen;
 }
 
+///
+/// \brief Get reference to the Uniform Random Bit Generator
+///
+std::minstd_rand &Rand::getUrbg()
+{
+    return mGen;
+}
+
 
 
 } // namespace util

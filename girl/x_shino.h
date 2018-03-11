@@ -15,7 +15,7 @@ class Shino : public Girl
 public:
     GIRL_CTORS(Shino)
 
-    bool checkInit(Who who, const Hand &init, const Princess &princess, int iter) override;
+    bool checkInit(Who who, const Hand &init, const Table &table, int iter) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
 
     std::string popUpStr() const override;

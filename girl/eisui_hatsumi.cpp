@@ -10,12 +10,12 @@ namespace saki
 
 
 
-bool Hatsumi::checkInit(Who who, const Hand &init, const Princess &princess, int iter)
+bool Hatsumi::checkInit(Who who, const Hand &init, const Table &table, int iter)
 {
     if (who == mSelf || iter > 100)
         return true;
 
-    if (princess.getTable().getSelfWind(mSelf) == 4) { // north seat
+    if (table.getSelfWind(mSelf) == 4) { // north seat
         // prevent rivals having E/N pairs
         using namespace tiles34;
         int ctE = init.closed().ct(1_f);
@@ -72,34 +72,29 @@ void Hatsumi::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     }
 }
 
-void Hatsumi::nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
-                        std::bitset<Girl::NUM_NM_SKILL> &presence,
-                        const Princess &princess)
+HrhInitFix *Hatsumi::onHrhRaid(const Table &table)
 {
-    (void) rand;
-    (void) presence;
+    if (table.getSelfWind(mSelf) != 4) // north seat
+        return nullptr;
 
-    if (princess.getTable().getSelfWind(mSelf) == 4) { // north seat
-        using namespace tiles37;
-        // seize E/N pair
-        if (mount.remainA(1_f) >= 2) {
-            init.inc(mount.initPopExact(1_f), 1);
-            init.inc(mount.initPopExact(1_f), 1);
-        }
+    using namespace tiles37;
 
-        if (mount.remainA(4_f) >= 2) {
-            init.inc(mount.initPopExact(4_f), 1);
-            init.inc(mount.initPopExact(4_f), 1);
-        }
+    if (mRaider.empty()) {
+        mRaider.priority = HrhInitFix::Priority::LOW;
 
-        // reserve a triplet of S/W
-        mount.loadB(2_f, 3);
-        mount.loadB(3_f, 3);
+        mRaider.targets.emplaceBack(1_f);
+        mRaider.targets.emplaceBack(1_f);
+        mRaider.targets.emplaceBack(4_f);
+        mRaider.targets.emplaceBack(4_f);
 
-        // prevent E/N to be dora
-        mount.incMk(Mount::Exit::DORAHYOU, 0, 1_f, -1000, false);
-        mount.incMk(Mount::Exit::DORAHYOU, 0, 4_f, -1000, false);
+        mRaider.loads.emplaceBack(2_f, 3);
+        mRaider.loads.emplaceBack(3_f, 3);
     }
+
+    // prevent E/N to be dora
+//    mount.incMk(Mount::Exit::DORAHYOU, 0, 1_f, -1000, false);
+//    mount.incMk(Mount::Exit::DORAHYOU, 0, 4_f, -1000, false);
+    return &mRaider;
 }
 
 

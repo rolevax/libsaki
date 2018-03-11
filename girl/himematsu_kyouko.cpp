@@ -10,7 +10,7 @@ namespace saki
 
 
 
-bool Kyouko::checkInit(Who who, const Hand &init, const Princess &princess, int iter)
+bool Kyouko::checkInit(Who who, const Hand &init, const Table &table, int iter)
 {
     if (who != mSelf)
         return true;
@@ -29,7 +29,6 @@ bool Kyouko::checkInit(Who who, const Hand &init, const Princess &princess, int 
     }
 
     using namespace tiles34;
-    const Table &table = princess.getTable();
     T34 sw(Suit::F, table.getSelfWind(mSelf));
     T34 rw(Suit::F, table.getRoundWind());
     std::array<T34, 5> yakuhais { 1_y, 2_y, 3_y, sw, rw };

@@ -64,8 +64,8 @@ protected:
     int mKanCt = 0;
     int mRemain = 136 - 14;
 
-    TileCount mStochA;
-    TileCount mStochB;
+    TileCount mStockA;
+    TileCount mStockB;
 };
 
 class Mount : private MountPrivate
@@ -85,10 +85,11 @@ public:
     int remainRinshan() const;
     int remainA(T34 t) const;
     int remainA(const T37 &t) const;
-    bool affordA(const TileCount &need) const;
 
     const util::Stactor<T37, 5> &getDrids() const;
     const util::Stactor<T37, 5> &getUrids() const;
+
+    const TileCount &getStockA() const;
 
     void lightA(T34 t, int delta, bool rinshan = false);
     void lightA(const T37 &t, int delta, bool rinshan = false);

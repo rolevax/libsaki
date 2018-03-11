@@ -29,6 +29,8 @@ public:
     uint32_t state() const;
     void set(uint32_t state);
 
+    std::minstd_rand &getUrbg();
+
 private:
     std::minstd_rand mGen;
     std::uniform_int_distribution<int> mDist;

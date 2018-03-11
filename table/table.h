@@ -154,7 +154,8 @@ private:
     void clean();
     void rollDice();
     void deal();
-    void flip();
+    void flipKandoraIndic();
+    void notifyFlipped();
     void tryDraw(Who who);
     void swapOut(Who who, const T37 &out);
     void spinOut(Who who);

@@ -662,24 +662,30 @@ void Table::rollDice()
 ///
 void Table::deal()
 {
-    mHands = Princess(*this, mRand, mMount, mGirls).deal();
+    mHands = Princess(*this, mRand, mMount, mGirls).dealAndFlip();
 
     TableEvent event = TableEvent::Dealt {};
     for (auto ob : mObservers)
         ob->onTableEvent(*this, event);
 
-    flip();
-
+    notifyFlipped();
     tryDraw(mDealer);
 }
 
 ///
-/// \brief Flip a new dora indicator
+/// \brief Flip a new kandora indicator
 ///
-void Table::flip()
+void Table::flipKandoraIndic()
 {
     mMount.flipIndic(mRand);
+    notifyFlipped();
+}
 
+///
+/// \brief Tell observers about the new dora indicator
+///
+void Table::notifyFlipped()
+{
     TableEvent event = TableEvent::Flipped {};
     for (auto ob : mObservers)
         ob->onTableEvent(*this, event);
@@ -822,7 +828,7 @@ void Table::discardEffects(Who who, bool spin)
 
     if (mToFlip) {
         mToFlip = false;
-        flip();
+        flipKandoraIndic();
     }
 
     mGenbutsuFlags[mFocus.who().index()].set(getFocusTile().id34());
@@ -994,7 +1000,7 @@ void Table::ankan(Who who, T34 tile)
 
     if (mToFlip) { // consecutive kans
         mToFlip = false;
-        flip();
+        flipKandoraIndic();
     }
 
     int w = who.index();
@@ -1025,7 +1031,7 @@ void Table::kakan(Who who, int barkId)
 
     if (mToFlip) { // consecutive kans
         mToFlip = false;
-        flip();
+        flipKandoraIndic();
     }
 
     int w = who.index();
@@ -1065,7 +1071,7 @@ void Table::finishKan(Who who)
         if (mKanContext.duringMinkan())
             mToFlip = true;
         else
-            flip();
+            flipKandoraIndic();
     }
 
     tryDraw(who);
