@@ -47,8 +47,9 @@ TableServerAi3::Msgs TableServerAi3::filterMsgs(const TableServer::Msgs &srcs)
 void TableServerAi3::filterSystemMsg(const TableMsgContent &content, MsgBackInserter it)
 {
     std::string event = content.event();
+    const auto &args = content.args();
+
     if (event == "riichi-auto") {
-        const auto &args = content.args();
         Who riichier(args["Who"].get<int>());
 
         if (riichier.human())
@@ -56,6 +57,16 @@ void TableServerAi3::filterSystemMsg(const TableMsgContent &content, MsgBackInse
 
         int nonce = mServer.table().getNonce(riichier);
         addBotAction(riichier, Action(ActCode::SPIN_OUT), nonce, it);
+    } else if (event == "round-start-log") {
+        int round = args["round"];
+        int extra = args["extra"];
+        int dealer = args["dealer"];
+        int deposit = args["deposit"];
+        bool allLast = args["allLast"];
+        uint32_t seed = args["seed"];
+        std::cout << round << '.' << extra << (allLast ? "al" : "")
+                  << " d=" << dealer << " depo=" << deposit
+                  << " seed=" << seed << std::endl;
     } else {
         // ignoring other types of system msgs
     }

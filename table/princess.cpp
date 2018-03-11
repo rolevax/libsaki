@@ -62,10 +62,10 @@ std::array<TileCount, 4> Princess::nonMonkey()
 
 #ifdef LIBSAKI_CHEAT_PRINCESS
     for (size_t pos = 0; pos < cheat::wall.size(); pos++)
-        mMount.pin(Mount::PII, pos, cheat::wall[pos]);
+        mMount.collapse(Mount::PII, pos, cheat::wall[pos]);
 
     for (size_t pos = 0; pos < cheat::dead.size(); pos++)
-        mMount.pin(Mount::RINSHAN, pos, cheat::dead[pos]);
+        mMount.collapse(Mount::RINSHAN, pos, cheat::dead[pos]);
 
     for (int w = 0; w < 4; w++)
         for (const T37 &t : cheat::inits[w])
