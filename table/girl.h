@@ -19,6 +19,13 @@
         return util::unique<Name>(*this); \
     }
 
+#define GIRL_COPY_CTORS(Name) \
+    Name(const Name &copy) = default; \
+    std::unique_ptr<Girl> clone() const override \
+    { \
+        return util::unique<Name>(*this); \
+    }
+
 
 
 namespace saki
@@ -48,7 +55,7 @@ public:
     // *INDENT-OFF*
     enum class Id
     {
-        DOGE = 0,
+        DOGE = 0, CUSTOM = 1,
 
         // IH71 A-Block
         MIYANAGA_TERU = 710111, HIROSE_SUMIRE = 710112, SHIBUYA_TAKAMI = 710113,
