@@ -12,7 +12,7 @@ qmake -project \
 	-o libsaki.pri \
 	-t lib \
 	-nopwd \
-	"INCLUDEPATH += $LIB_ROOT/3rd" \
+	"INCLUDEPATH += $LIB_ROOT/3rd/lua" \
 	$LIB_ROOT
 sed -i '/TEMPLATE =/d' libsaki.pri
 sed -i '/TARGET =/d' libsaki.pri
