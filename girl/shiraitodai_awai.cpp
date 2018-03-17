@@ -101,12 +101,10 @@ void Awai::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     }
 }
 
-void Awai::onIrsChecked(const Table &table, Mount &mount)
+HrhBargainer *Awai::onHrhBargain(const Table &table)
 {
-    (void) mount;
-
     if (!usingDaburii())
-        return;
+        return nullptr;
 
     int rw = table.getRoundWind();
     int sw = table.getSelfWind(mSelf);
@@ -114,11 +112,8 @@ void Awai::onIrsChecked(const Table &table, Mount &mount)
     for (int v = 1; v <= 4; v++)
         if (v != rw && v != sw)
             mSomeGuestWind = T34(Suit::F, v);
-}
 
-HrhBargainer *Awai::onHrhBargain()
-{
-    return usingDaburii() ? this : nullptr;
+    return this;
 }
 
 HrhBargainer::Claim Awai::hrhBargainClaim(int plan, T34 t)
@@ -154,24 +149,25 @@ void Awai::onHrhBargained(int plan, Mount &mount)
     mount.incMk(Mount::URAHYOU, 0, mKanura.indicator(), -100, false);
 }
 
-HrhInitFix *Awai::onHrhBeg(util::Rand &rand, const TileCount &stock)
+std::optional<HrhInitFix> Awai::onHrhBeg(util::Rand &rand, const TileCount &stock)
 {
     if (!usingDaburii())
-        return nullptr;
+        return std::nullopt;
 
-    mInitFix.clear();
+    HrhInitFix fix;
 
     // add 3 kanura
     TileCount myStock(stock);
     myStock.clear(mKanura);
     for (int i = 0; i < 3; i++)
-        mInitFix.targets.pushBack(T37(mKanura.id34()));
+        fix.targets.pushBack(T37(mKanura.id34()));
 
+    // FUCK avoid dora
 //    myStock.clear();
 
-    begIter(rand, myStock);
+    begIter(fix, rand, myStock);
 
-    return &mInitFix;
+    return fix;
 }
 
 Girl::IrsCtrlGetter Awai::attachIrsOnDice()
@@ -207,7 +203,7 @@ int Awai::lastCorner(int dice, int kanCt)
     return tailRemain;
 }
 
-void Awai::begIter(util::Rand &rand, const TileCount &stock)
+void Awai::begIter(HrhInitFix &fix, util::Rand &rand, const TileCount &stock)
 {
     util::Stactor<Suit, 3> avaiSuits;
     for (Suit s : { Suit::M, Suit::P, Suit::S })
@@ -226,12 +222,12 @@ void Awai::begIter(util::Rand &rand, const TileCount &stock)
             continue;
 
         // pick the last wait tile
-        if (!pickWait(rand, ske, stock))
+        if (!pickWait(fix, rand, ske, stock))
             continue;
 
         // done
         for (const T37 &t : ske.need.t37s13(true))
-            mInitFix.targets.pushBack(t);
+            fix.targets.pushBack(t);
 
         break;
     }
@@ -290,7 +286,7 @@ Awai::InitSketch Awai::sketch(util::Rand &rand, const util::Stactor<Suit, 3> &av
     return res;
 }
 
-bool Awai::pickWait(util::Rand &rand, InitSketch &ske, const TileCount &stock)
+bool Awai::pickWait(HrhInitFix &fix, util::Rand &rand, InitSketch &ske, const TileCount &stock)
 {
     std::vector<T37> kickables;
 
@@ -340,12 +336,12 @@ bool Awai::pickWait(util::Rand &rand, InitSketch &ske, const TileCount &stock)
     mLastWaits.clear();
     if (ske.thridIsTri) { // bibump wait
         T37 p37(ske.pair.id34());
-        mInitFix.loads.emplaceBack(kick3, 2); // reserve other 2 for initPopExact
-        mInitFix.loads.emplaceBack(p37, 2);
+        fix.loads.emplaceBack(kick3, 2); // reserve other 2 for initPopExact
+        fix.loads.emplaceBack(p37, 2);
         mLastWaits.push_back(kick3);
         mLastWaits.push_back(p37);
     } else {
-        mInitFix.loads.emplaceBack(kick3, 4); // the more, the better
+        fix.loads.emplaceBack(kick3, 4); // the more, the better
         mLastWaits.push_back(kick3);
     }
 
@@ -354,7 +350,7 @@ bool Awai::pickWait(util::Rand &rand, InitSketch &ske, const TileCount &stock)
     mNeedFirstDraw = true;
     mFirstDraw = kick1ables[rand.gen(kick1ables.size())];
     ske.need.inc(mFirstDraw, -1);
-    mInitFix.loads.emplaceBack(mFirstDraw, 1);
+    fix.loads.emplaceBack(mFirstDraw, 1);
 
     return true;
 }

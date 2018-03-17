@@ -59,16 +59,16 @@ void Princess::debugCheat(std::array<TileCount, 4> &res)
 
 void Princess::raid(std::array<TileCount, 4> &inits)
 {
-    std::array<HrhInitFix *, 4> fixes;
+    std::array<std::optional<HrhInitFix>, 4> fixes;
     for (int w = 0; w < 4; w++)
         fixes[w] = mGirls[w]->onHrhRaid(mTable);
 
     using Pri = HrhInitFix::Priority;
     for (Pri pri : { Pri::HIGH, Pri::LOW }) {
         for (int w = 0; w < 4; w++) {
-            HrhInitFix *fix = fixes[w];
-            if (fix != nullptr && fix->priority == pri) {
-                fixInit(inits[w], *fix);
+            const auto &opt = fixes[w];
+            if (opt.has_value() && opt->priority == pri) {
+                fixInit(inits[w], *opt);
             }
         }
     }
@@ -80,7 +80,7 @@ void Princess::bargain()
     util::Stactor<Who, 4> whos;
     int totalPlanCt = 1;
     for (int w = 0; w < 4; w++) {
-        auto bargainer = mGirls[w]->onHrhBargain();
+        auto bargainer = mGirls[w]->onHrhBargain(mTable);
         if (bargainer != nullptr) {
             assert(bargainer->hrhBargainPlanCt() > 0);
             totalPlanCt *= bargainer->hrhBargainPlanCt();
@@ -177,8 +177,8 @@ void Princess::beg(std::array<TileCount, 4> &inits)
             }
         }
 
-        HrhInitFix *fix = mGirls[begger.index()]->onHrhBeg(mRand, stock);
-        if (fix != nullptr) // ppriority ignored in 'beg' stage
+        std::optional<HrhInitFix> fix = mGirls[begger.index()]->onHrhBeg(mRand, stock);
+        if (fix.has_value()) // ppriority ignored in 'beg' stage
             fixInit(inits[begger.index()], *fix);
     }
 }
@@ -213,12 +213,12 @@ std::array<Hand, 4> Princess::monkey(std::array<TileCount, 4> &inits)
             Hand hand(init);
 
             // *INDENT-OFF*
-            auto pass = [w, &hand, this, &mount, iter](int checker) {
-                return mGirls[checker]->checkInit(Who(w), hand, mTable, iter);
+            auto pass = [&](Who checker) {
+                return mGirls[checker.index()]->checkInit(Who(w), hand, mTable, iter);
             };
             // *INDENT-ON*
 
-            if (pass(0) && pass(1) && pass(2) && pass(3)) {
+            if (util::all(whos::ALL4, pass)) {
                 mMount = mount;
                 res[w] = hand;
                 break;

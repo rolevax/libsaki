@@ -183,22 +183,23 @@ const Choices &Girl::irsChoices() const
     return mIrsCtrlGetter.get(*const_cast<Girl *>(this)).choices();
 }
 
-HrhInitFix *Girl::onHrhRaid(const Table &table)
+std::optional<HrhInitFix> Girl::onHrhRaid(const Table &table)
+{
+    (void) table;
+    return std::nullopt;
+}
+
+HrhBargainer *Girl::onHrhBargain(const Table &table)
 {
     (void) table;
     return nullptr;
 }
 
-HrhBargainer *Girl::onHrhBargain()
-{
-    return nullptr;
-}
-
-HrhInitFix *Girl::onHrhBeg(util::Rand &rand, const TileCount &stock)
+std::optional<HrhInitFix> Girl::onHrhBeg(util::Rand &rand, const TileCount &stock)
 {
     (void) rand;
     (void) stock;
-    return nullptr;
+    return std::nullopt;
 }
 
 std::string Girl::popUpStr() const

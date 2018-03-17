@@ -19,13 +19,12 @@ public:
     bool checkInit(Who who, const Hand &init, const Table &table, int iter) override;
     void onMonkey(std::array<Exist, 4> &exists, const Table &table) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
-    void onIrsChecked(const Table &table, Mount &mount) override;
 
-    HrhBargainer *onHrhBargain() override;
+    HrhBargainer *onHrhBargain(const Table &table) override;
     Claim hrhBargainClaim(int plan, T34 t) override;
     int hrhBargainPlanCt() override;
     void onHrhBargained(int plan, Mount &mount) override;
-    HrhInitFix *onHrhBeg(util::Rand &rand, const TileCount &stock) override;
+    std::optional<HrhInitFix> onHrhBeg(util::Rand &rand, const TileCount &stock) override;
 
 protected:
     IrsCtrlGetter attachIrsOnDice() override;
@@ -42,9 +41,9 @@ private:
     bool usingDaburii() const;
     T34 kanuraOfPlan(int plan) const;
     static int lastCorner(int dice, int kanCt);
-    void begIter(util::Rand &rand, const TileCount &stock);
+    void begIter(HrhInitFix &fix, util::Rand &rand, const TileCount &stock);
     InitSketch sketch(util::Rand &rand, const util::Stactor<Suit, 3> &avaiSuits) const;
-    bool pickWait(util::Rand &rand, InitSketch &ske, const TileCount &stock);
+    bool pickWait(HrhInitFix &fix, util::Rand &rand, InitSketch &ske, const TileCount &stock);
 
 private:
     static const int DRAG_MK = 100;
@@ -64,7 +63,6 @@ private:
     bool mNeedFirstDraw = false;
     T34 mKanura;
     std::vector<T34> mLastWaits;
-    HrhInitFix mInitFix;
 };
 
 

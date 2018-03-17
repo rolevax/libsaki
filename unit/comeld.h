@@ -72,24 +72,23 @@ public:
     util::Stactor<T34, 3> t34s() const
     {
         // save typing
-        using S = util::Stactor<T34, 3>;
         const T34 h = mHead;
 
         switch (mType) {
         case Type::SEQ:
-            return S { h, h.next(), h.nnext() };
+            return { h, h.next(), h.nnext() };
         case Type::TRI:
-            return S { h, h, h };
+            return { h, h, h };
         case Type::BIFACE:
-            return S { h, h.next() };
+            return { h, h.next() };
         case Type::CLAMP:
-            return S { h, h.nnext() };
+            return { h, h.nnext() };
         case Type::SIDE:
-            return S { h, h.next() };
+            return { h, h.next() };
         case Type::PAIR:
-            return S { h, h };
+            return { h, h };
         case Type::FREE:
-            return S { h };
+            return { h };
         default:
             unreached("illegal c34 type");
         }

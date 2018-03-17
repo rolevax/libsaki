@@ -72,29 +72,50 @@ void Hatsumi::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     }
 }
 
-HrhInitFix *Hatsumi::onHrhRaid(const Table &table)
+std::optional<HrhInitFix> Hatsumi::onHrhRaid(const Table &table)
 {
     if (table.getSelfWind(mSelf) != 4) // north seat
-        return nullptr;
+        return std::nullopt;
 
     using namespace tiles37;
 
-    if (mRaider.empty()) {
-        mRaider.priority = HrhInitFix::Priority::LOW;
+    HrhInitFix fix;
 
-        mRaider.targets.emplaceBack(1_f);
-        mRaider.targets.emplaceBack(1_f);
-        mRaider.targets.emplaceBack(4_f);
-        mRaider.targets.emplaceBack(4_f);
+    fix.priority = HrhInitFix::Priority::LOW;
 
-        mRaider.loads.emplaceBack(2_f, 3);
-        mRaider.loads.emplaceBack(3_f, 3);
-    }
+    fix.targets.emplaceBack(1_f);
+    fix.targets.emplaceBack(1_f);
+    fix.targets.emplaceBack(4_f);
+    fix.targets.emplaceBack(4_f);
 
-    // prevent E/N to be dora
-//    mount.incMk(Mount::Exit::DORAHYOU, 0, 1_f, -1000, false);
-//    mount.incMk(Mount::Exit::DORAHYOU, 0, 4_f, -1000, false);
-    return &mRaider;
+    fix.loads.emplaceBack(2_f, 3);
+    fix.loads.emplaceBack(3_f, 3);
+
+    return fix;
+}
+
+HrhBargainer *Hatsumi::onHrhBargain(const Table &table)
+{
+    return table.getSelfWind(mSelf) == 4 ? this : nullptr;
+}
+
+HrhBargainer::Claim Hatsumi::hrhBargainClaim(int plan, T34 t)
+{
+    (void) plan;
+    using namespace tiles34;
+    return t == 1_f || t == 4_f ? Claim::ANY : Claim::NONE;
+}
+
+int Hatsumi::hrhBargainPlanCt()
+{
+    return 1;
+}
+
+void Hatsumi::onHrhBargained(int plan, Mount &mount)
+{
+    (void) plan;
+    (void) mount;
+    // do nothing
 }
 
 

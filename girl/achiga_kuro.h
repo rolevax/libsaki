@@ -20,7 +20,7 @@ public:
 
     void onTableEvent(const Table &table, const TableEvent &event) override;
 
-    HrhBargainer *onHrhBargain() override;
+    HrhBargainer *onHrhBargain(const Table &table) override;
     Claim hrhBargainClaim(int plan, T34 t) override;
     int hrhBargainPlanCt() override;
     void onHrhBargained(int plan, Mount &mount) override;

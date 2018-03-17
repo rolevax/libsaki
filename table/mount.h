@@ -4,7 +4,7 @@
 #include "../form/tile_count.h"
 #include "../util/rand.h"
 
-#include <memory>
+#include <optional>
 #include <array>
 #include <vector>
 #include <list>
@@ -51,31 +51,15 @@ private:
 
 
 
-class MountPrivate
-{
-protected:
-    MountPrivate(TileCount::AkadoraCount fillMode);
-    MountPrivate(const MountPrivate &copy) = default;
-    MountPrivate &operator=(const MountPrivate &assign) = default;
-
-protected:
-    util::Stactor<T37, 5> mDrids;
-    util::Stactor<T37, 5> mUrids;
-    int mKanCt = 0;
-    int mRemain = 136 - 14;
-
-    TileCount mStockA;
-    TileCount mStockB;
-};
-
-class Mount : private MountPrivate
+class Mount
 {
 public:
     enum Exit { PII, RINSHAN, DORAHYOU, URAHYOU, NUM_EXITS };
 
     explicit Mount(TileCount::AkadoraCount fillMode);
-    explicit Mount(const Mount &copy);
-    Mount &operator=(const Mount &assign);
+
+    Mount(const Mount &copy) = default;
+    Mount &operator=(const Mount &assign) = default;
 
     void initFill(util::Rand &rand, TileCount &init, Exist &exist);
     const T37 &initPopExact(const T37 &t);
@@ -114,10 +98,9 @@ private:
         Erwin(const T37 &t) : tile(t), earlyCollapse(true) {}
     };
 
+    using ErwinQueue = std::list<std::optional<Erwin>>;
 
-    using ErwinQueue = std::list<std::unique_ptr<Erwin>>;
-
-    const std::unique_ptr<Erwin> &prepareSuperpos(Exit exit, std::size_t pos);
+    Erwin &prepareSuperpos(Exit exit, std::size_t pos);
     T37 popFrom(util::Rand &rand, Exit exit);
     std::vector<T37> popExist(util::Rand &rand, Exist &exist, int need);
     T37 popExist(util::Rand &rand, Exist &exA, Exist &exB);
@@ -125,7 +108,14 @@ private:
     T37 popScientific(util::Rand &rand);
 
 private:
-    // *** SYNC with copy constructor and assign operator ***
+    util::Stactor<T37, 5> mDrids;
+    util::Stactor<T37, 5> mUrids;
+    int mKanCt = 0;
+    int mRemain = 136 - 14;
+
+    TileCount mStockA;
+    TileCount mStockB;
+
     std::array<ErwinQueue, NUM_EXITS> mErwinQueues;
 };
 

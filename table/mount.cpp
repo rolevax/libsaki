@@ -69,41 +69,10 @@ Exist::Polar Exist::polarize(const TileCount &stoch) const
 
 
 
-MountPrivate::MountPrivate(TileCount::AkadoraCount fillMode)
+Mount::Mount(TileCount::AkadoraCount fillMode)
     : mStockA(fillMode)
     , mStockB() // empty
 {
-}
-
-
-
-Mount::Mount(TileCount::AkadoraCount fillMode)
-    : MountPrivate(fillMode)
-{
-}
-
-Mount::Mount(const Mount &copy)
-    : MountPrivate(copy)
-{
-    for (int i = 0; i < NUM_EXITS; i++) {
-        const ErwinQueue &eq = copy.mErwinQueues[i];
-        for (const std::unique_ptr<Erwin> &ptr : eq)
-            mErwinQueues[i].emplace_back(ptr ? new Erwin(*ptr) : nullptr);
-    }
-}
-
-Mount &Mount::operator=(const Mount &copy)
-{
-    MountPrivate::operator=(copy);
-
-    for (int i = 0; i < NUM_EXITS; i++) {
-        const ErwinQueue &eq = copy.mErwinQueues[i];
-        mErwinQueues[i].clear();
-        for (const std::unique_ptr<Erwin> &ptr : eq)
-            mErwinQueues[i].emplace_back(ptr ? new Erwin(*ptr) : nullptr);
-    }
-
-    return *this;
 }
 
 void Mount::initFill(util::Rand &rand, TileCount &init, Exist &exist)
@@ -196,18 +165,18 @@ void Mount::lightB(const T37 &t, int delta, bool rinshan)
 
 void Mount::incMk(Exit exit, size_t pos, T34 t, int delta, bool bSpace)
 {
-    auto &ptr = prepareSuperpos(exit, pos);
-    if (!ptr->earlyCollapse) {
-        Exist &exist = bSpace ? ptr->exB : ptr->exA;
+    Erwin &erwin = prepareSuperpos(exit, pos);
+    if (!erwin.earlyCollapse) {
+        Exist &exist = bSpace ? erwin.exB : erwin.exA;
         exist.inc(t, delta);
     }
 }
 
 void Mount::incMk(Mount::Exit exit, size_t pos, const T37 &t, int delta, bool bSpace)
 {
-    auto &ptr = prepareSuperpos(exit, pos);
-    if (!ptr->earlyCollapse) {
-        Exist &exist = bSpace ? ptr->exB : ptr->exA;
+    Erwin &erwin = prepareSuperpos(exit, pos);
+    if (!erwin.earlyCollapse) {
+        Exist &exist = bSpace ? erwin.exB : erwin.exA;
         exist.inc(t, delta);
     }
 }
@@ -217,18 +186,16 @@ void Mount::collapse(Exit exit, std::size_t pos, const T37 &tile)
     ErwinQueue &eq = mErwinQueues[exit];
 
     while (!(pos < eq.size()))
-        eq.emplace_back(nullptr);
+        eq.emplace_back(std::nullopt);
 
     auto it = eq.begin();
     std::advance(it, pos);
-    std::unique_ptr<Erwin> &ptr = *it;
+    std::optional<Erwin> &opt = *it;
 
-    if (ptr == nullptr) {
+    // first come first collapse
+    if (!opt.has_value() || !opt->earlyCollapse) {
         (mStockA.ct(tile) > 0 ? mStockA : mStockB).inc(tile, -1);
-        ptr.reset(new Erwin(tile));
-    } else if (!ptr->earlyCollapse) { // first come first collapse
-        (mStockA.ct(tile) > 0 ? mStockA : mStockB).inc(tile, -1);
-        ptr.reset(new Erwin(tile));
+        opt.emplace(Erwin(tile));
     }
 }
 
@@ -255,21 +222,21 @@ void Mount::digIndic(util::Rand &rand)
         mUrids.pushBack(popFrom(rand, Exit::URAHYOU));
 }
 
-const std::unique_ptr<Mount::Erwin> &Mount::prepareSuperpos(Exit exit, std::size_t pos)
+Mount::Erwin &Mount::prepareSuperpos(Exit exit, std::size_t pos)
 {
     ErwinQueue &eq = mErwinQueues[exit];
 
     while (!(pos < eq.size()))
-        eq.emplace_back(nullptr);
+        eq.emplace_back(std::nullopt);
 
     auto it = eq.begin();
     std::advance(it, pos);
-    auto &ptr = *it;
+    auto &opt = *it;
 
-    if (ptr == nullptr)
-        ptr.reset(new Erwin());
+    if (!opt.has_value())
+        opt.emplace(Erwin());
 
-    return ptr;
+    return opt.value();
 }
 
 T37 Mount::popFrom(util::Rand &rand, Exit exit)
@@ -277,11 +244,11 @@ T37 Mount::popFrom(util::Rand &rand, Exit exit)
     ErwinQueue &eq = mErwinQueues[exit];
     if (eq.empty()) {
         return popScientific(rand);
-    } else if (eq.front() == nullptr) {
+    } else if (!eq.front().has_value()) {
         eq.pop_front();
         return popScientific(rand);
     } else {
-        Erwin &e = *eq.front();
+        Erwin &e = eq.front().value();
         T37 res = e.earlyCollapse ? e.tile : popExist(rand, e.exA, e.exB);
         eq.pop_front();
         return res;

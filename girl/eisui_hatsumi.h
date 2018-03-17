@@ -10,17 +10,19 @@ namespace saki
 
 
 
-class Hatsumi : public Girl
+class Hatsumi : public Girl, public HrhBargainer
 {
 public:
     GIRL_CTORS(Hatsumi)
 
     bool checkInit(Who who, const Hand &init, const Table &table, int iter) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
-    HrhInitFix *onHrhRaid(const Table &table) override;
+    std::optional<HrhInitFix> onHrhRaid(const Table &table) override;
 
-private:
-    HrhInitFix mRaider;
+    HrhBargainer *onHrhBargain(const Table &table) override;
+    Claim hrhBargainClaim(int plan, T34 t) override;
+    int hrhBargainPlanCt() override;
+    void onHrhBargained(int plan, Mount &mount) override;
 };
 
 

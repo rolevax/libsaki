@@ -14,25 +14,24 @@ namespace saki
 
 
 
-HrhInitFix *Takami::onHrhRaid(const Table &table)
+std::optional<HrhInitFix> Takami::onHrhRaid(const Table &table)
 {
     if (!table.isAllLast())
-        return nullptr;
+        return std::nullopt;
 
     Mount mount(table.getMount()); // copy
 
-    if (mRaider.empty()) {
-        for (const T37 &seed : mSlots) {
-            // use black if no red, use red if no black
-            T37 bud = mount.remainA(seed) > 0 ? seed : seed.toInverse5();
-            mount.initPopExact(bud);
-            mRaider.targets.emplaceBack(bud);
-        }
-
-        mRaider.priority = HrhInitFix::Priority::HIGH;
+    HrhInitFix fix;
+    for (const T37 &seed : mSlots) {
+        // use black if no red, use red if no black
+        T37 bud = mount.remainA(seed) > 0 ? seed : seed.toInverse5();
+        mount.initPopExact(bud);
+        fix.targets.emplaceBack(bud);
     }
 
-    return &mRaider;
+    fix.priority = HrhInitFix::Priority::HIGH;
+
+    return fix;
 }
 
 void Takami::onTableEvent(const Table &table, const TableEvent &event)

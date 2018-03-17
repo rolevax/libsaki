@@ -25,17 +25,6 @@ public:
         int ct;
     };
 
-    bool empty() const
-    {
-        return priority == Priority::NONE;
-    }
-
-    void clear()
-    {
-        targets.clear();
-        loads.clear();
-    }
-
     Priority priority = Priority::NONE;
     util::Stactor<T37, 13> targets;
     util::Stactor<LoadArgs, 8> loads;

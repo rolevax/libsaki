@@ -8,6 +8,7 @@
 #include "../util/misc.h"
 
 #include <bitset>
+#include <optional>
 
 
 
@@ -198,9 +199,9 @@ public:
     bool irsReady() const;
     const Choices &irsChoices() const;
 
-    virtual HrhInitFix *onHrhRaid(const Table &table);
-    virtual HrhBargainer *onHrhBargain();
-    virtual HrhInitFix *onHrhBeg(util::Rand &rand, const TileCount &stock);
+    virtual std::optional<HrhInitFix> onHrhRaid(const Table &table);
+    virtual HrhBargainer *onHrhBargain(const Table &table);
+    virtual std::optional<HrhInitFix> onHrhBeg(util::Rand &rand, const TileCount &stock);
 
     virtual std::string popUpStr() const;
 

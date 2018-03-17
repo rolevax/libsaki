@@ -111,8 +111,9 @@ void Kuro::onTableEvent(const Table &table, const TableEvent &event)
         mCd = true;
 }
 
-HrhBargainer *Kuro::onHrhBargain()
+HrhBargainer *Kuro::onHrhBargain(const Table &table)
 {
+    (void) table;
     return mCd ? nullptr : this;
 }
 

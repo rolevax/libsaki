@@ -184,8 +184,10 @@ void Sawaya::onIrsChecked(const Table &table, Mount &mount)
     }
 }
 
-HrhBargainer *Sawaya::onHrhBargain()
+HrhBargainer *Sawaya::onHrhBargain(const Table &table)
 {
+    (void) table;
+
     if (usingCloud(Cloud::RED) && usingCloud(Cloud::RED_RIVALS))
         return this;
 

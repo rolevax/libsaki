@@ -21,7 +21,7 @@ public:
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
     void onIrsChecked(const Table &table, Mount &mount) override;
 
-    HrhBargainer *onHrhBargain() override;
+    HrhBargainer *onHrhBargain(const Table &table) override;
     Claim hrhBargainClaim(int plan, T34 t) override;
     int hrhBargainPlanCt() override;
     void onHrhBargained(int plan, Mount &mount) override;

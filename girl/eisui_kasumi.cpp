@@ -83,8 +83,9 @@ void Kasumi::onIrsChecked(const Table &table, Mount &mount)
 
 }
 
-HrhBargainer *Kasumi::onHrhBargain()
+HrhBargainer *Kasumi::onHrhBargain(const Table &table)
 {
+    (void) table;
     return mIrsCtrl.itemAt(0).on() ? this : nullptr;
 }
 
