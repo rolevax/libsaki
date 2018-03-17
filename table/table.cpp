@@ -134,7 +134,7 @@ const River &Table::getRiver(Who who) const
 std::unique_ptr<TableView> Table::getView(Who who) const
 {
     // use polymorphic views in the future
-    return util::unique<TableViewReal>(*this, who);
+    return std::make_unique<TableViewReal>(*this, who);
 }
 
 const Furiten &Table::getFuriten(Who who) const

@@ -19,17 +19,6 @@ namespace util
 
 
 ///
-/// \brief C++14 std::make_unique, but not forbidding arrays
-///
-/// Sadly, for compatibility reasons, we cannot directly use C++14/17.
-///
-template<typename T, typename... Args>
-std::unique_ptr<T> unique(Args && ... args)
-{
-    return std::unique_ptr<T>(new T(std::forward<Args>(args) ...));
-}
-
-///
 /// \brief same as boost:all_of
 ///
 template<typename V, typename Pred>

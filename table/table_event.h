@@ -44,7 +44,7 @@ public:
 
         std::unique_ptr<Args> clone() override
         {
-            return util::unique<ArgsCloneable>(*this);
+            return std::make_unique<ArgsCloneable>(*this);
         }
 
         ArgsT args;
@@ -157,7 +157,7 @@ public:
     template<typename ArgsT>
     TableEvent(ArgsT args)
         : mType(ArgsT::TYPE)
-        , mArgs(util::unique<ArgsCloneable<ArgsT>>(args))
+        , mArgs(std::make_unique<ArgsCloneable<ArgsT>>(args))
     {
     }
 

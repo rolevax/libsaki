@@ -97,16 +97,16 @@ void Ai::Limits::addNoOut(T34 t)
 std::unique_ptr<Ai> Ai::create(Girl::Id id)
 {
     switch (id) {
-    case Girl::Id::SHIBUYA_TAKAMI:      return util::unique<AiTakami>();
-    case Girl::Id::MATANO_SEIKO:        return util::unique<AiSeiko>();
-    case Girl::Id::OOHOSHI_AWAI:        return util::unique<AiAwai>();
-    case Girl::Id::MATSUMI_KURO:        return util::unique<AiKuro>();
-    case Girl::Id::USUZUMI_HATSUMI:     return util::unique<AiHatsumi>();
-    case Girl::Id::IWATO_KASUMI:        return util::unique<AiKasumi>();
-    case Girl::Id::ANETAI_TOYONE:       return util::unique<AiToyone>();
-    case Girl::Id::HARAMURA_NODOKA:     return util::unique<AiNodoka>();
-    case Girl::Id::SHISHIHARA_SAWAYA:   return util::unique<AiSawaya>();
-    default: return util::unique<Ai>();
+    case Girl::Id::SHIBUYA_TAKAMI:      return std::make_unique<AiTakami>();
+    case Girl::Id::MATANO_SEIKO:        return std::make_unique<AiSeiko>();
+    case Girl::Id::OOHOSHI_AWAI:        return std::make_unique<AiAwai>();
+    case Girl::Id::MATSUMI_KURO:        return std::make_unique<AiKuro>();
+    case Girl::Id::USUZUMI_HATSUMI:     return std::make_unique<AiHatsumi>();
+    case Girl::Id::IWATO_KASUMI:        return std::make_unique<AiKasumi>();
+    case Girl::Id::ANETAI_TOYONE:       return std::make_unique<AiToyone>();
+    case Girl::Id::HARAMURA_NODOKA:     return std::make_unique<AiNodoka>();
+    case Girl::Id::SHISHIHARA_SAWAYA:   return std::make_unique<AiSawaya>();
+    default: return std::make_unique<Ai>();
     }
 }
 

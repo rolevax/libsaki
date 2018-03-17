@@ -3,6 +3,7 @@
 
 #include <type_traits>
 #include <functional>
+#include <new>
 #include <cassert>
 
 
@@ -53,12 +54,12 @@ public:
 
     const T *data() const noexcept
     {
-        return static_cast<const T *>(static_cast<const void *>(&mData));
+        return std::launder(reinterpret_cast<const T *>(mData));
     }
 
     T *data() noexcept
     {
-        return static_cast<T *>(static_cast<void *>(&mData));
+        return std::launder(reinterpret_cast<T *>(mData));
     }
 
     T &operator[](size_t i) noexcept
@@ -151,21 +152,21 @@ public:
     void emplaceBack(Args && ... elem) noexcept
     {
         assert(mSize + 1 <= MAX);
-        new (data() + mSize) T(std::forward<Args>(elem) ...);
+        new (mData + mSize) T(std::forward<Args>(elem) ...);
         mSize++;
     }
 
     void pushBack(const T &elem) noexcept
     {
         assert(mSize + 1 <= MAX);
-        new (data() + mSize) T(elem);
+        new (mData + mSize) T(elem);
         mSize++;
     }
 
     void pushBack(T &&elem) noexcept
     {
         assert(mSize + 1 <= MAX);
-        new (data() + mSize) T(std::move(elem));
+        new (mData + mSize) T(std::move(elem));
         mSize++;
     }
 
@@ -196,30 +197,13 @@ public:
 
     void clear() noexcept
     {
-        for (size_t i = 0; i < mSize; i++)
-            (data() + i)->T::~T();
-
-        mSize = 0;
-    }
-
-    void exile(size_t i) noexcept
-    {
-        assert(i < mSize);
-        data()[i] = back();
-        popBack();
-    }
-
-    void exileAllIf(std::function<bool(const T &)> pred) noexcept
-    {
-        for (size_t i = 0; i < mSize; i++)
-            if (pred(data()[i]))
-                exile(i--);
+        while (mSize > 0)
+            popBack();
     }
 
 protected:
-    static const size_t BYTES = sizeof(T) * MAX;
     static const size_t ALIGN = std::alignment_of<T>::value;
-    typename std::aligned_storage<BYTES, ALIGN>::type mData;
+    typename std::aligned_storage<sizeof(T), ALIGN>::type mData[MAX];
     size_t mSize = 0;
 };
 
@@ -264,11 +248,13 @@ class Stactor<T, MAX, typename std::enable_if<!std::is_trivially_copyable<T>::va
     : public StactorBase<T, MAX>
 {
 public:
-    using StactorBase<T, MAX>::StactorBase;
+    using Base = StactorBase<T, MAX>;
+
+    using Base::StactorBase;
 
     ~Stactor()
     {
-        StactorBase<T, MAX>::clear();
+        Base::clear();
     }
 
     Stactor(const Stactor &copy)
@@ -279,7 +265,7 @@ public:
 
     Stactor &operator=(const Stactor &that)
     {
-        StactorBase<T, MAX>::clear();
+        Base::clear();
         for (const auto &e : that)
             pushBack(e);
     }

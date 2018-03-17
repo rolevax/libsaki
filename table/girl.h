@@ -16,14 +16,14 @@
     Name(const Name &copy) = default; \
     std::unique_ptr<Girl> clone() const override \
     { \
-        return util::unique<Name>(*this); \
+        return std::make_unique<Name>(*this); \
     }
 
 #define GIRL_COPY_CTORS(Name) \
     Name(const Name &copy) = default; \
     std::unique_ptr<Girl> clone() const override \
     { \
-        return util::unique<Name>(*this); \
+        return std::make_unique<Name>(*this); \
     }
 
 
@@ -102,7 +102,7 @@ public:
 
         template<typename IrsCtrlImpl, typename GirlImpl>
         IrsCtrlGetter(IrsCtrlImpl GirlImpl::*mem)
-            : mImpl(mem == nullptr ? nullptr : util::unique<Impl<IrsCtrlImpl>>(upcast(mem)))
+            : mImpl(mem == nullptr ? nullptr : std::make_unique<Impl<IrsCtrlImpl>>(upcast(mem)))
         {
         }
 
@@ -156,7 +156,7 @@ public:
 
             std::unique_ptr<ImplBase> clone() override
             {
-                return util::unique<Impl>(*this);
+                return std::make_unique<Impl>(*this);
             }
 
             IrsCtrl &get(Girl &girl) override

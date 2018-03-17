@@ -40,33 +40,33 @@ std::unique_ptr<Girl> Girl::create(Who who, int id_)
 {
     Id id = Id(id_);
     switch (id) {
-    case Id::DOGE:              return util::unique<Girl>(who, id);
-    case Id::MIYANAGA_TERU:     return util::unique<Teru>(who, id);
-    case Id::HIROSE_SUMIRE:     return util::unique<Sumire>(who, id);
-    case Id::SHIBUYA_TAKAMI:    return util::unique<Takami>(who, id);
-    case Id::MATANO_SEIKO:      return util::unique<Seiko>(who, id);
-    case Id::OOHOSHI_AWAI:      return util::unique<Awai>(who, id);
-    case Id::MATSUMI_KURO:      return util::unique<Kuro>(who, id);
-    case Id::MATSUMI_YUU:       return util::unique<Yuu>(who, id);
-    case Id::ATARASHI_AKO:      return util::unique<Ako>(who, id);
-    case Id::ONJOUJI_TOKI:      return util::unique<Toki>(who, id);
-    case Id::EGUCHI_SERA:       return util::unique<Sera>(who, id);
-    case Id::USUZUMI_HATSUMI:   return util::unique<Hatsumi>(who, id);
-    case Id::IWATO_KASUMI:      return util::unique<Kasumi>(who, id);
-    case Id::ANETAI_TOYONE:     return util::unique<Toyone>(who, id);
-    case Id::KATAOKA_YUUKI:     return util::unique<Yuuki>(who, id);
-    case Id::HARAMURA_NODOKA:   return util::unique<Nodoka>(who, id);
-    case Id::NANPO_KAZUE:       return util::unique<Kazue>(who, id);
-    case Id::UESHIGE_SUZU:      return util::unique<Suzu>(who, id);
-    case Id::SUEHARA_KYOUKO:    return util::unique<Kyouko>(who, id);
-    case Id::SHISHIHARA_SAWAYA: return util::unique<Sawaya>(who, id);
-    case Id::HAO_HUIYU:         return util::unique<Huiyu>(who, id);
-    case Id::INAMURA_KYOUKA:    return util::unique<Kyouka>(who, id);
-    case Id::SHIRATSUKI_SHINO:  return util::unique<Shino>(who, id);
-    case Id::HONDOU_YUE:        return util::unique<Yue>(who, id);
-    case Id::MIHOROGI_UTA:      return util::unique<Uta>(who, id);
-    case Id::TAKUWA_RIO:        return util::unique<Rio>(who, id);
-    case Id::KAJINO_YUI:        return util::unique<Yui>(who, id);
+    case Id::DOGE:              return std::make_unique<Girl>(who, id);
+    case Id::MIYANAGA_TERU:     return std::make_unique<Teru>(who, id);
+    case Id::HIROSE_SUMIRE:     return std::make_unique<Sumire>(who, id);
+    case Id::SHIBUYA_TAKAMI:    return std::make_unique<Takami>(who, id);
+    case Id::MATANO_SEIKO:      return std::make_unique<Seiko>(who, id);
+    case Id::OOHOSHI_AWAI:      return std::make_unique<Awai>(who, id);
+    case Id::MATSUMI_KURO:      return std::make_unique<Kuro>(who, id);
+    case Id::MATSUMI_YUU:       return std::make_unique<Yuu>(who, id);
+    case Id::ATARASHI_AKO:      return std::make_unique<Ako>(who, id);
+    case Id::ONJOUJI_TOKI:      return std::make_unique<Toki>(who, id);
+    case Id::EGUCHI_SERA:       return std::make_unique<Sera>(who, id);
+    case Id::USUZUMI_HATSUMI:   return std::make_unique<Hatsumi>(who, id);
+    case Id::IWATO_KASUMI:      return std::make_unique<Kasumi>(who, id);
+    case Id::ANETAI_TOYONE:     return std::make_unique<Toyone>(who, id);
+    case Id::KATAOKA_YUUKI:     return std::make_unique<Yuuki>(who, id);
+    case Id::HARAMURA_NODOKA:   return std::make_unique<Nodoka>(who, id);
+    case Id::NANPO_KAZUE:       return std::make_unique<Kazue>(who, id);
+    case Id::UESHIGE_SUZU:      return std::make_unique<Suzu>(who, id);
+    case Id::SUEHARA_KYOUKO:    return std::make_unique<Kyouko>(who, id);
+    case Id::SHISHIHARA_SAWAYA: return std::make_unique<Sawaya>(who, id);
+    case Id::HAO_HUIYU:         return std::make_unique<Huiyu>(who, id);
+    case Id::INAMURA_KYOUKA:    return std::make_unique<Kyouka>(who, id);
+    case Id::SHIRATSUKI_SHINO:  return std::make_unique<Shino>(who, id);
+    case Id::HONDOU_YUE:        return std::make_unique<Yue>(who, id);
+    case Id::MIHOROGI_UTA:      return std::make_unique<Uta>(who, id);
+    case Id::TAKUWA_RIO:        return std::make_unique<Rio>(who, id);
+    case Id::KAJINO_YUI:        return std::make_unique<Yui>(who, id);
     default:
         unreached("unimplemented girl");
     }
@@ -80,7 +80,7 @@ Girl::Girl(Who who, Id id)
 
 std::unique_ptr<Girl> Girl::clone() const
 {
-    return util::unique<Girl>(*this);
+    return std::make_unique<Girl>(*this);
 }
 
 Girl::Id Girl::getId() const
