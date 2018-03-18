@@ -36,9 +36,8 @@ namespace saki
 
 
 
-std::unique_ptr<Girl> Girl::create(Who who, int id_)
+std::unique_ptr<Girl> Girl::create(Who who, Id id)
 {
-    Id id = Id(id_);
     switch (id) {
     case Id::DOGE:              return std::make_unique<Girl>(who, id);
     case Id::MIYANAGA_TERU:     return std::make_unique<Teru>(who, id);

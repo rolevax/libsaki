@@ -92,7 +92,7 @@ public:
     struct InitConfig
     {
         std::array<int, 4> points;
-        std::array<int, 4> girlIds;
+        std::array<std::unique_ptr<Girl>, 4> girls;
         Rule rule;
         Who tempDealer;
     };

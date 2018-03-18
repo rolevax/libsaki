@@ -2,6 +2,7 @@
 #define SAKI_APP_GIRL_X_H
 
 #include "../table/girl.h"
+#include "../3rd/kaguya.hpp"
 
 
 namespace saki
@@ -11,11 +12,15 @@ namespace saki
 class GirlX : public Girl
 {
 public:
-    GIRL_COPY_CTORS(GirlX)
+    GirlX(Who who, std::string luaCode);
+    GirlX(const GirlX &copy);
 
-    GirlX(Who who);
+    std::unique_ptr<Girl> clone() const override;
 
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
+
+private:
+    kaguya::State mLua;
 };
 
 

@@ -38,11 +38,9 @@ TablePrivate::TablePrivate(std::array<int, 4> points,
 ///
 Table::Table(InitConfig config, std::vector<TableObserver *> obs, const TableEnv &env)
     : TablePrivate(config.points, config.rule, config.tempDealer, env)
+    , mGirls(std::move(config.girls))
 {
     assert(!util::has(mObservers, nullptr));
-
-    for (int w = 0; w < 4; w++)
-        mGirls[w] = Girl::create(Who(w), config.girlIds[w]);
 
     setupObservers(obs);
 

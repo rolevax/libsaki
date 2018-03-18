@@ -23,7 +23,7 @@ void rotate(T &arr)
 
 TableServer::TableServer(Table::InitConfig config,
                          std::vector<TableObserver *> obs, const TableEnv &env)
-    : mTable(config, (obs.push_back(this), obs), env)
+    : mTable(std::move(config), (obs.push_back(this), obs), env)
     , mNonces{0, 0, 0, 0}
 {
 
@@ -96,12 +96,13 @@ TableServer::Msgs TableServer::resume(Who comer)
         pts[comer.left().index()],
     };
 
-    args["girlIds"] = json {
-        static_cast<int>(mTable.getGirl(comer).getId()),
-        static_cast<int>(mTable.getGirl(comer.right()).getId()),
-        static_cast<int>(mTable.getGirl(comer.cross()).getId()),
-        static_cast<int>(mTable.getGirl(comer.left()).getId())
-    };
+    args["girlKeys"] = json::array();
+    for (Who who: { comer, comer.right(), comer.cross(), comer.left() }) {
+        json key;
+        key["id"] = static_cast<int>(mTable.getGirl(who).getId());
+        key["path"] = "";
+        args["girlKeys"].push_back(key);
+    }
 
     args["wallRemain"] = mTable.getMount().remainPii();
     args["deadRemain"] = mTable.getMount().remainRinshan();

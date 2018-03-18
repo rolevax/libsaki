@@ -10,7 +10,7 @@ namespace saki
 
 TableServerAi3::TableServerAi3(Table::InitConfig config, std::vector<TableObserver *> obs,
                                const TableEnv &env, Ai3 &&ais)
-    : mServer(config, obs, env)
+    : mServer(std::move(config), obs, env)
     , mAis(std::move(ais))
 {
 }

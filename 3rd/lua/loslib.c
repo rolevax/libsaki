@@ -164,13 +164,18 @@ static int os_rename (lua_State *L) {
 
 
 static int os_tmpname (lua_State *L) {
-  char buff[LUA_TMPNAMBUFSIZE];
-  int err;
-  lua_tmpnam(buff, err);
-  if (err)
-    return luaL_error(L, "unable to generate a unique filename");
-  lua_pushstring(L, buff);
-  return 1;
+  // rolevax: 'generating a tmp file' seems useless to libsaki
+  //           and call to 'tmpnam' raises linker warning.
+  //           just make it fail.
+  return luaL_error(L, "rolevax: call your sister's tmpnam");
+
+//  char buff[LUA_TMPNAMBUFSIZE];
+//  int err;
+//  lua_tmpnam(buff, err);
+//  if (err)
+//    return luaL_error(L, "unable to generate a unique filename");
+//  lua_pushstring(L, buff);
+//  return 1;
 }
 
 

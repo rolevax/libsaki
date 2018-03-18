@@ -20,13 +20,6 @@
         return std::make_unique<Name>(*this); \
     }
 
-#define GIRL_COPY_CTORS(Name) \
-    Name(const Name &copy) = default; \
-    std::unique_ptr<Girl> clone() const override \
-    { \
-        return std::make_unique<Name>(*this); \
-    }
-
 
 
 namespace saki
@@ -173,7 +166,7 @@ public:
         std::unique_ptr<ImplBase> mImpl;
     };
 
-    static std::unique_ptr<Girl> create(Who who, int id);
+    static std::unique_ptr<Girl> create(Who who, Id id);
 
     Girl(Who who, Id id);
     virtual ~Girl() = default;

@@ -128,14 +128,20 @@ void testTable()
     Rule rule;
     for (int iter = 0; iter < 20; iter++) {
         util::p(iter);
+
+        std::array<std::unique_ptr<Girl>, 4> girls;
         for (int w = 0; w < 4; w++) {
-            ais[w] = Ai::create(Girl::Id(girlIds[w]));
+            assert(girlIds[w] != 1);
+            Girl::Id id = Girl::Id(girlIds[w]);
+
+            girls[w] = Girl::create(Who(w), id);
+            ais[w] = Ai::create(id);
             deciders[w] = ais[w].get();
         }
 
         TableEnvStub env;
-        Table::InitConfig config { points, girlIds, rule, Who(0) };
-        Table table(config, obs, env);
+        Table::InitConfig config { points, std::move(girls), rule, Who(0) };
+        Table table(std::move(config), obs, env);
         TableTester tester(table, deciders);
         tester.run();
     }
