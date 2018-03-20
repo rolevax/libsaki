@@ -8,31 +8,60 @@
 #include <sstream>
 
 
-
 namespace saki
 {
 
 
 
-bool Awai::checkInit(Who who, const Hand &init, const Table &table, int iter)
+bool Awai::checkInit(Who who, const Hand &init, const Princess &princess, int iter)
 {
-    (void) table;
+    (void) princess;
 
-    if (who == mSelf || iter > 500)
-        return true;
+    if (who == mSelf) {
+        TileCount hand;
+        for (const T37 &t : init.closed().t37s13(true))
+            hand.inc(t, 1);
+
+        int Total = 0;
+
+        for (const T37 &t : hand.t37s13(true)) {
+            hand.inc(t, -1);
+            hand.inc(mFirstDraw, 1);
+            if (hand.step4(0) == 0)
+                Total++;
+
+            hand.inc(mFirstDraw, -1);
+            hand.inc(t, 1);
+        }
+
+        if (Total > 1) {
+            return false;
+        } else {
+            return true;
+        }
+    } else {
+        if (iter > 500)
+            return true;
+    }
 
     return init.step() >= (iter > 300 ? 4 : 5);
 }
 
-void Awai::onMonkey(std::array<Exist, 4> &exists, const Table &table)
+void Awai::onMonkey(std::array<Exist, 4> &exists, const Princess &princess)
 {
-    if (!usingDaburii())
+    if (!mIrsCtrl.itemAt(0).on())
         return;
 
+    using Indic = Princess::Indic;
     int self = mSelf.index();
+    T34 dora = princess.getImageIndic(Indic::DORA).dora();
+    T34 ura = princess.getImageIndic(Indic::URADORA).dora();
+    T34 kandora = princess.getImageIndic(Indic::KANDORA).dora();
 
-    T34 dora = table.getMount().getDrids().front().dora();
     exists[self].inc(dora, -EJECT_MK);
+    exists[self].inc(ura, -EJECT_MK);
+    exists[self].inc(kandora, -EJECT_MK);
+    // kanura has been loaded to B-space (see nonMonkey())
 
     using namespace tiles37;
     exists[self].inc(0_m, -EJECT_MK);
@@ -53,7 +82,7 @@ void Awai::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         return;
     }
 
-    if (rinshan || !usingDaburii())
+    if (rinshan || !mIrsCtrl.itemAt(0).on())
         return;
 
     if (who == mSelf && table.getRiver(who).empty()) {
@@ -101,95 +130,60 @@ void Awai::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     }
 }
 
-HrhBargainer *Awai::onHrhBargain(const Table &table)
+void Awai::nonMonkey(util::Rand &rand, TileCount &init, Mount &mount,
+                     std::bitset<Girl::NUM_NM_SKILL> &presence,
+                     const Princess &princess)
 {
-    if (!usingDaburii())
-        return nullptr;
-
-    int rw = table.getRoundWind();
-    int sw = table.getSelfWind(mSelf);
-
-    for (int v = 1; v <= 4; v++)
-        if (v != rw && v != sw)
-            mSomeGuestWind = T34(Suit::F, v);
-
-    return this;
-}
-
-HrhBargainer::Claim Awai::hrhBargainClaim(int plan, T34 t)
-{
-    T34 kanura = kanuraOfPlan(plan);
-    return t == kanura ? Claim::FOUR : (t % kanura ? Claim::ANY : Claim::NONE);
-}
-
-int Awai::hrhBargainPlanCt()
-{
-    return 25; // 3x8 no-fives + 1 some guest wind
-}
-
-void Awai::onHrhBargained(int plan, Mount &mount)
-{
-    mKanura = kanuraOfPlan(plan);
-
-    // reserve kan-material
-    mount.loadB(T37(mKanura.id34()), 1);
-
-    // fix kanura indicator
-    mount.loadB(T37(mKanura.indicator().id34()), 1);
-    for (T34 t : tiles34::ALL34) {
-        mount.incMk(Mount::URAHYOU, 1, t, -100, false);
-        mount.incMk(Mount::URAHYOU, 1, t, t % mKanura ? 100 : -100, true);
-    }
-
-    // make other indics diff from the kanura indic
-    // useful only in a kuro-less case
-    // if kuro is present, the conflict is already solved by bargain
-    mount.incMk(Mount::DORAHYOU, 0, mKanura.indicator(), -100, false);
-    mount.incMk(Mount::DORAHYOU, 1, mKanura.indicator(), -100, false);
-    mount.incMk(Mount::URAHYOU, 0, mKanura.indicator(), -100, false);
-}
-
-std::optional<HrhInitFix> Awai::onHrhBeg(util::Rand &rand, const TileCount &stock)
-{
-    if (!usingDaburii())
-        return std::nullopt;
-
-    HrhInitFix fix;
+    if (!mIrsCtrl.itemAt(0).on())
+        return;
 
     // add 3 kanura
-    TileCount myStock(stock);
-    myStock.clear(mKanura);
+    mKanura = princess.getImageIndic(Princess::Indic::KANURA).dora();
     for (int i = 0; i < 3; i++)
-        fix.targets.pushBack(T37(mKanura.id34()));
+        init.inc(mount.initPopExact(T37(mKanura.id34())), 1);
 
-    // FUCK avoid dora
-//    myStock.clear();
+    mount.loadB(T37(mKanura.id34()), 1);
 
-    begIter(fix, rand, myStock);
+    // exclude ZIM-suit from init hand
+    std::vector<Suit> avaiSuits { Suit::M, Suit::P, Suit::S };
+    if (presence.test(ZIM_M))
+        avaiSuits.erase(avaiSuits.begin());
+    else if (presence.test(ZIM_P))
+        avaiSuits.erase(avaiSuits.begin() + 1);
+    else if (presence.test(ZIM_S))
+        avaiSuits.erase(avaiSuits.begin() + 2);
 
-    return fix;
+    // a significant but not necessary random generation
+    // by this generation, the generated complete hand has no yaku, but
+    // after 2 swap-out's it may have. we simply ignore such a case.
+    int iter = 500;
+    while (iter-- > 0) {
+        // generate a sketch of winning hand
+        InitSketch ske = sketch(rand, avaiSuits);
+
+        // check if mount affords and hand doraless
+        if (!mount.affordA(ske.need))
+            continue;
+
+        auto mayHaveDora = [&princess](T34 t) { return princess.mayHaveDora(t); };
+        if (iter > 100 && util::any(ske.need.t34s13(), mayHaveDora))
+            continue;
+
+        // pick the last wait tile
+        if (!pickWait(rand, ske, mount))
+            continue;
+
+        // done
+        for (const T37 &t : ske.need.t37s13(true))
+            init.inc(mount.initPopExact(t), 1);
+
+        break;
+    }
 }
 
 Girl::IrsCtrlGetter Awai::attachIrsOnDice()
 {
     return &Awai::mIrsCtrl;
-}
-
-bool Awai::usingDaburii() const
-{
-    return mIrsCtrl.itemAt(0).on();
-}
-
-T34 Awai::kanuraOfPlan(int plan) const
-{
-    using namespace tiles34;
-    static const std::array<T34, 24> noFives {
-        1_m, 2_m, 3_m, 4_m, 6_m, 7_m, 8_m, 9_m,
-        1_p, 2_p, 3_p, 4_p, 6_p, 7_p, 8_p, 9_p,
-        1_s, 2_s, 3_s, 4_s, 6_s, 7_s, 8_s, 9_s,
-    };
-
-    return plan < 24 ? noFives[plan] : mSomeGuestWind;
 }
 
 int Awai::lastCorner(int dice, int kanCt)
@@ -203,37 +197,7 @@ int Awai::lastCorner(int dice, int kanCt)
     return tailRemain;
 }
 
-void Awai::begIter(HrhInitFix &fix, util::Rand &rand, const TileCount &stock)
-{
-    util::Stactor<Suit, 3> avaiSuits;
-    for (Suit s : { Suit::M, Suit::P, Suit::S })
-        if (stock.has(s))
-            avaiSuits.pushBack(s);
-
-    // a significant but not necessary random generation
-    // by this generation, the generated complete hand has no yaku, but
-    // after 2 swap-out's it may have. we simply ignore such a case.
-    int iter = 500;
-    while (iter-- > 0) {
-        // generate a sketch of winning hand
-        InitSketch ske = sketch(rand, avaiSuits);
-
-        if (!stock.covers(ske.need))
-            continue;
-
-        // pick the last wait tile
-        if (!pickWait(fix, rand, ske, stock))
-            continue;
-
-        // done
-        for (const T37 &t : ske.need.t37s13(true))
-            fix.targets.pushBack(t);
-
-        break;
-    }
-}
-
-Awai::InitSketch Awai::sketch(util::Rand &rand, const util::Stactor<Suit, 3> &avaiSuits) const
+Awai::InitSketch Awai::sketch(util::Rand &rand, const std::vector<Suit> &avaiSuits) const
 {
     // (1) generate a yao sequence and a non-yao sequence,
     //     whose both suits and values are different.
@@ -260,7 +224,7 @@ Awai::InitSketch Awai::sketch(util::Rand &rand, const util::Stactor<Suit, 3> &av
     res.need.inc(T37(midSeq.nnext().id34()), 1);
 
     // (2)
-    if (rand.gen(3) > 0) { // 2/3 sequence
+    if (rand.gen(3) > 0) {     // 2/3 sequence
         T37 lastSeq(avaiSuits[rand.gen(avaiSuits.size())], rand.gen(7) + 1);
         // avoid 1pk by mapping 123567 to 765321, and 4 to 3
         if (lastSeq == yaoSeq || lastSeq == midSeq)
@@ -286,7 +250,7 @@ Awai::InitSketch Awai::sketch(util::Rand &rand, const util::Stactor<Suit, 3> &av
     return res;
 }
 
-bool Awai::pickWait(HrhInitFix &fix, util::Rand &rand, InitSketch &ske, const TileCount &stock)
+bool Awai::pickWait(util::Rand &rand, Awai::InitSketch &ske, Mount &mount)
 {
     std::vector<T37> kickables;
 
@@ -294,8 +258,8 @@ bool Awai::pickWait(HrhInitFix &fix, util::Rand &rand, InitSketch &ske, const Ti
         // horizontally spread, avoid wait-almost-in-hand
         if (ske.need.ct(ske.heads[2]) == 3
             && ske.need.ct(ske.pair) == 2
-            && stock.ct(T37(ske.heads[2].id34())) == 4
-            && stock.ct(T37(ske.pair.id34())) == 4) {
+            && mount.remainA(T37(ske.heads[2].id34())) == 4
+            && mount.remainA(T37(ske.pair.id34())) == 4) {
             // init has at most one closed tri, looks comfortable
             kickables.push_back(T37(ske.heads[2].id34()));
         }
@@ -304,16 +268,16 @@ bool Awai::pickWait(HrhInitFix &fix, util::Rand &rand, InitSketch &ske, const Ti
             // *INDENT-OFF*
             auto waity = [&](T34 t) {
                 // horizontally spread, avoid wait-almost-in-hand
-                return ske.need.ct(t) == 1 && stock.ct(T37(t.id34())) >= 3;
+                return ske.need.ct(t) == 1 && mount.remainA(T37(t.id34())) >= 3;
             };
             // *INDENT-ON*
-            if (waity(head.next())) // clamp
+            if (waity(head.next()))     // clamp
                 kickables.push_back(T37(head.next().id34()));
 
-            if (head.val() == 1 && waity(head.nnext())) // 12+3
+            if (head.val() == 1 && waity(head.nnext()))     // 12+3
                 kickables.push_back(T37(head.nnext().id34()));
 
-            if (head.val() == 7 && waity(head)) // 7+89
+            if (head.val() == 7 && waity(head))     // 7+89
                 kickables.push_back(T37(head.id34()));
         }
     }
@@ -329,19 +293,19 @@ bool Awai::pickWait(HrhInitFix &fix, util::Rand &rand, InitSketch &ske, const Ti
     bool ankanable = ske.need.onlyInTriplet(mKanura, 0);
     ske.need.inc(T37(mKanura.id34()), -3);
     if (!ankanable) {
-        ske.need.inc(kick3, 1); // recover, useless if see caller, though
+        ske.need.inc(kick3, 1);     // recover, useless if see caller, though
         return false;
     }
 
     mLastWaits.clear();
-    if (ske.thridIsTri) { // bibump wait
+    if (ske.thridIsTri) {     // bibump wait
         T37 p37(ske.pair.id34());
-        fix.loads.emplaceBack(kick3, 2); // reserve other 2 for initPopExact
-        fix.loads.emplaceBack(p37, 2);
+        mount.loadB(kick3, 2);     // reserve other 2 for initPopExact
+        mount.loadB(p37, 2);
         mLastWaits.push_back(kick3);
         mLastWaits.push_back(p37);
     } else {
-        fix.loads.emplaceBack(kick3, 4); // the more, the better
+        mount.loadB(kick3, 4);     // the more, the better
         mLastWaits.push_back(kick3);
     }
 
@@ -350,11 +314,9 @@ bool Awai::pickWait(HrhInitFix &fix, util::Rand &rand, InitSketch &ske, const Ti
     mNeedFirstDraw = true;
     mFirstDraw = kick1ables[rand.gen(kick1ables.size())];
     ske.need.inc(mFirstDraw, -1);
-    fix.loads.emplaceBack(mFirstDraw, 1);
+    mount.loadB(mFirstDraw, 1);
 
     return true;
 }
-
-
 
 } // namespace saki
