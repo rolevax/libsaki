@@ -18,31 +18,18 @@ bool Awai::checkInit(Who who, const Hand &init, const Table &table, int iter)
 {
     (void) table;
 
+    if (iter > 500)
+        return true;
+    
     if (who == mSelf) {
-        TileCount hand;
-        for (const T37 &t : init.closed().t37s13(true))
-            hand.inc(t, 1);
-
-        int Total = 0;
-
-        for (const T37 &t : hand.t37s13(true)) {
-            hand.inc(t, -1);
-            hand.inc(mFirstDraw, 1);
-            if (hand.step4(0) == 0)
-                Total++;
-
-            hand.inc(mFirstDraw, -1);
-            hand.inc(t, 1);
-        }
-
-        if (Total > 1) {
-            return false;
-        } else {
+        if (!usingDaburii())
             return true;
-        }
-    } else {
-        if (iter > 500)
-            return true;
+        Hand hand(init);
+		hand.draw(mFirstDraw);
+		util::Stactor<T37, 13> swappables;
+		bool spinnable;
+		hand.canRiichi(swappables, spinnable);
+		return swappables.size() + spinnable <= 1;
     }
 
     return init.step() >= (iter > 300 ? 4 : 5);
