@@ -22,9 +22,9 @@ bool Awai::checkInit(Who who, const Hand &init, const Table &table, int iter)
         return true;
     
     if (who == mSelf) {
-        if (!usingDaburii())
-            return true;
-        Hand hand(init);
+	if (!usingDaburii())
+		return true;
+	Hand hand(init);
 	hand.draw(mFirstDraw);
 	util::Stactor<T37, 13> swappables;
 	bool spinnable;
