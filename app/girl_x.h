@@ -4,6 +4,8 @@
 #include "../table/girl.h"
 #include "../3rd/kaguya.hpp"
 
+#include <sstream>
+
 
 namespace saki
 {
@@ -19,8 +21,26 @@ public:
 
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
 
+    std::string popUpStr() const override;
+
+    void onTableEvent(const Table &table, const TableEvent &event) override;
+
+private:
+    void setupLuaGlobal();
+    void setupLuaClasses(kaguya::LuaTable girl);
+    void setupLuaWho(kaguya::LuaTable girl);
+    void setupLuaTile(kaguya::LuaTable girl);
+    void setupLuaMount(kaguya::LuaTable girl);
+    void setupLuaTileCount(kaguya::LuaTable girl);
+    void setupLuaHand(kaguya::LuaTable girl);
+    void setupLuaGame(kaguya::LuaTable girl);
+    void addError(const char *what);
+
+    void popUpIfAny(const Table &table);
+
 private:
     kaguya::State mLua;
+    std::ostringstream mErrStream;
 };
 
 
