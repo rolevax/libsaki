@@ -39,6 +39,8 @@ private:
     };
 
     bool usingDaburii() const;
+    bool checkInitSelf(const Hand &init, int iter) const;
+    bool checkInitRival(const Hand &init, int iter) const;
     T34 kanuraOfPlan(int plan) const;
     static int lastCorner(int dice, int kanCt);
     void begIter(HrhInitFix &fix, util::Rand &rand, const TileCount &stock);

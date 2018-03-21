@@ -17,22 +17,8 @@ namespace saki
 bool Awai::checkInit(Who who, const Hand &init, const Table &table, int iter)
 {
     (void) table;
-
-    if (iter > 500)
-        return true;
     
-    if (who == mSelf) {
-	if (!usingDaburii())
-		return true;
-	Hand hand(init);
-	hand.draw(mFirstDraw);
-	util::Stactor<T37, 13> swappables;
-	bool spinnable;
-	hand.canRiichi(swappables, spinnable);
-	return swappables.size() + spinnable <= 1;
-    }
-
-    return init.step() >= (iter > 300 ? 4 : 5);
+    return who == mSelf ? checkInitSelf(init, iter) : checkInitRival(init, iter);
 }
 
 void Awai::onMonkey(std::array<Exist, 4> &exists, const Table &table)
@@ -189,6 +175,26 @@ Girl::IrsCtrlGetter Awai::attachIrsOnDice()
 bool Awai::usingDaburii() const
 {
     return mIrsCtrl.itemAt(0).on();
+}
+
+bool Awai::checkInitSelf(const Hand &init, int iter) const
+{
+    if (!usingDaburii() || iter > 200)
+        return true;
+
+    Hand hand(init); // copy
+    hand.draw(mFirstDraw);
+
+    util::Stactor<T37, 13> swappables;
+    bool spinnable;
+    hand.canRiichi(swappables, spinnable);
+
+    return swappables.size() + spinnable <= 1;
+}
+
+bool Awai::checkInitRival(const Hand &init, int iter) const
+{
+    return iter > 500 || init.step() >= (iter > 300 ? 4 : 5);
 }
 
 T34 Awai::kanuraOfPlan(int plan) const
