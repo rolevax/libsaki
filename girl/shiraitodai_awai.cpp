@@ -25,11 +25,11 @@ bool Awai::checkInit(Who who, const Hand &init, const Table &table, int iter)
         if (!usingDaburii())
             return true;
         Hand hand(init);
-		hand.draw(mFirstDraw);
-		util::Stactor<T37, 13> swappables;
-		bool spinnable;
-		hand.canRiichi(swappables, spinnable);
-		return swappables.size() + spinnable <= 1;
+	hand.draw(mFirstDraw);
+	util::Stactor<T37, 13> swappables;
+	bool spinnable;
+	hand.canRiichi(swappables, spinnable);
+	return swappables.size() + spinnable <= 1;
     }
 
     return init.step() >= (iter > 300 ? 4 : 5);
