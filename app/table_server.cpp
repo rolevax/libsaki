@@ -362,7 +362,7 @@ void TableServer::pushActivationMsgs()
             pushActivationMsg(who);
 }
 
-void TableServer::pushActivationMsg(Who who)
+void TableServer::pushActivationMsg(Who who, bool isResume)
 {
     using AC = ActCode;
     using Mode = Choices::Mode;
@@ -370,7 +370,7 @@ void TableServer::pushActivationMsg(Who who)
     const auto view = mTable.getView(who);
     const Choices &choices = view->myChoices();
 
-    if (mTable.getNonce(who) == mNonces[who.index()])
+    if (!isResume && mTable.getNonce(who) == mNonces[who.index()])
         return; // still waiting for input
 
     mNonces[who.index()] = mTable.getNonce(who);

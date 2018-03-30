@@ -44,7 +44,7 @@ public:
 
 private:
     void pushActivationMsgs();
-    void pushActivationMsg(Who who);
+    void pushActivationMsg(Who who, bool isResume = false);
     void pushPointsChanged(const Table &table);
     void pushActionExpired(Who who);
     void pushActionIllegal(Who who);
