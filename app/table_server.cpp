@@ -114,6 +114,10 @@ TableServer::Msgs TableServer::resume(Who comer)
     args["deposit"] = mTable.getDeposit();
 
     pushPeerMsg(comer, "resume", args);
+
+    if (mTable.getView(comer)->myChoices().any())
+        pushActivationMsg(comer);
+
     return popMsgs();
 }
 
