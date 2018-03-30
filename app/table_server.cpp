@@ -116,7 +116,7 @@ TableServer::Msgs TableServer::resume(Who comer)
     pushPeerMsg(comer, "resume", args);
 
     if (mTable.getView(comer)->myChoices().any())
-        pushActivationMsg(comer);
+        pushActivationMsg(comer, true);
 
     return popMsgs();
 }
