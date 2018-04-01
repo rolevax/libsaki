@@ -675,6 +675,9 @@ void Table::deal()
 ///
 void Table::flipKandoraIndic()
 {
+    for (auto &g : mGirls)
+        g->onFlipKandoraIndic(*this, mMount);
+
     mMount.flipIndic(mRand);
     notifyFlipped();
 }
@@ -1378,8 +1381,12 @@ void Table::finishRound(const util::Stactor<Who, 4> &openers_, Who gunner)
 
     // dig uradora-indicator if some winner established riichi
     auto est = [this](Who who) { return riichiEstablished(who); };
-    if (mRule.uradora && util::any(openers.begin(), openers.begin() + ticket, est))
+    if (mRule.uradora && util::any(openers.begin(), openers.begin() + ticket, est)) {
+        for (auto &g : mGirls)
+            g->onDigUradoraIndic(*this, mMount, openers);
+
         mMount.digIndic(mRand);
+    }
 
     util::Stactor<Form, 2> forms;
     for (int i = 0; i < ticket; i++) {

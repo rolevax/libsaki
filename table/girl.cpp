@@ -132,6 +132,23 @@ void Girl::onIrsChecked(const Table &table, Mount &mount)
 }
 
 ///
+/// \brief Called before flipping kandora indicator
+///
+void Girl::onFlipKandoraIndic(const Table &table, Mount &mount)
+{
+    (void) table; (void) mount;
+}
+
+///
+/// \brief Called after someone's win, before digging uradora indicator
+/// \param openers Players who opened their hand
+///
+void Girl::onDigUradoraIndic(const Table &table, Mount &mount, util::Stactor<Who, 4> openers)
+{
+    (void) table; (void) mount; (void) openers;
+}
+
+///
 /// \brief Called on the choice-filtering stage
 ///
 void Girl::onFilterChoice(const Table &table, Who who, ChoiceFilter &filter)
@@ -194,9 +211,10 @@ HrhBargainer *Girl::onHrhBargain(const Table &table)
     return nullptr;
 }
 
-std::optional<HrhInitFix> Girl::onHrhBeg(util::Rand &rand, const TileCount &stock)
+std::optional<HrhInitFix> Girl::onHrhBeg(util::Rand &rand, const Table &table, const TileCount &stock)
 {
     (void) rand;
+    (void) table;
     (void) stock;
     return std::nullopt;
 }

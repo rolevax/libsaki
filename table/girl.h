@@ -184,6 +184,8 @@ public:
     virtual void onDraw(const Table &table, Mount &mount, Who who, bool rinshan);
     virtual void onChooseFirstDealer(util::Rand &rand, Who tempDealer, int &die1, int &die2);
     virtual void onIrsChecked(const Table &table, Mount &mount);
+    virtual void onFlipKandoraIndic(const Table &table, Mount &mount);
+    virtual void onDigUradoraIndic(const Table &table, Mount &mount, util::Stactor<Who, 4> openers);
 
     void onFilterChoice(const Table &table, Who who, ChoiceFilter &filter);
     void onActivateDice(const Table &table);
@@ -194,7 +196,7 @@ public:
 
     virtual std::optional<HrhInitFix> onHrhRaid(const Table &table);
     virtual HrhBargainer *onHrhBargain(const Table &table);
-    virtual std::optional<HrhInitFix> onHrhBeg(util::Rand &rand, const TileCount &stock);
+    virtual std::optional<HrhInitFix> onHrhBeg(util::Rand &rand, const Table &table, const TileCount &stock);
 
     virtual std::string popUpStr() const;
 

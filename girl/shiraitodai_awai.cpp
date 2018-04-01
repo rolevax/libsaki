@@ -98,6 +98,38 @@ void Awai::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     }
 }
 
+///
+/// \brief Avoid hitting kandora when using daburii
+///
+void Awai::onFlipKandoraIndic(const Table &table, Mount &mount)
+{
+    if (!usingDaburii())
+        return;
+
+    const Hand &hand = table.getHand(mSelf);
+    for (T34 t : hand.closed().t34s13())
+        mount.incMk(Mount::DORAHYOU, 0, t.indicator(), -100, false);
+}
+
+///
+/// \brief Avoid hitting more than 4 uradoras when using daburii
+///
+void Awai::onDigUradoraIndic(const Table &table, Mount &mount, util::Stactor<Who, 4> openers)
+{
+    if (!usingDaburii())
+        return;
+
+    if (!util::has(openers, mSelf))
+        return; // even not winning, care your sister
+
+    const Hand &hand = table.getHand(mSelf);
+
+    // affects only at position '0'
+    // '1' is the kanura, '2+' is not defined by the skill
+    for (T34 t : hand.closed().t34s13())
+        mount.incMk(Mount::URAHYOU, 0, t.indicator(), -100, false);
+}
+
 HrhBargainer *Awai::onHrhBargain(const Table &table)
 {
     if (!usingDaburii())
@@ -146,7 +178,7 @@ void Awai::onHrhBargained(int plan, Mount &mount)
     mount.incMk(Mount::URAHYOU, 0, mKanura.indicator(), -100, false);
 }
 
-std::optional<HrhInitFix> Awai::onHrhBeg(util::Rand &rand, const TileCount &stock)
+std::optional<HrhInitFix> Awai::onHrhBeg(util::Rand &rand, const Table &table, const TileCount &stock)
 {
     if (!usingDaburii())
         return std::nullopt;
@@ -159,8 +191,9 @@ std::optional<HrhInitFix> Awai::onHrhBeg(util::Rand &rand, const TileCount &stoc
     for (int i = 0; i < 3; i++)
         fix.targets.pushBack(T37(mKanura.id34()));
 
-    // FUCK avoid dora
-//    myStock.clear();
+    // avoid dora
+    T34 dora = table.getMount().getDrids().front().dora();
+    myStock.clear(dora);
 
     begIter(fix, rand, myStock);
 
@@ -177,9 +210,12 @@ bool Awai::usingDaburii() const
     return mIrsCtrl.itemAt(0).on();
 }
 
+///
+/// \brief Keep riichi discard choice unique
+///
 bool Awai::checkInitSelf(const Hand &init, int iter) const
 {
-    if (!usingDaburii() || iter > 200)
+    if (!usingDaburii() || iter > 50)
         return true;
 
     Hand hand(init); // copy
@@ -192,6 +228,9 @@ bool Awai::checkInitSelf(const Hand &init, int iter) const
     return swappables.size() + spinnable <= 1;
 }
 
+///
+/// \brief Give them poor starts
+///
 bool Awai::checkInitRival(const Hand &init, int iter) const
 {
     return iter > 500 || init.step() >= (iter > 300 ? 4 : 5);
@@ -209,6 +248,9 @@ T34 Awai::kanuraOfPlan(int plan) const
     return plan < 24 ? noFives[plan] : mSomeGuestWind;
 }
 
+///
+/// \brief Number of drawable tiles in the last mount segment
+///
 int Awai::lastCorner(int dice, int kanCt)
 {
     int tailRemain = 2 * dice;
@@ -283,14 +325,14 @@ Awai::InitSketch Awai::sketch(util::Rand &rand, const util::Stactor<Suit, 3> &av
         if (lastSeq == yaoSeq || lastSeq == midSeq)
             lastSeq = T37(lastSeq.suit(), lastSeq.val() == 4 ? 3 : 8 - lastSeq.val());
 
-        res.thridIsTri = false;
+        res.thirdIsTri = false;
         res.heads[2] = lastSeq;
         res.need.inc(lastSeq, 1);
         res.need.inc(T37(lastSeq.next().id34()), 1);
         res.need.inc(T37(lastSeq.nnext().id34()), 1);
     } else {
         T37 lastTri(avaiSuits[rand.gen(avaiSuits.size())], rand.gen(9) + 1);
-        res.thridIsTri = true;
+        res.thirdIsTri = true;
         res.heads[2] = lastTri;
         res.need.inc(lastTri, 3);
     }
@@ -307,7 +349,7 @@ bool Awai::pickWait(HrhInitFix &fix, util::Rand &rand, InitSketch &ske, const Ti
 {
     std::vector<T37> kickables;
 
-    if (ske.thridIsTri) {
+    if (ske.thirdIsTri) {
         // horizontally spread, avoid wait-almost-in-hand
         if (ske.need.ct(ske.heads[2]) == 3
             && ske.need.ct(ske.pair) == 2
@@ -318,19 +360,13 @@ bool Awai::pickWait(HrhInitFix &fix, util::Rand &rand, InitSketch &ske, const Ti
         }
     } else {
         for (T34 head : ske.heads) {
-            // *INDENT-OFF*
-            auto waity = [&](T34 t) {
-                // horizontally spread, avoid wait-almost-in-hand
-                return ske.need.ct(t) == 1 && stock.ct(T37(t.id34())) >= 3;
-            };
-            // *INDENT-ON*
-            if (waity(head.next())) // clamp
+            if (waitable(ske, stock, head.next())) // clamp
                 kickables.push_back(T37(head.next().id34()));
 
-            if (head.val() == 1 && waity(head.nnext())) // 12+3
+            if (head.val() == 1 && waitable(ske, stock, head.nnext())) // 12+3
                 kickables.push_back(T37(head.nnext().id34()));
 
-            if (head.val() == 7 && waity(head)) // 7+89
+            if (head.val() == 7 && waitable(ske, stock, head)) // 7+89
                 kickables.push_back(T37(head.id34()));
         }
     }
@@ -342,16 +378,15 @@ bool Awai::pickWait(HrhInitFix &fix, util::Rand &rand, InitSketch &ske, const Ti
     ske.need.inc(kick3, -1);
 
     // check if the kanura is ankanable after riichi
-    ske.need.inc(T37(mKanura.id34()), 3);
-    bool ankanable = ske.need.onlyInTriplet(mKanura, 0);
-    ske.need.inc(T37(mKanura.id34()), -3);
+    bool ankanable = ske.need.peekDelta(mKanura, 3, &TileCount::onlyInTriplet, mKanura, 0);
+
     if (!ankanable) {
         ske.need.inc(kick3, 1); // recover, useless if see caller, though
         return false;
     }
 
     mLastWaits.clear();
-    if (ske.thridIsTri) { // bibump wait
+    if (ske.thirdIsTri) { // bibump wait
         T37 p37(ske.pair.id34());
         fix.loads.emplaceBack(kick3, 2); // reserve other 2 for initPopExact
         fix.loads.emplaceBack(p37, 2);
@@ -370,6 +405,15 @@ bool Awai::pickWait(HrhInitFix &fix, util::Rand &rand, InitSketch &ske, const Ti
     fix.loads.emplaceBack(mFirstDraw, 1);
 
     return true;
+}
+
+bool Awai::waitable(Awai::InitSketch &ske, const TileCount &stock, T34 wait)
+{
+    // (1) horizontally spread, avoid wait-almost-in-hand
+    // (2) unique parsing, avoid multiple discard choices in riichi
+    return ske.need.ct(wait) == 1
+            && stock.ct(T37(wait.id34())) >= 3
+            && ske.need.peekDelta(wait, -1, &TileCount::parse4, 0).size() == 1;
 }
 
 

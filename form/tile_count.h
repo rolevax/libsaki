@@ -87,12 +87,18 @@ public:
     int sum(const std::vector<T34> &ts) const;
     int sum() const;
 
-    template<typename Ret, typename... Args>
-    Ret peekDraw(T34 t, Ret (TileCount::*f) (Args...) const, Args... args) const
+    template<typename Ret, typename... Params, typename... Args>
+    Ret peekDraw(T34 t, Ret (TileCount::*f) (Params...) const, Args && ... args) const
     {
-        T34Delta guard(mutableCounts(), t, 1);
+        return peekDelta(t, 1, f, std::forward<Args>(args) ...);
+    }
+
+    template<typename Ret, typename... Params, typename... Args>
+    Ret peekDelta(T34 t, int delta, Ret (TileCount::*f) (Params...) const, Args && ... args) const
+    {
+        T34Delta guard(mutableCounts(), t, delta);
         (void) guard;
-        return (this->*f)(args...);
+        return (this->*f)(std::forward<Args>(args) ...);
     }
 
 private:

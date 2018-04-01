@@ -177,7 +177,7 @@ void Princess::beg(std::array<TileCount, 4> &inits)
             }
         }
 
-        std::optional<HrhInitFix> fix = mGirls[begger.index()]->onHrhBeg(mRand, stock);
+        std::optional<HrhInitFix> fix = mGirls[begger.index()]->onHrhBeg(mRand, mTable, stock);
         if (fix.has_value()) // ppriority ignored in 'beg' stage
             fixInit(inits[begger.index()], *fix);
     }
