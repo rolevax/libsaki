@@ -18,6 +18,18 @@ namespace util
 
 
 
+template <class T>
+constexpr T* launder(T* p) noexcept
+{
+#ifdef __clang__
+    return p; // clang++ in NDK don't have launder??
+#else
+    return std::launder(p);
+#endif
+}
+
+
+
 template<typename T>
 class Range
 {
@@ -54,12 +66,12 @@ public:
 
     const T *data() const noexcept
     {
-        return std::launder(reinterpret_cast<const T *>(mData));
+        return launder(reinterpret_cast<const T *>(mData));
     }
 
     T *data() noexcept
     {
-        return std::launder(reinterpret_cast<T *>(mData));
+        return launder(reinterpret_cast<T *>(mData));
     }
 
     T &operator[](size_t i) noexcept

@@ -20,7 +20,7 @@ public:
     void onMonkey(std::array<Exist, 4> &exists, const Table &table) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
     void onFlipKandoraIndic(const Table &table, Mount &mount) override;
-    void onDigUradoraIndic(const Table &table, Mount &mount, util::Stactor<Who, 4> openers);
+    void onDigUradoraIndic(const Table &table, Mount &mount, util::Stactor<Who, 4> openers) override;
 
     HrhBargainer *onHrhBargain(const Table &table) override;
     Claim hrhBargainClaim(int plan, T34 t) override;

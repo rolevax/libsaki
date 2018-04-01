@@ -32,8 +32,8 @@ class Table;
 class Choices;
 class Action;
 class IrsCtrl;
-class HrhInitFix;
 class HrhBargainer;
+struct HrhInitFix;
 
 
 
