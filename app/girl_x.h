@@ -11,6 +11,10 @@ namespace saki
 {
 
 
+
+///
+/// \brief Lua intepreter for custom characters
+///
 class GirlX : public Girl
 {
 public:

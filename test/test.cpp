@@ -43,11 +43,11 @@ void testAll()
     // *INDENT-OFF*
 //    testUtil();
 //    testTileCount();
-//    testParse();
+    testParse();
 //    testHand();
 //    testForm();
 //    testFormGb();
-    testTable();
+//    testTable();
     // *INDENT-ON*
 }
 
@@ -76,12 +76,49 @@ void testParse()
     TestScope test("parse", true);
 
     using namespace tiles37;
-    TileCount tc { 1_m, 2_m, 4_m, 2_p, 2_p, 3_p, 3_s, 3_s, 3_s, 4_f, 4_f, 4_f, 1_y };
+    TileCount tc1 { 1_m, 2_m, 4_m, 2_p, 2_p, 3_p, 3_s, 3_s, 3_s, 4_f, 4_f, 4_f, 1_y };
+    TileCount tc2 { 1_m, 1_m, 1_m, 2_m, 3_m, 4_m, 5_m, 6_m, 7_m, 8_m, 9_m, 9_m, 9_m };
+    TileCount tc3 { 1_m, 2_m, 4_m, 2_p, 2_p, 3_p, 3_s, 3_s, 5_s, 4_f, 4_f, 1_y, 2_y };
+    TileCount tc4 { 1_m, 2_m, 5_m, 2_p, 2_p, 4_p, 3_s, 3_s, 5_s, 4_f, 2_f, 1_y, 2_y };
+    TileCount tc5 { 1_m, 4_m, 7_m, 2_p, 2_p, 5_p, 3_s, 3_s, 6_s, 4_f, 1_f, 1_y, 2_y };
+    TileCount tc6 { 1_m, 4_m, 7_m, 2_p, 5_p, 8_p, 3_s, 6_s, 9_s, 4_f, 1_f, 1_y, 2_y };
 
-    auto parseds = tc.parse4(0);
+    auto parseds = tc1.parse4(0);
 
     for (const auto &p : parseds)
-        util::p(p, 8 - p.work());
+        util::p(p, p.step4(0));
+
+    {
+        TestScope test("old", true);
+        auto effA4 = tc1.effA4(0);
+        util::p(effA4);
+        effA4 = tc2.effA4(0);
+        util::p(effA4);
+        effA4 = tc3.effA4(0);
+        util::p(effA4);
+        effA4 = tc4.effA4(0);
+        util::p(effA4);
+        effA4 = tc5.effA4(0);
+        util::p(effA4);
+        effA4 = tc6.effA4(0);
+        util::p(effA4);
+    }
+
+    {
+        TestScope test("new", true);
+        auto effA4 = tc1.effA4Fast(0);
+        util::p(effA4);
+        effA4 = tc2.effA4Fast(0);
+        util::p(effA4);
+        effA4 = tc3.effA4Fast(0);
+        util::p(effA4);
+        effA4 = tc4.effA4Fast(0);
+        util::p(effA4);
+        effA4 = tc5.effA4Fast(0);
+        util::p(effA4);
+        effA4 = tc6.effA4Fast(0);
+        util::p(effA4);
+    }
 }
 
 void testHand()

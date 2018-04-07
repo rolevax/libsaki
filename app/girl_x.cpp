@@ -126,13 +126,16 @@ std::unique_ptr<Girl> GirlX::clone() const
 void GirlX::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
 {
     kaguya::LuaTable girl = mLua["girl"];
+    kaguya::LuaRef cb = girl.getRawField("ondraw");
+    if (cb.isNilref() || cb.type() != LUA_TFUNCTION)
+        return;
 
     girl.setRawField("game", &table);
     girl.setRawField("mount", &mount);
     girl.setRawField("who", who);
     girl.setRawField("rinshan", rinshan);
 
-    mLua.dostring("if ondraw then ondraw() end", girl);
+    mLua.dostring("ondraw()", girl);
 
     girl.setRawField("game", nullptr);
     girl.setRawField("mount", nullptr);

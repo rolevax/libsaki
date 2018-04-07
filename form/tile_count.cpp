@@ -350,7 +350,7 @@ std::vector<Parsed> TileCount::parse4(int barkCt) const
     // *INDENT-OFF*
     auto update = [&](bool hasBirdHead, T34 h = T34()) {
         auto subreses = cutMeldOut(0, maxCut);
-        int comin = (hasBirdHead ? 7 : 8) - subreses[0].work() - 2 * barkCt;
+        int comin = (hasBirdHead ? 7 : 8) - Parsed::workOfHeads(subreses[0]) - 2 * barkCt;
 
         if (comin <= min) {
             if (comin < min) {
@@ -359,13 +359,13 @@ std::vector<Parsed> TileCount::parse4(int barkCt) const
             }
 
             if (hasBirdHead)
-                for (Parsed &p : subreses)
-                    p.append(C34(C34::Type::PAIR, h));
+                for (Parsed::Heads &heads : subreses)
+                    heads.emplaceBack(C34::Type::PAIR, h);
 
-            for (Parsed &p : subreses) {
-                p.sort();
-                if (!util::has(reses, p))
-                    reses.push_back(p);
+            for (Parsed::Heads &heads : subreses) {
+                Parsed parsed(heads);
+                if (!util::has(reses, parsed))
+                    reses.emplace_back(parsed);
             }
         }
     };
@@ -384,6 +384,21 @@ std::vector<Parsed> TileCount::parse4(int barkCt) const
     update(false);
 
     return reses;
+}
+
+util::Stactor<T34, 34> TileCount::effA4Fast(int barkCt) const
+{
+    auto parseds = parse4(barkCt);
+    std::bitset<34> effA;
+    for (const Parsed &p : parseds)
+        effA |= p.effA4();
+
+    util::Stactor<T34, 34> res;
+    for (int ti = 0; ti < 34; ti++)
+        if (effA[ti])
+            res.emplaceBack(ti);
+
+    return res;
 }
 
 std::vector<TileCount::Explain4Closed> TileCount::explain4(T34 pick) const
@@ -603,9 +618,9 @@ int TileCount::cutMeld(int id34, int maxCut) const
     return maxWork;
 }
 
-std::vector<Parsed> TileCount::cutMeldOut(int id34, int maxCut) const
+std::vector<Parsed::Heads> TileCount::cutMeldOut(int id34, int maxCut) const
 {
-    std::vector<Parsed> reses;
+    std::vector<Parsed::Heads> reses;
     NonEmptyGuard guard(reses);
     (void) guard;
 
@@ -621,7 +636,7 @@ std::vector<Parsed> TileCount::cutMeldOut(int id34, int maxCut) const
     // *INDENT-OFF*
     auto updateWork = [&](C34::Type type, bool cut) {
         auto subreses = cutMeldOut(id34 + !cut, maxCut - cut);
-        int work = (cut ? 2 : 0) + subreses[0].work();
+        int work = (cut ? 2 : 0) + Parsed::workOfHeads(subreses[0]);
 
         if (work >= maxWork) {
             if (work > maxWork) {
@@ -630,8 +645,8 @@ std::vector<Parsed> TileCount::cutMeldOut(int id34, int maxCut) const
             }
 
             if (cut)
-                for (Parsed &p : subreses)
-                    p.append(C34(type, t));
+                for (Parsed::Heads &heads : subreses)
+                    heads.emplaceBack(type, t);
 
             reses.insert(reses.end(), subreses.begin(), subreses.end());
         }
@@ -710,9 +725,9 @@ int TileCount::cutSubmeld(int id34, int maxCut) const
     return maxWork;
 }
 
-std::vector<Parsed> TileCount::cutSubmeldOut(int id34, int maxCut) const
+std::vector<Parsed::Heads> TileCount::cutSubmeldOut(int id34, int maxCut) const
 {
-    std::vector<Parsed> reses;
+    std::vector<Parsed::Heads> reses;
     NonEmptyGuard guard(reses);
     (void) guard;
 
@@ -728,7 +743,7 @@ std::vector<Parsed> TileCount::cutSubmeldOut(int id34, int maxCut) const
     // *INDENT-OFF*
     auto updateWork = [&](C34::Type type, bool cut) {
         auto subreses = cutSubmeldOut(id34 + !cut, maxCut - cut);
-        int work = cut + subreses[0].work();
+        int work = cut + Parsed::workOfHeads(subreses[0]);
 
         if (work >= maxWork) {
             if (work > maxWork) {
@@ -736,8 +751,8 @@ std::vector<Parsed> TileCount::cutSubmeldOut(int id34, int maxCut) const
                 reses.clear();
             }
 
-            for (Parsed &p : subreses)
-                p.append(C34(type, t));
+            for (Parsed::Heads &heads : subreses)
+                heads.emplaceBack(type, t);
 
             reses.insert(reses.end(), subreses.begin(), subreses.end());
         }
@@ -822,7 +837,7 @@ TileCount::T34Delta::~T34Delta()
 
 
 
-TileCount::NonEmptyGuard::NonEmptyGuard(std::vector<Parsed> &p)
+TileCount::NonEmptyGuard::NonEmptyGuard(std::vector<Parsed::Heads> &p)
     : mParseds(p)
 {
 }
@@ -830,7 +845,7 @@ TileCount::NonEmptyGuard::NonEmptyGuard(std::vector<Parsed> &p)
 TileCount::NonEmptyGuard::~NonEmptyGuard()
 {
     if (mParseds.empty())
-        mParseds.push_back(Parsed());
+        mParseds.emplace_back();
 }
 
 

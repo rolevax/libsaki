@@ -80,6 +80,7 @@ public:
     bool dislike4(T34 t) const;
 
     std::vector<Parsed> parse4(int barkCt) const;
+    util::Stactor<T34, 34> effA4Fast(int barkCt) const;
 
     std::vector<Explain4Closed> explain4(T34 pick) const;
     bool onlyInTriplet(T34 pick, int barkCt) const;
@@ -121,18 +122,18 @@ private:
     class NonEmptyGuard
     {
     public:
-        explicit NonEmptyGuard(std::vector<Parsed> &p);
+        explicit NonEmptyGuard(std::vector<Parsed::Heads> &p);
         ~NonEmptyGuard();
 
     private:
-        std::vector<Parsed> &mParseds;
+        std::vector<Parsed::Heads> &mParseds;
     };
 
     std::array<int, 34> &mutableCounts() const;
     int cutMeld(int i, int maxCut) const;
-    std::vector<Parsed> cutMeldOut(int i, int maxCut) const;
+    std::vector<Parsed::Heads> cutMeldOut(int i, int maxCut) const;
     int cutSubmeld(int i, int maxCut) const;
-    std::vector<Parsed> cutSubmeldOut(int i, int maxCut) const;
+    std::vector<Parsed::Heads> cutSubmeldOut(int i, int maxCut) const;
     bool decomposeBirdless4(Explain4Closed &exp, const std::array<int, 34> &mCounts) const;
 
 private:

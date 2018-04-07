@@ -12,9 +12,21 @@ namespace saki
 
 
 
+///
+/// \brief Comeld, a meld or a part of a meld
+///
 class C34
 {
 public:
+    ///
+    /// SEQ: sequence, 123m
+    /// TRI: triplet, 111m
+    /// BIFACE: biface-waiter, 23m
+    /// CLAMP: clamp-waiter, 13m
+    /// SIZE: side-waiter, 12m
+    /// PAIR: pair, either triplet-waiter or bird-head, 11m
+    /// FREE: single floating tile, 1m
+    ///
     enum class Type
     {
         SEQ, TRI, BIFACE, CLAMP, SIDE, PAIR, FREE
@@ -94,6 +106,46 @@ public:
         }
     }
 
+    ///
+    /// \brief Get first-class effective tiles assuming this comeld is a waiter
+    ///
+    util::Stactor<T34, 5> effA4() const
+    {
+        // save typing
+        const T34 h = mHead;
+        const int v = h.val();
+
+        switch (mType) {
+        case Type::SEQ:
+            return {};
+        case Type::TRI:
+            return {};
+        case Type::BIFACE:
+            return { h.prev(), h.nnext() };
+        case Type::CLAMP:
+            return { h.next() };
+        case Type::SIDE:
+            return { h.val() == 1 ? h.nnext() : h.prev() };
+        case Type::PAIR:
+            return { h };
+        case Type::FREE:
+            if (h.isZ())
+                return { h };
+            else if (v == 1)
+                return { h, h.next(), h.nnext() };
+            else if (v == 2)
+                return { h.prev(), h, h.next(), h.nnext() };
+            else if (v == 8)
+                return { h.pprev(), h.prev(), h, h.next() };
+            else if (v == 9)
+                return { h.pprev(), h.prev(), h };
+            else // 3 ~ 7
+                return { h.pprev(), h.prev(), h, h.next(), h.nnext() };
+        default:
+            unreached("illegal c34 type");
+        }
+    }
+
     bool has(T34 t) const
     {
         const auto &ts = t34s();
@@ -115,11 +167,17 @@ public:
         return mType == Type::BIFACE || mType == Type::CLAMP || mType == Type::SIDE;
     }
 
+    ///
+    /// \brief Tiles needed to transform from this into that
+    ///
     util::Stactor<T34, 3> tilesTo(const C34 &that) const
     {
         return tilesTo(that.t34s());
     }
 
+    ///
+    /// \brief Tiles needed to form this to tar
+    ///
     util::Stactor<T34, 3> tilesTo(const util::Stactor<T34, 3> &tar) const
     {
         util::Stactor<T34, 3> res;
