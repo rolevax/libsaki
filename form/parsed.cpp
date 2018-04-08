@@ -69,24 +69,25 @@ std::bitset<34> Parsed::effA4() const
 
     int faceCt = seq2End - mHeads.begin();
     const auto pairEnd = std::find_if_not(seq2End, mHeads.end(), isPair);
+    int pairCt = pairEnd - seq2End;
     if (faceCt < 4) { // lacking of faces except pairs
-        // regard all pair as bibump waiters
-        // sacrificing bird-head candidates does not harm effA
+        // regard all pair as triplet candidates
+        // sacrificing bird-head candidates does not affect effA
         for (auto it = seq2End; it != pairEnd; ++it)
             res.set(it->head().id34());
 
-        // regard all floating tiles as face-seed
-        // isoride cases are implied
-        for (auto it = pairEnd; it != mHeads.end(); ++it) {
-            assert(it->type() == C34::Type::FREE);
-            for (T34 t : it->effA4())
-                res.set(t.id34());
+        // floating tiles affects effA only when non-floats are less than five
+        if (faceCt + pairCt < 5) {
+            // regard all floating tiles as face or bird-head candidates
+            for (auto it = pairEnd; it != mHeads.end(); ++it) {
+                assert(it->type() == C34::Type::FREE);
+                for (T34 t : it->effA4())
+                    res.set(t.id34());
+            }
         }
-    } else { // full faces
-        bool hasBirdHead = pairEnd - seq2End != 0;
-        if (!hasBirdHead) // isoride shape
-            for (auto it = pairEnd; it != mHeads.end(); ++it)
-                res.set(it->head().id34());
+    } else if (pairCt == 0) { // full face and isoride shape
+        for (auto it = pairEnd; it != mHeads.end(); ++it)
+            res.set(it->head().id34());
     }
 
     return res;

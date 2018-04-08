@@ -1,5 +1,5 @@
 #include "test.h"
-#include "../form/tile_count.h"
+#include "../form/tile_count_list.h"
 #include "../form/form.h"
 #include "../form/form_gb.h"
 #include "../table/table_tester.h"
@@ -76,48 +76,29 @@ void testParse()
     TestScope test("parse", true);
 
     using namespace tiles37;
-    TileCount tc1 { 1_m, 2_m, 4_m, 2_p, 2_p, 3_p, 3_s, 3_s, 3_s, 4_f, 4_f, 4_f, 1_y };
-    TileCount tc2 { 1_m, 1_m, 1_m, 2_m, 3_m, 4_m, 5_m, 6_m, 7_m, 8_m, 9_m, 9_m, 9_m };
-    TileCount tc3 { 1_m, 2_m, 4_m, 2_p, 2_p, 3_p, 3_s, 3_s, 5_s, 4_f, 4_f, 1_y, 2_y };
-    TileCount tc4 { 1_m, 2_m, 5_m, 2_p, 2_p, 4_p, 3_s, 3_s, 5_s, 4_f, 2_f, 1_y, 2_y };
-    TileCount tc5 { 1_m, 4_m, 7_m, 2_p, 2_p, 5_p, 3_s, 3_s, 6_s, 4_f, 1_f, 1_y, 2_y };
-    TileCount tc6 { 1_m, 4_m, 7_m, 2_p, 5_p, 8_p, 3_s, 6_s, 9_s, 4_f, 1_f, 1_y, 2_y };
 
-    auto parseds = tc1.parse4(0);
+    TileCountList tcl(13, 1_p, 9_p);
+    int prevPercent = 0;
+    for (const TileCount &tc : tcl) {
+        int currProg = tc.ct(1_p) * 16 + tc.ct(2_p) * 4 + tc.ct(3_p);
+        int percent = (currProg * 100) / 128;
+        if (percent != prevPercent) {
+            util::p(percent, "%");
+            prevPercent = percent;
+        }
 
-    for (const auto &p : parseds)
-        util::p(p, p.step4(0));
-
-    {
-        TestScope test("old", true);
-        auto effA4 = tc1.effA4(0);
-        util::p(effA4);
-        effA4 = tc2.effA4(0);
-        util::p(effA4);
-        effA4 = tc3.effA4(0);
-        util::p(effA4);
-        effA4 = tc4.effA4(0);
-        util::p(effA4);
-        effA4 = tc5.effA4(0);
-        util::p(effA4);
-        effA4 = tc6.effA4(0);
-        util::p(effA4);
-    }
-
-    {
-        TestScope test("new", true);
-        auto effA4 = tc1.effA4Fast(0);
-        util::p(effA4);
-        effA4 = tc2.effA4Fast(0);
-        util::p(effA4);
-        effA4 = tc3.effA4Fast(0);
-        util::p(effA4);
-        effA4 = tc4.effA4Fast(0);
-        util::p(effA4);
-        effA4 = tc5.effA4Fast(0);
-        util::p(effA4);
-        effA4 = tc6.effA4Fast(0);
-        util::p(effA4);
+        auto res1 = tc.effA4(0);
+        auto res2 = tc.effA4Fast(0);
+        bool eq = std::equal(res1.begin(), res1.end(), res2.begin(), res2.end());
+        if (!eq) {
+            util::p(tc.t37s13(true));
+            util::p("old", res1);
+            util::p("new", res2);
+            auto parseds = tc.parse4(0);
+            for (auto &p : parseds)
+                util::p("parse", p);
+            std::abort();
+        }
     }
 }
 
