@@ -394,7 +394,7 @@ util::Stactor<T34, 34> Hand::effA4() const
     return peekStay(&TileCount::effA4, mBarks.size());
 }
 
-std::vector<Parsed> Hand::parse4() const
+Parseds Hand::parse4() const
 {
     return peekStay(&TileCount::parse4, mBarks.size());
 }

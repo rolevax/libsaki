@@ -260,28 +260,49 @@ bool TileCount::hasEffA13(T34 t) const
     return t.isYao() && peekDraw(t, &TileCount::step13) < step13();
 }
 
+///
+/// \brief Compute first-class effective tiles
+/// \param barkCt Number of barks
+///
 util::Stactor<T34, 34> TileCount::effA(int barkCt) const
 {
-    util::Stactor<T34, 34> res;
+    int s4 = step4(barkCt);
+    int s7 = step7();
+    int s13 = step13();
+    int minStep = std::min(s4, std::min(s7, s13));
 
-    for (T34 t : tiles34::ALL34)
-        if (hasEffA(barkCt, t))
-            res.pushBack(t);
+    std::bitset<34> set;
 
-    return res;
+    if (s4 == minStep)
+        set = parse4(barkCt).effA4Set();
+
+    if (s7 == minStep)
+        for (T34 t : tiles34::ALL34)
+            if (!set[t.id34()] && hasEffA7(t))
+                set[t.id34()] = true;
+
+    if (s13 == minStep)
+        for (T34 t : tiles34::YAO13)
+            if (!set[t.id34()] && hasEffA13(t))
+                set[t.id34()] = true;
+
+    return tiles34::toStactor(set);
 }
 
+///
+/// \deprecated See TileCount::parse4 and Parseds::effA4
+///
 util::Stactor<T34, 34> TileCount::effA4(int barkCt) const
 {
-    util::Stactor<T34, 34> res;
-
-    for (int ti = 0; ti < 34; ti++)
-        if (hasEffA4(barkCt, T34(ti)))
-            res.pushBack(T34(ti));
-
-    return res;
+    return parse4(barkCt).effA4();
 }
 
+///
+/// \brief List all kind of tiles in this set
+/// \return At most 13 kind of tiles
+///
+/// Cause undefined behavior when this contains more than 13 kind of tiles.
+///
 util::Stactor<T34, 13> TileCount::t34s13() const
 {
     util::Stactor<T34, 13> res;
@@ -293,6 +314,13 @@ util::Stactor<T34, 13> TileCount::t34s13() const
     return res;
 }
 
+///
+/// \brief List all tiles in this set
+/// \param allowDup Whether to stop removing duplication in the result
+/// \return At most 13 tiles
+///
+/// Cause undefined behavior when this contains more than 13 tiles.
+///
 util::Stactor<T37, 13> TileCount::t37s13(bool allowDup) const
 {
     util::Stactor<T37, 13> res;
@@ -311,10 +339,19 @@ util::Stactor<T37, 13> TileCount::t37s13(bool allowDup) const
     return res;
 }
 
-// 't' will be a floating tile (form-4) if added to this 'count'
-// a disliked tile might be 'useful' when there is a pure-empty ready
-// but logically that's still not 'effective-A'
-// since it does not change the step
+///
+/// \brief Check if 't' is trivially not an effA4
+/// \param t The tile to check
+/// \return True only if (but not if) 't' is not an effA4
+///
+/// By 'trivial', we mean this tile does not connect with
+/// any existing tile, and by 'connect', we mean the numerical
+/// distance of two tiles are at most 2.
+///
+/// A disliked tile might be 'useful' in a pure-empty ready hand,
+/// But it is still not an effA4 since it does not decrease the
+/// return value of step4()
+///
 bool TileCount::dislike4(T34 t) const
 {
     int ti = t.id34();
@@ -340,7 +377,12 @@ bool TileCount::dislike4(T34 t) const
     return true; // nobody likes this tile
 }
 
-std::vector<Parsed> TileCount::parse4(int barkCt) const
+///
+/// \brief Parse this hand as 4-meld shape with minimal shanten number
+/// \param barkCt Number of barks
+/// \return A Parseds object representing all possible explanations
+///
+Parseds TileCount::parse4(int barkCt) const
 {
     std::vector<Parsed> reses;
 
@@ -383,22 +425,7 @@ std::vector<Parsed> TileCount::parse4(int barkCt) const
     // birdhead-less case
     update(false);
 
-    return reses;
-}
-
-util::Stactor<T34, 34> TileCount::effA4Fast(int barkCt) const
-{
-    auto parseds = parse4(barkCt);
-    std::bitset<34> effA;
-    for (const Parsed &p : parseds)
-        effA |= p.effA4();
-
-    util::Stactor<T34, 34> res;
-    for (int ti = 0; ti < 34; ti++)
-        if (effA[ti])
-            res.emplaceBack(ti);
-
-    return res;
+    return Parseds(std::move(reses), barkCt);
 }
 
 std::vector<TileCount::Explain4Closed> TileCount::explain4(T34 pick) const
@@ -577,10 +604,12 @@ std::array<int, 34> &TileCount::mutableCounts() const
     return const_cast<std::array<int, 34> &>(mCounts);
 }
 
-/// \brief cut-out meld and submeld from the count and get the max work-delta
-/// \param i beginning tild id37
-/// \param maxCut max number of meld to cut
-/// \return step-4 delta
+///
+/// \brief Cut-out meld and submeld from the count and get the max work-delta
+/// \param id34 Index of the beginning tile
+/// \param maxCut Max number of meld to cut
+/// \return Step-4 delta
+///
 int TileCount::cutMeld(int id34, int maxCut) const
 {
     if (maxCut == 0)
@@ -674,10 +703,12 @@ std::vector<Parsed::Heads> TileCount::cutMeldOut(int id34, int maxCut) const
     return reses;
 }
 
-/// \brief cut-out submeld from the count and get the max work-delta
-/// \param i beginning tild id37
-/// \param maxCut max number of submeld to cut
-/// \return step-4 delta
+///
+/// \brief Cut-out submeld from the count and get the max work-delta
+/// \param id34 Index of the beginning tile
+/// \param maxCut Max number of submeld to cut
+/// \return Step-4 delta
+///
 int TileCount::cutSubmeld(int id34, int maxCut) const
 {
     if (maxCut == 0)

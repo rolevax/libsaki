@@ -79,8 +79,7 @@ public:
 
     bool dislike4(T34 t) const;
 
-    std::vector<Parsed> parse4(int barkCt) const;
-    util::Stactor<T34, 34> effA4Fast(int barkCt) const;
+    Parseds parse4(int barkCt) const;
 
     std::vector<Explain4Closed> explain4(T34 pick) const;
     bool onlyInTriplet(T34 pick, int barkCt) const;

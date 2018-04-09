@@ -3,8 +3,6 @@
 
 #include "../unit/action.h"
 
-#include <bitset>
-
 
 
 namespace saki

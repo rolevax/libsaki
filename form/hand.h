@@ -72,7 +72,7 @@ public:
     util::Stactor<T34, 34> effA() const;
     util::Stactor<T34, 34> effA4() const;
 
-    std::vector<Parsed> parse4() const;
+    Parseds parse4() const;
 
     int estimate(const Rule &rule, int sw, int rw, const util::Stactor<T37, 5> &drids) const;
 

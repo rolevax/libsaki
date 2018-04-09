@@ -4,8 +4,6 @@
 #include "../table/girl.h"
 #include "../form/form_ctx.h"
 
-#include <bitset>
-
 
 
 namespace saki

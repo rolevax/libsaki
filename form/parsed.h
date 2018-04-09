@@ -3,8 +3,6 @@
 
 #include "../unit/comeld.h"
 
-#include <bitset>
-
 
 
 namespace saki
@@ -43,6 +41,29 @@ inline std::ostream &operator<<(std::ostream &os, const Parsed &p)
 {
     return os << p.heads();
 }
+
+
+
+class Parseds
+{
+public:
+    using Container = std::vector<Parsed>;
+
+    explicit Parseds(Container &&parseds, int barkCt);
+
+    const Container &data() const;
+    int size() const;
+    Container::const_iterator begin() const;
+    Container::const_iterator end() const;
+
+    util::Stactor<T34, 34> effA4() const;
+
+    std::bitset<34> effA4Set() const;
+
+private:
+    Container mParseds;
+    int mBarkCt;
+};
 
 
 

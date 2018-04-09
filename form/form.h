@@ -3,8 +3,6 @@
 
 #include "explain.h"
 
-#include <bitset>
-
 
 
 namespace saki

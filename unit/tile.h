@@ -9,6 +9,7 @@
 #include <cctype>
 #include <cstring>
 #include <array>
+#include <bitset>
 
 
 
@@ -496,6 +497,16 @@ const std::array<T34, 7> Z7
 };
 
 constexpr IntRange<T34, 34> ALL34;
+
+inline util::Stactor<T34, 34> toStactor(std::bitset<34> bs)
+{
+    util::Stactor<T34, 34> res;
+    for (int ti = 0; ti < 34; ti++)
+        if (bs[ti])
+            res.emplaceBack(ti);
+
+    return res;
+}
 
 
 

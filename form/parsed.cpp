@@ -148,6 +148,54 @@ util::Stactor<T34, 3> Parsed::minTilesTo(const C34 &c) const
     return std::min_element(mHeads.begin(), mHeads.end(), comp)->tilesTo(c);
 }
 
+///
+/// \brief Contruct from raw data
+/// \param parseds Must have same shanten number for all element, w/o duplication
+///
+Parseds::Parseds(Parseds::Container &&parseds, int barkCt)
+    : mParseds(parseds)
+    , mBarkCt(barkCt)
+{
+}
+
+const Parseds::Container &Parseds::data() const
+{
+    return mParseds;
+}
+
+int Parseds::size() const
+{
+    return mParseds.size();
+}
+
+auto Parseds::begin() const -> Container::const_iterator
+{
+    return mParseds.begin();
+}
+
+auto Parseds::end() const -> Container::const_iterator
+{
+    return mParseds.end();
+}
+
+///
+/// \brief Compute 4-meld first-class effective tiles
+/// \return All 4-meld first-class effective tiles, sorted in ID-34 order
+///
+util::Stactor<T34, 34> Parseds::effA4() const
+{
+    return tiles34::toStactor(effA4Set());
+}
+
+std::bitset<34> Parseds::effA4Set() const
+{
+    std::bitset<34> effA;
+    for (const Parsed &p : mParseds)
+        effA |= p.effA4();
+
+    return effA;
+}
+
 
 
 } // namespace saki

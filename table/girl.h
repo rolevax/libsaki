@@ -7,7 +7,6 @@
 
 #include "../util/misc.h"
 
-#include <bitset>
 #include <optional>
 
 

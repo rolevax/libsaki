@@ -2,7 +2,6 @@
 #include "../table/table.h"
 #include "../util/misc.h"
 
-#include <bitset>
 #include <numeric>
 #include <sstream>
 

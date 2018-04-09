@@ -88,7 +88,7 @@ void testParse()
         }
 
         auto res1 = tc.effA4(0);
-        auto res2 = tc.effA4Fast(0);
+        auto res2 = tc.parse4(0).effA4();
         bool eq = std::equal(res1.begin(), res1.end(), res2.begin(), res2.end());
         if (!eq) {
             util::p(tc.t37s13(true));
