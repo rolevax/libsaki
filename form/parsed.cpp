@@ -14,7 +14,7 @@ namespace saki
 ///
 /// The function does not care about the 4-meld limit
 ///
-int Parsed::workOfHeads(const Parsed::Heads &heads)
+int Parsed4::workOfHeads(const Parsed4::Heads &heads)
 {
     auto aux = [](int s, C34 c) { return s + c.work(); };
     return std::accumulate(heads.begin(), heads.end(), 0, aux);
@@ -30,13 +30,13 @@ int Parsed::workOfHeads(const Parsed::Heads &heads)
 /// An example of comeld overflow: 112233m 12p 78p 45s 99s
 /// (has 2 medls, 3 waiters, 1 birdhead --- too many waiters, must discard one)
 ///
-Parsed::Parsed(const Parsed::Heads &heads)
+Parsed4::Parsed4(const Parsed4::Heads &heads)
     : mHeads(heads)
 {
     std::sort(mHeads.begin(), mHeads.end());
 }
 
-const Parsed::Heads &Parsed::heads() const
+const Parsed4::Heads &Parsed4::heads() const
 {
     return mHeads;
 }
@@ -45,7 +45,7 @@ const Parsed::Heads &Parsed::heads() const
 /// \brief Compute 4-meld shanten number with given bark count
 /// \param barkCt Number of barks
 ///
-int Parsed::step4(int barkCt) const
+int Parsed4::step4(int barkCt) const
 {
     return 8 - 2 * barkCt - workOfHeads(mHeads);
 }
@@ -53,7 +53,7 @@ int Parsed::step4(int barkCt) const
 ///
 /// \brief Get the set of first-class effective tiles of this parse formation
 ///
-std::bitset<34> Parsed::effA4() const
+std::bitset<34> Parsed4::effA4Set() const
 {
     std::bitset<34> res;
 
@@ -93,7 +93,7 @@ std::bitset<34> Parsed::effA4() const
     return res;
 }
 
-util::Stactor<T34, 9> Parsed::claim3sk() const
+util::Stactor<T34, 9> Parsed4::claim3sk() const
 {
     using namespace tiles34;
 
@@ -120,7 +120,7 @@ util::Stactor<T34, 9> Parsed::claim3sk() const
 }
 
 /// \brief ordered equal, not set equal
-bool Parsed::operator==(const Parsed &that) const
+bool Parsed4::operator==(const Parsed4 &that) const
 {
     if (mHeads.size() != that.mHeads.size())
         return false;
@@ -128,7 +128,7 @@ bool Parsed::operator==(const Parsed &that) const
     return std::equal(mHeads.begin(), mHeads.end(), that.mHeads.begin());
 }
 
-util::Stactor<T34, 9> Parsed::minTilesTo(const std::array<C34, 3> &cs) const
+util::Stactor<T34, 9> Parsed4::minTilesTo(const std::array<C34, 3> &cs) const
 {
     util::Stactor<T34, 9> res;
     for (const C34 &c : cs)
@@ -137,7 +137,7 @@ util::Stactor<T34, 9> Parsed::minTilesTo(const std::array<C34, 3> &cs) const
     return res;
 }
 
-util::Stactor<T34, 3> Parsed::minTilesTo(const C34 &c) const
+util::Stactor<T34, 3> Parsed4::minTilesTo(const C34 &c) const
 {
     // *INDENT-OFF*
     auto comp = [&c](const C34 &a, const C34 &b) {
@@ -152,48 +152,104 @@ util::Stactor<T34, 3> Parsed::minTilesTo(const C34 &c) const
 /// \brief Contruct from raw data
 /// \param parseds Must have same shanten number for all element, w/o duplication
 ///
-Parseds::Parseds(Parseds::Container &&parseds, int barkCt)
+Parsed4s::Parsed4s(Parsed4s::Container &&parseds, int barkCt)
     : mParseds(parseds)
     , mBarkCt(barkCt)
 {
 }
 
-const Parseds::Container &Parseds::data() const
+const Parsed4s::Container &Parsed4s::data() const
 {
     return mParseds;
 }
 
-int Parseds::size() const
+int Parsed4s::size() const
 {
     return mParseds.size();
 }
 
-auto Parseds::begin() const -> Container::const_iterator
+auto Parsed4s::begin() const -> Container::const_iterator
 {
     return mParseds.begin();
 }
 
-auto Parseds::end() const -> Container::const_iterator
+auto Parsed4s::end() const -> Container::const_iterator
 {
     return mParseds.end();
 }
+
+
 
 ///
 /// \brief Compute 4-meld first-class effective tiles
 /// \return All 4-meld first-class effective tiles, sorted in ID-34 order
 ///
-util::Stactor<T34, 34> Parseds::effA4() const
+util::Stactor<T34, 34> Parsed4s::effA4() const
 {
     return tiles34::toStactor(effA4Set());
 }
 
-std::bitset<34> Parseds::effA4Set() const
+std::bitset<34> Parsed4s::effA4Set() const
 {
     std::bitset<34> effA;
-    for (const Parsed &p : mParseds)
-        effA |= p.effA4();
+    for (const Parsed4 &p : mParseds)
+        effA |= p.effA4Set();
 
     return effA;
+}
+
+
+
+///
+/// \param plurals Tiles whose count in hand >= 2
+/// \param floats Tiles whose count in hand == 1
+///
+Parsed7::Parsed7(const std::bitset<34> &plurals, const std::bitset<34> &floats)
+    : mPlurals(plurals)
+    , mFloats(floats)
+    , mNeedKind(std::max(0, 7 - static_cast<int>(plurals.count() + floats.count())))
+{
+}
+
+int Parsed7::step7() const
+{
+    return 6 - mPlurals.count() + mNeedKind;
+}
+
+///
+/// \brief Get set of 7-pair first-class effective tiles
+///
+std::bitset<34> Parsed7::effA7Set() const
+{
+    return mNeedKind == 0 ? mFloats : ~mPlurals;
+}
+
+
+
+///
+/// \param yaos Presence of yao tiles in the hand. Non-yao bits must be zeros.
+/// \param hasYaoPair True if a yao-pair is already in the hand
+///
+Parsed13::Parsed13(const std::bitset<34> &yaos, bool hasYaoPair)
+    : mYaos(yaos)
+    , mHasYaoPair(hasYaoPair)
+{
+}
+
+int Parsed13::step13() const
+{
+    return 13 - mYaos.count() - mHasYaoPair;
+}
+
+std::bitset<34> Parsed13::effA13Set() const
+{
+    std::bitset<34> res;
+
+    for (T34 t : tiles34::YAO13)
+        if (!mHasYaoPair || !mYaos[t.id34()])
+            res.set(t.id34());
+
+    return res;
 }
 
 

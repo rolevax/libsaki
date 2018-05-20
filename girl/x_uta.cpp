@@ -53,7 +53,7 @@ void Uta::power3sk(const Hand &hand, const River &river, Mount &mount)
         return util::any(river, [t](const T37 &r) { return t == r; });
     };
 
-    auto comp = [&inRiver](const Parsed &a, const Parsed &b) {
+    auto comp = [&inRiver](const Parsed4 &a, const Parsed4 &b) {
         auto needA = a.claim3sk();
         auto needB = b.claim3sk();
 

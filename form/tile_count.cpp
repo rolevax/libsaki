@@ -382,9 +382,9 @@ bool TileCount::dislike4(T34 t) const
 /// \param barkCt Number of barks
 /// \return A Parseds object representing all possible explanations
 ///
-Parseds TileCount::parse4(int barkCt) const
+Parsed4s TileCount::parse4(int barkCt) const
 {
-    std::vector<Parsed> reses;
+    std::vector<Parsed4> reses;
 
     int maxCut = 4 - barkCt;
     int min = 8;
@@ -392,7 +392,7 @@ Parseds TileCount::parse4(int barkCt) const
     // *INDENT-OFF*
     auto update = [&](bool hasBirdHead, T34 h = T34()) {
         auto subreses = cutMeldOut(0, maxCut);
-        int comin = (hasBirdHead ? 7 : 8) - Parsed::workOfHeads(subreses[0]) - 2 * barkCt;
+        int comin = (hasBirdHead ? 7 : 8) - Parsed4::workOfHeads(subreses[0]) - 2 * barkCt;
 
         if (comin <= min) {
             if (comin < min) {
@@ -401,11 +401,11 @@ Parseds TileCount::parse4(int barkCt) const
             }
 
             if (hasBirdHead)
-                for (Parsed::Heads &heads : subreses)
+                for (Parsed4::Heads &heads : subreses)
                     heads.emplaceBack(C34::Type::PAIR, h);
 
-            for (Parsed::Heads &heads : subreses) {
-                Parsed parsed(heads);
+            for (Parsed4::Heads &heads : subreses) {
+                Parsed4 parsed(heads);
                 if (!util::has(reses, parsed))
                     reses.emplace_back(parsed);
             }
@@ -425,7 +425,39 @@ Parseds TileCount::parse4(int barkCt) const
     // birdhead-less case
     update(false);
 
-    return Parseds(std::move(reses), barkCt);
+    return Parsed4s(std::move(reses), barkCt);
+}
+
+Parsed7 TileCount::parse7() const
+{
+    std::bitset<34> plurals;
+    std::bitset<34> floats;
+
+    for (int ti = 0; ti < 34; ti++) {
+        if (mCounts[ti] >= 2)
+            plurals.set(ti);
+        else if (mCounts[ti] == 1)
+            floats.set(ti);
+    }
+
+    return Parsed7(plurals, floats);
+}
+
+Parsed13 TileCount::parse13() const
+{
+    std::bitset<34> yaos;
+    bool hasYaoPair = false;
+
+    for (T34 t : tiles34::YAO13) {
+        int ct = mCounts[t.id34()];
+        if (ct > 0) {
+            yaos.set(t.id34());
+            if (ct >= 2)
+                hasYaoPair = true;
+        }
+    }
+
+    return Parsed13(yaos, hasYaoPair);
 }
 
 std::vector<TileCount::Explain4Closed> TileCount::explain4(T34 pick) const
@@ -647,9 +679,9 @@ int TileCount::cutMeld(int id34, int maxCut) const
     return maxWork;
 }
 
-std::vector<Parsed::Heads> TileCount::cutMeldOut(int id34, int maxCut) const
+std::vector<Parsed4::Heads> TileCount::cutMeldOut(int id34, int maxCut) const
 {
-    std::vector<Parsed::Heads> reses;
+    std::vector<Parsed4::Heads> reses;
     NonEmptyGuard guard(reses);
     (void) guard;
 
@@ -665,7 +697,7 @@ std::vector<Parsed::Heads> TileCount::cutMeldOut(int id34, int maxCut) const
     // *INDENT-OFF*
     auto updateWork = [&](C34::Type type, bool cut) {
         auto subreses = cutMeldOut(id34 + !cut, maxCut - cut);
-        int work = (cut ? 2 : 0) + Parsed::workOfHeads(subreses[0]);
+        int work = (cut ? 2 : 0) + Parsed4::workOfHeads(subreses[0]);
 
         if (work >= maxWork) {
             if (work > maxWork) {
@@ -674,7 +706,7 @@ std::vector<Parsed::Heads> TileCount::cutMeldOut(int id34, int maxCut) const
             }
 
             if (cut)
-                for (Parsed::Heads &heads : subreses)
+                for (Parsed4::Heads &heads : subreses)
                     heads.emplaceBack(type, t);
 
             reses.insert(reses.end(), subreses.begin(), subreses.end());
@@ -756,9 +788,9 @@ int TileCount::cutSubmeld(int id34, int maxCut) const
     return maxWork;
 }
 
-std::vector<Parsed::Heads> TileCount::cutSubmeldOut(int id34, int maxCut) const
+std::vector<Parsed4::Heads> TileCount::cutSubmeldOut(int id34, int maxCut) const
 {
-    std::vector<Parsed::Heads> reses;
+    std::vector<Parsed4::Heads> reses;
     NonEmptyGuard guard(reses);
     (void) guard;
 
@@ -774,7 +806,7 @@ std::vector<Parsed::Heads> TileCount::cutSubmeldOut(int id34, int maxCut) const
     // *INDENT-OFF*
     auto updateWork = [&](C34::Type type, bool cut) {
         auto subreses = cutSubmeldOut(id34 + !cut, maxCut - cut);
-        int work = cut + Parsed::workOfHeads(subreses[0]);
+        int work = cut + Parsed4::workOfHeads(subreses[0]);
 
         if (work >= maxWork) {
             if (work > maxWork) {
@@ -782,7 +814,7 @@ std::vector<Parsed::Heads> TileCount::cutSubmeldOut(int id34, int maxCut) const
                 reses.clear();
             }
 
-            for (Parsed::Heads &heads : subreses)
+            for (Parsed4::Heads &heads : subreses)
                 heads.emplaceBack(type, t);
 
             reses.insert(reses.end(), subreses.begin(), subreses.end());
@@ -868,7 +900,7 @@ TileCount::T34Delta::~T34Delta()
 
 
 
-TileCount::NonEmptyGuard::NonEmptyGuard(std::vector<Parsed::Heads> &p)
+TileCount::NonEmptyGuard::NonEmptyGuard(std::vector<Parsed4::Heads> &p)
     : mParseds(p)
 {
 }
