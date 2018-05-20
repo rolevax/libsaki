@@ -44,7 +44,8 @@ void testAll()
 //    testUtil();
 //    testTileCount();
 //    testParse4();
-    testParse7And13();
+//    testParse7And13();
+    testParseAll();
 //    testHand();
 //    testForm();
 //    testFormGb();
@@ -126,6 +127,43 @@ void testParse7And13()
             util::p(tc.t37s13(true));
             util::p("old", tc.step7());
             util::p("new", step);
+            std::abort();
+        }
+    }
+}
+
+void testParseAll()
+{
+    TestScope test("parse all", true);
+
+    using namespace tiles37;
+
+    TileCountList tcl(13, 1_p, 9_p);
+    int prevPercent = 0;
+    for (const TileCount &tc : tcl) {
+        int currProg = tc.ct(1_p) * 16 + tc.ct(2_p) * 4 + tc.ct(3_p);
+        int percent = (currProg * 100) / 128;
+        if (percent != prevPercent) {
+            util::p(percent, "%");
+            prevPercent = percent;
+        }
+
+        int step = tc.parse(0).step();
+        int old = tc.step(0);
+        if (step != old) {
+            util::p(tc.t37s13(true));
+            util::p("old", old);
+            util::p("new", step);
+            std::abort();
+        }
+
+        auto res1 = tc.effA(0);
+        auto res2 = tc.parse(0).effA();
+        bool eq = std::equal(res1.begin(), res1.end(), res2.begin(), res2.end());
+        if (!eq) {
+            util::p(tc.t37s13(true));
+            util::p("old", res1);
+            util::p("new", res2);
             std::abort();
         }
     }

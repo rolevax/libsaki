@@ -178,6 +178,11 @@ auto Parsed4s::end() const -> Container::const_iterator
     return mParseds.end();
 }
 
+int Parsed4s::step4(int barkCt) const
+{
+    return mParseds.front().step4(barkCt);
+}
+
 
 
 ///
@@ -248,6 +253,64 @@ std::bitset<34> Parsed13::effA13Set() const
     for (T34 t : tiles34::YAO13)
         if (!mHasYaoPair || !mYaos[t.id34()])
             res.set(t.id34());
+
+    return res;
+}
+
+
+
+Parseds::Parseds(const Parsed4s &p4, const Parsed7 &p7, const Parsed13 &p13)
+    : mParsed4s(p4)
+    , mParsed7(p7)
+    , mParsed13(p13)
+    , mBarkCt(0)
+{
+}
+
+Parseds::Parseds(const Parsed4s &p4, int barkCt)
+    : mParsed4s(p4)
+    , mBarkCt(barkCt)
+{
+}
+
+int Parseds::step() const
+{
+    int minStep = mParsed4s.step4(mBarkCt);
+
+    if (mBarkCt == 0) {
+        int step7 = mParsed7->step7();
+        int step13 = mParsed13->step13();
+        minStep = std::min(minStep, std::min(step7, step13));
+    }
+
+    return minStep;
+}
+
+util::Stactor<T34, 34> Parseds::effA() const
+{
+    return tiles34::toStactor(effASet());
+}
+
+std::bitset<34> Parseds::effASet() const
+{
+    if (mBarkCt > 0)
+        return mParsed4s.effA4Set();
+
+    int step4 = mParsed4s.step4(0);
+    int step7 = mParsed7->step7();
+    int step13 = mParsed13->step13();
+    int minStep = std::min(step4, std::min(step7, step13));
+
+    std::bitset<34> res;
+
+    if (step4 == minStep)
+        res |= mParsed4s.effA4Set();
+
+    if (step7 == minStep)
+        res |= mParsed7->effA7Set();
+
+    if (step13 == minStep)
+        res |= mParsed13->effA13Set();
 
     return res;
 }

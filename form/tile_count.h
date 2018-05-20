@@ -79,6 +79,7 @@ public:
 
     bool dislike4(T34 t) const;
 
+    Parseds parse(int barkCt) const;
     Parsed4s parse4(int barkCt) const;
     Parsed7 parse7() const;
     Parsed13 parse13() const;

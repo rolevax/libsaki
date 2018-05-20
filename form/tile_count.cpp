@@ -377,6 +377,12 @@ bool TileCount::dislike4(T34 t) const
     return true; // nobody likes this tile
 }
 
+Parseds TileCount::parse(int barkCt) const
+{
+    return barkCt == 0 ? Parseds(parse4(barkCt), parse7(), parse13())
+                       : Parseds(parse4(barkCt), barkCt);
+}
+
 ///
 /// \brief Parse this hand as 4-meld shape with minimal shanten number
 /// \param barkCt Number of barks

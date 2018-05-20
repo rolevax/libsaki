@@ -57,6 +57,7 @@ public:
     Container::const_iterator begin() const;
     Container::const_iterator end() const;
 
+    int step4(int barkCt) const;
     util::Stactor<T34, 34> effA4() const;
     std::bitset<34> effA4Set() const;
 
@@ -94,6 +95,25 @@ public:
 private:
     std::bitset<34> mYaos;
     bool mHasYaoPair;
+};
+
+
+
+class Parseds
+{
+public:
+    explicit Parseds(const Parsed4s &p4, const Parsed7 &p7, const Parsed13 &p13);
+    explicit Parseds(const Parsed4s &p4, int barkCt);
+
+    int step() const;
+    util::Stactor<T34, 34> effA() const;
+    std::bitset<34> effASet() const;
+
+private:
+    Parsed4s mParsed4s;
+    std::optional<Parsed7> mParsed7;
+    std::optional<Parsed13> mParsed13;
+    int mBarkCt;
 };
 
 
