@@ -27,7 +27,8 @@ void testAll();
 
 void testUtil();
 void testTileCount();
-void testParse();
+void testParse4();
+void testParse7And13();
 void testHand();
 void testForm();
 void testFormGb();
