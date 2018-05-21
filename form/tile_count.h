@@ -71,9 +71,6 @@ public:
     bool hasEffA7(T34 t) const;
     bool hasEffA13(T34 t) const;
 
-    util::Stactor<T34, 34> effA(int barkCt) const;
-    util::Stactor<T34, 34> effA4(int barkCt) const;
-
     util::Stactor<T34, 13> t34s13() const;
     util::Stactor<T37, 13> t37s13(bool allowDup = false) const;
 

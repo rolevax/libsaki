@@ -273,6 +273,11 @@ Parseds::Parseds(const Parsed4s &p4, int barkCt)
 {
 }
 
+const Parsed4s &Parseds::get4s() const
+{
+    return mParsed4s;
+}
+
 int Parseds::step() const
 {
     int minStep = mParsed4s.step4(mBarkCt);
@@ -286,9 +291,29 @@ int Parseds::step() const
     return minStep;
 }
 
+int Parseds::step4() const
+{
+    return mParsed4s.step4(mBarkCt);
+}
+
+int Parseds::step7() const
+{
+    return mParsed7.has_value() ? mParsed7->step7() : STEP_INF;
+}
+
+int Parseds::step13() const
+{
+    return mParsed13.has_value() ? mParsed13->step13() : STEP_INF;
+}
+
 util::Stactor<T34, 34> Parseds::effA() const
 {
     return tiles34::toStactor(effASet());
+}
+
+util::Stactor<T34, 34> Parseds::effA4() const
+{
+    return mParsed4s.effA4();
 }
 
 std::bitset<34> Parseds::effASet() const
@@ -313,6 +338,21 @@ std::bitset<34> Parseds::effASet() const
         res |= mParsed13->effA13Set();
 
     return res;
+}
+
+std::bitset<34> Parseds::effA4Set() const
+{
+    return mParsed4s.effA4Set();
+}
+
+std::bitset<34> Parseds::effA7Set() const
+{
+    return mParsed7.has_value() ? mParsed7->effA7Set() : std::bitset<34>();
+}
+
+std::bitset<34> Parseds::effA13Set() const
+{
+    return mParsed13.has_value() ? mParsed13->effA13Set() : std::bitset<34>();
 }
 
 

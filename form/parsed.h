@@ -102,12 +102,24 @@ private:
 class Parseds
 {
 public:
+    static const int STEP_INF = 14;
+
     explicit Parseds(const Parsed4s &p4, const Parsed7 &p7, const Parsed13 &p13);
     explicit Parseds(const Parsed4s &p4, int barkCt);
 
+    const Parsed4s &get4s() const;
+
     int step() const;
+    int step4() const;
+    int step7() const;
+    int step13() const;
+
     util::Stactor<T34, 34> effA() const;
+    util::Stactor<T34, 34> effA4() const;
     std::bitset<34> effASet() const;
+    std::bitset<34> effA4Set() const;
+    std::bitset<34> effA7Set() const;
+    std::bitset<34> effA13Set() const;
 
 private:
     Parsed4s mParsed4s;

@@ -261,43 +261,6 @@ bool TileCount::hasEffA13(T34 t) const
 }
 
 ///
-/// \brief Compute first-class effective tiles
-/// \param barkCt Number of barks
-///
-util::Stactor<T34, 34> TileCount::effA(int barkCt) const
-{
-    int s4 = step4(barkCt);
-    int s7 = step7();
-    int s13 = step13();
-    int minStep = std::min(s4, std::min(s7, s13));
-
-    std::bitset<34> set;
-
-    if (s4 == minStep)
-        set = parse4(barkCt).effA4Set();
-
-    if (s7 == minStep)
-        for (T34 t : tiles34::ALL34)
-            if (!set[t.id34()] && hasEffA7(t))
-                set[t.id34()] = true;
-
-    if (s13 == minStep)
-        for (T34 t : tiles34::YAO13)
-            if (!set[t.id34()] && hasEffA13(t))
-                set[t.id34()] = true;
-
-    return tiles34::toStactor(set);
-}
-
-///
-/// \deprecated See TileCount::parse4 and Parseds::effA4
-///
-util::Stactor<T34, 34> TileCount::effA4(int barkCt) const
-{
-    return parse4(barkCt).effA4();
-}
-
-///
 /// \brief List all kind of tiles in this set
 /// \return At most 13 kind of tiles
 ///

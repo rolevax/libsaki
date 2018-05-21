@@ -336,6 +336,9 @@ bool Hand::ready() const
 
 int Hand::step() const
 {
+    if (usingCache())
+        return loadCache().step();
+
     return peekStay(&TileCount::step, mBarks.size());
 }
 
@@ -346,56 +349,94 @@ int Hand::stepGb() const
 
 int Hand::step4() const
 {
+    if (usingCache())
+        return loadCache().step4();
+
     return peekStay(&TileCount::step4, mBarks.size());
 }
 
 int Hand::step7() const
 {
-    return mBarks.empty() ? peekStay(&TileCount::step7) : STEP_INF;
+    if (usingCache())
+        return loadCache().step7();
+
+    return mBarks.empty() ? peekStay(&TileCount::step7) : Parseds::STEP_INF;
 }
 
 int Hand::step7Gb() const
 {
-    return mBarks.empty() ? peekStay(&TileCount::step7Gb) : STEP_INF;
+    return mBarks.empty() ? peekStay(&TileCount::step7Gb) : Parseds::STEP_INF;
 }
 
 int Hand::step13() const
 {
-    return mBarks.empty() ? peekStay(&TileCount::step13) : STEP_INF;
+    if (usingCache())
+        return loadCache().step13();
+
+    return mBarks.empty() ? peekStay(&TileCount::step13) : Parseds::STEP_INF;
 }
 
 bool Hand::hasEffA(T34 t) const
 {
+    if (usingCache())
+        return loadCache().effASet()[t.id34()];
+
     return peekStay(&TileCount::hasEffA, mBarks.size(), t);
 }
 
 bool Hand::hasEffA4(T34 t) const
 {
+    if (usingCache())
+        return loadCache().effA4Set()[t.id34()];
+
     return peekStay(&TileCount::hasEffA4, mBarks.size(), t);
 }
 
 bool Hand::hasEffA7(T34 t) const
 {
+    if (usingCache())
+        return loadCache().effA7Set()[t.id34()];
+
     return mBarks.empty() && peekStay(&TileCount::hasEffA7, t);
 }
 
 bool Hand::hasEffA13(T34 t) const
 {
+    if (usingCache())
+        return loadCache().effA13Set()[t.id34()];
+
     return mBarks.empty() && peekStay(&TileCount::hasEffA13, t);
 }
 
 util::Stactor<T34, 34> Hand::effA() const
 {
-    return peekStay(&TileCount::effA, mBarks.size());
+    if (usingCache())
+        return loadCache().effA();
+
+    return parse().effA();
 }
 
 util::Stactor<T34, 34> Hand::effA4() const
 {
-    return peekStay(&TileCount::effA4, mBarks.size());
+    if (usingCache())
+        return loadCache().effA4();
+
+    return parse().effA4();
+}
+
+Parseds Hand::parse() const
+{
+    if (usingCache())
+        return loadCache();
+
+    return peekStay(&TileCount::parse, mBarks.size());
 }
 
 Parsed4s Hand::parse4() const
 {
+    if (usingCache())
+        return loadCache().get4s();
+
     return peekStay(&TileCount::parse4, mBarks.size());
 }
 
@@ -427,22 +468,26 @@ int Hand::peekPickStep4(T34 pick) const
 
 int Hand::peekPickStep7(T34 pick) const
 {
-    return mBarks.empty() ? mClosed.peekDraw(pick, &TileCount::step7) : STEP_INF;
+    return mBarks.empty() ? mClosed.peekDraw(pick, &TileCount::step7) : Parseds::STEP_INF;
 }
 
 int Hand::peekPickStep7Gb(T34 pick) const
 {
-    return mBarks.empty() ? mClosed.peekDraw(pick, &TileCount::step7Gb) : STEP_INF;
+    return mBarks.empty() ? mClosed.peekDraw(pick, &TileCount::step7Gb) : Parseds::STEP_INF;
 }
 
 int Hand::peekPickStep13(T34 pick) const
 {
-    return mBarks.empty() ? mClosed.peekDraw(pick, &TileCount::step13) : STEP_INF;
+    return mBarks.empty() ? mClosed.peekDraw(pick, &TileCount::step13) : Parseds::STEP_INF;
 }
 
 void Hand::draw(const T37 &in)
 {
     assert(!hasDrawn());
+
+    if (usingCache())
+        mParseCache.reset();
+
     mDrawn = in;
     mHasDrawn = true;
 }
@@ -451,6 +496,10 @@ void Hand::swapOut(const T37 &out)
 {
     assert(mClosed.ct(out) > 0);
     assert(mHasDrawn);
+
+    if (usingCache())
+        mParseCache.reset();
+
     mClosed.inc(out, -1);
     mClosed.inc(mDrawn, 1);
     mHasDrawn = false;
@@ -459,6 +508,10 @@ void Hand::swapOut(const T37 &out)
 void Hand::spinOut()
 {
     assert(mHasDrawn);
+
+    if (usingCache())
+        mParseCache.reset();
+
     mHasDrawn = false;
 }
 
@@ -466,11 +519,18 @@ void Hand::barkOut(const T37 &out)
 {
     assert(mClosed.ct(out) > 0);
     assert(!mHasDrawn);
+
+    if (usingCache())
+        mParseCache.reset();
+
     mClosed.inc(out, -1);
 }
 
 void Hand::chiiAsLeft(const T37 &pick, bool showAka5)
 {
+    if (usingCache())
+        mParseCache.reset();
+
     T37 m = tryShow(pick.next(), showAka5);
     T37 r = tryShow(pick.nnext(), showAka5);
     mBarks.pushBack(M37::chii(pick, m, r, 0));
@@ -478,6 +538,9 @@ void Hand::chiiAsLeft(const T37 &pick, bool showAka5)
 
 void Hand::chiiAsMiddle(const T37 &pick, bool showAka5)
 {
+    if (usingCache())
+        mParseCache.reset();
+
     T37 l = tryShow(pick.prev(), showAka5);
     T37 r = tryShow(pick.next(), showAka5);
     mBarks.pushBack(M37::chii(l, pick, r, 1));
@@ -485,6 +548,9 @@ void Hand::chiiAsMiddle(const T37 &pick, bool showAka5)
 
 void Hand::chiiAsRight(const T37 &pick, bool showAka5)
 {
+    if (usingCache())
+        mParseCache.reset();
+
     T37 l = tryShow(pick.pprev(), showAka5);
     T37 m = tryShow(pick.prev(), showAka5);
     mBarks.pushBack(M37::chii(l, m, pick, 2));
@@ -494,6 +560,9 @@ void Hand::pon(const T37 &pick, int showAka5, int layIndex)
 {
     assert(0 <= showAka5 && showAka5 <= 2);
     assume_opt_out(0 <= showAka5 && showAka5 <= 2);
+
+    if (usingCache())
+        mParseCache.reset();
 
     T37 one = tryShow(pick, showAka5 >= 1);
     T37 two = tryShow(pick, showAka5 == 2);
@@ -511,6 +580,9 @@ void Hand::pon(const T37 &pick, int showAka5, int layIndex)
 
 void Hand::daiminkan(const T37 &pick, int layIndex)
 {
+    if (usingCache())
+        mParseCache.reset();
+
     // 'showAka5' arg <- don't care
     T37 one = tryShow(pick, true);
     T37 two = tryShow(pick, true);
@@ -530,6 +602,10 @@ void Hand::daiminkan(const T37 &pick, int layIndex)
 void Hand::ankan(T34 t)
 {
     assert(mHasDrawn);
+
+    if (usingCache())
+        mParseCache.reset();
+
     bool useDrawn = t == mDrawn;
 
     // 'showAka5' arg <- don't care
@@ -549,6 +625,10 @@ void Hand::ankan(T34 t)
 void Hand::kakan(int barkId)
 {
     assert(mHasDrawn);
+
+    if (usingCache())
+        mParseCache.reset();
+
     T37 t(mBarks[barkId][0]);
     if (t == mDrawn) {
         t = mDrawn;
@@ -564,6 +644,26 @@ void Hand::kakan(int barkId)
     mHasDrawn = false;
 
     mBarks[barkId].kakan(t);
+}
+
+///
+/// \brief Check if this hand is using parse-cache
+/// \return True if reading and/or writing the cache,
+///         false if neither reading nor writing the cache.
+///
+bool Hand::usingCache() const
+{
+    return mSkipCacheLevel == 0;
+}
+
+const Parseds &Hand::loadCache() const
+{
+    assert(usingCache());
+
+    if (!mParseCache.has_value())
+        mParseCache = peekStay(&TileCount::parse, mBarks.size());
+
+    return *mParseCache;
 }
 
 bool Hand::hasSwappableAfterChii(T34 mat1, T34 mat2, SwapOk ok) const
@@ -620,11 +720,13 @@ util::Stactor<T37, 13> Hand::makeChoices(SwapOk ok) const
 Hand::DeltaSpin::DeltaSpin(Hand &hand)
     : mHand(hand)
 {
+    mHand.mSkipCacheLevel++;
     mHand.spinOut();
 }
 
 Hand::DeltaSpin::~DeltaSpin()
 {
+    mHand.mSkipCacheLevel--;
     mHand.mHasDrawn = true;
 }
 
@@ -634,11 +736,13 @@ Hand::DeltaSwap::DeltaSwap(Hand &hand, const T37 &out)
     : mHand(hand)
     , mOut(out)
 {
+    mHand.mSkipCacheLevel++;
     mHand.swapOut(out);
 }
 
 Hand::DeltaSwap::~DeltaSwap()
 {
+    mHand.mSkipCacheLevel--;
     mHand.mHasDrawn = true;
     mHand.mClosed.inc(mHand.mDrawn, -1);
     mHand.mClosed.inc(mOut, 1);
@@ -648,6 +752,8 @@ Hand::DeltaCp::DeltaCp(Hand &hand, const T37 &pick, const Action &a, const T37 &
     : mHand(hand)
     , mOut(out)
 {
+    mHand.mSkipCacheLevel++;
+
     switch (a.act()) {
     case ActCode::CHII_AS_LEFT:
         mHand.chiiAsLeft(pick, a.showAka5());
@@ -670,6 +776,8 @@ Hand::DeltaCp::DeltaCp(Hand &hand, const T37 &pick, const Action &a, const T37 &
 
 Hand::DeltaCp::~DeltaCp()
 {
+    mHand.mSkipCacheLevel--;
+
     mHand.mClosed.inc(mOut, 1);
 
     const M37 &cp = mHand.mBarks.back();

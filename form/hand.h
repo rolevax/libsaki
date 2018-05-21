@@ -17,8 +17,6 @@ namespace saki
 class Hand
 {
 public:
-    static const int STEP_INF = 14;
-
     Hand() = default;
     explicit Hand(const TileCount &count);
     explicit Hand(const TileCount &count, const util::Stactor<M37, 4> &barks);
@@ -72,6 +70,7 @@ public:
     util::Stactor<T34, 34> effA() const;
     util::Stactor<T34, 34> effA4() const;
 
+    Parseds parse() const;
     Parsed4s parse4() const;
 
     int estimate(const Rule &rule, int sw, int rw, const util::Stactor<T37, 5> &drids) const;
@@ -176,6 +175,9 @@ private:
 
     using SwapOk = std::function<bool(T34)>;
 
+    bool usingCache() const;
+    const Parseds &loadCache() const;
+
     bool hasSwappableAfterChii(T34 mat1, T34 mat2, SwapOk ok) const;
     bool shouldShowAka5(T34 show, bool showAka5) const;
     T37 tryShow(T34 t, bool showAka5);
@@ -193,6 +195,8 @@ private:
     T37 mDrawn;
     bool mHasDrawn = false;
     util::Stactor<M37, 4> mBarks;
+    mutable std::optional<Parseds> mParseCache;
+    mutable int mSkipCacheLevel = 0; ///< Ignore cache iff > 0
 };
 
 int operator%(T34 ind, const Hand &hand);

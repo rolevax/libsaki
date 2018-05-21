@@ -878,7 +878,7 @@ void FormGb::checkV1F4(FormGb::Fans &res, const Explain4 &exp,
     // Bianzhang
     // Kanzhang
     // Dandiaojiang
-    if (hand.closed().effA(hand.barks().size()).size() == 1) {
+    if (hand.effA().size() == 1) {
         // effA of wait-hand, not full (including drawn) hand
         switch (exp.wait()) {
         case Wait::SIDE:
