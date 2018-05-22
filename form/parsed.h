@@ -32,8 +32,11 @@ private:
     util::Stactor<T34, 9> minTilesTo(const std::array<C34, 3> &cs) const;
     util::Stactor<T34, 3> minTilesTo(const C34 &cs) const;
 
+    void computeEffA4() const;
+
 private:
     Heads mHeads;
+    mutable std::optional<std::bitset<34>> mEffA4SetCache;
 };
 
 
@@ -64,6 +67,7 @@ public:
 private:
     Container mParseds;
     int mBarkCt;
+    mutable std::optional<std::bitset<34>> mEffA4SetCache;
 };
 
 
@@ -95,6 +99,7 @@ public:
 private:
     std::bitset<34> mYaos;
     bool mHasYaoPair;
+    mutable std::optional<std::bitset<34>> mEffA13SetCache;
 };
 
 
@@ -122,10 +127,14 @@ public:
     std::bitset<34> effA13Set() const;
 
 private:
+    void computeEffA() const;
+
+private:
     Parsed4s mParsed4s;
     std::optional<Parsed7> mParsed7;
     std::optional<Parsed13> mParsed13;
     int mBarkCt;
+    mutable std::optional<std::bitset<34>> mEffASetCache;
 };
 
 

@@ -55,42 +55,10 @@ int Parsed4::step4(int barkCt) const
 ///
 std::bitset<34> Parsed4::effA4Set() const
 {
-    std::bitset<34> res;
+    if (!mEffA4SetCache.has_value())
+        computeEffA4();
 
-    auto is3 = [](C34 c) { return c.is3(); };
-    auto isSeq2 = [](C34 c) { return c.isSeq2(); };
-    auto isPair = [](C34 c) { return c.type() == C34::Type::PAIR; };
-
-    const auto meldEnd = std::find_if_not(mHeads.begin(), mHeads.end(), is3);
-    const auto seq2End = std::find_if_not(meldEnd, mHeads.end(), isSeq2);
-    for (auto it = meldEnd; it != seq2End; ++it)
-        for (T34 t : it->effA4())
-            res.set(t.id34());
-
-    int faceCt = seq2End - mHeads.begin();
-    const auto pairEnd = std::find_if_not(seq2End, mHeads.end(), isPair);
-    int pairCt = pairEnd - seq2End;
-    if (faceCt < 4) { // lacking of faces except pairs
-        // regard all pair as triplet candidates
-        // sacrificing bird-head candidates does not affect effA
-        for (auto it = seq2End; it != pairEnd; ++it)
-            res.set(it->head().id34());
-
-        // floating tiles affects effA only when non-floats are less than five
-        if (faceCt + pairCt < 5) {
-            // regard all floating tiles as face or bird-head candidates
-            for (auto it = pairEnd; it != mHeads.end(); ++it) {
-                assert(it->type() == C34::Type::FREE);
-                for (T34 t : it->effA4())
-                    res.set(t.id34());
-            }
-        }
-    } else if (pairCt == 0) { // full face and isoride shape
-        for (auto it = pairEnd; it != mHeads.end(); ++it)
-            res.set(it->head().id34());
-    }
-
-    return res;
+    return *mEffA4SetCache;
 }
 
 util::Stactor<T34, 9> Parsed4::claim3sk() const
@@ -148,6 +116,46 @@ util::Stactor<T34, 3> Parsed4::minTilesTo(const C34 &c) const
     return std::min_element(mHeads.begin(), mHeads.end(), comp)->tilesTo(c);
 }
 
+void Parsed4::computeEffA4() const
+{
+    std::bitset<34> res;
+
+    auto is3 = [](C34 c) { return c.is3(); };
+    auto isSeq2 = [](C34 c) { return c.isSeq2(); };
+    auto isPair = [](C34 c) { return c.type() == C34::Type::PAIR; };
+
+    const auto meldEnd = std::find_if_not(mHeads.begin(), mHeads.end(), is3);
+    const auto seq2End = std::find_if_not(meldEnd, mHeads.end(), isSeq2);
+    for (auto it = meldEnd; it != seq2End; ++it)
+        for (T34 t : it->effA4())
+            res.set(t.id34());
+
+    int faceCt = seq2End - mHeads.begin();
+    const auto pairEnd = std::find_if_not(seq2End, mHeads.end(), isPair);
+    int pairCt = pairEnd - seq2End;
+    if (faceCt < 4) { // lacking of faces except pairs
+        // regard all pair as triplet candidates
+        // sacrificing bird-head candidates does not affect effA
+        for (auto it = seq2End; it != pairEnd; ++it)
+            res.set(it->head().id34());
+
+        // floating tiles affects effA only when non-floats are less than five
+        if (faceCt + pairCt < 5) {
+            // regard all floating tiles as face or bird-head candidates
+            for (auto it = pairEnd; it != mHeads.end(); ++it) {
+                assert(it->type() == C34::Type::FREE);
+                for (T34 t : it->effA4())
+                    res.set(t.id34());
+            }
+        }
+    } else if (pairCt == 0) { // full face and isoride shape
+        for (auto it = pairEnd; it != mHeads.end(); ++it)
+            res.set(it->head().id34());
+    }
+
+    mEffA4SetCache = res;
+}
+
 ///
 /// \brief Contruct from raw data
 /// \param parseds Must have same shanten number for all element, w/o duplication
@@ -196,11 +204,15 @@ util::Stactor<T34, 34> Parsed4s::effA4() const
 
 std::bitset<34> Parsed4s::effA4Set() const
 {
-    std::bitset<34> effA;
-    for (const Parsed4 &p : mParseds)
-        effA |= p.effA4Set();
+    if (!mEffA4SetCache.has_value()) {
+        std::bitset<34> effA;
+        for (const Parsed4 &p : mParseds)
+            effA |= p.effA4Set();
 
-    return effA;
+        mEffA4SetCache = effA;
+    }
+
+    return *mEffA4SetCache;
 }
 
 
@@ -248,13 +260,16 @@ int Parsed13::step13() const
 
 std::bitset<34> Parsed13::effA13Set() const
 {
-    std::bitset<34> res;
+    if (!mEffA13SetCache.has_value()) {
+        std::bitset<34> res;
+        for (T34 t : tiles34::YAO13)
+            if (!mHasYaoPair || !mYaos[t.id34()])
+                res.set(t.id34());
 
-    for (T34 t : tiles34::YAO13)
-        if (!mHasYaoPair || !mYaos[t.id34()])
-            res.set(t.id34());
+        mEffA13SetCache = res;
+    }
 
-    return res;
+    return *mEffA13SetCache;
 }
 
 
@@ -318,8 +333,31 @@ util::Stactor<T34, 34> Parseds::effA4() const
 
 std::bitset<34> Parseds::effASet() const
 {
+    if (!mEffASetCache.has_value())
+        computeEffA();
+
+    return *mEffASetCache;
+}
+
+std::bitset<34> Parseds::effA4Set() const
+{
+    return mParsed4s.effA4Set();
+}
+
+std::bitset<34> Parseds::effA7Set() const
+{
+    return mParsed7.has_value() ? mParsed7->effA7Set() : std::bitset<34>();
+}
+
+std::bitset<34> Parseds::effA13Set() const
+{
+    return mParsed13.has_value() ? mParsed13->effA13Set() : std::bitset<34>();
+}
+
+void Parseds::computeEffA() const
+{
     if (mBarkCt > 0)
-        return mParsed4s.effA4Set();
+        mEffASetCache = mParsed4s.effA4Set();
 
     int step4 = mParsed4s.step4(0);
     int step7 = mParsed7->step7();
@@ -337,22 +375,7 @@ std::bitset<34> Parseds::effASet() const
     if (step13 == minStep)
         res |= mParsed13->effA13Set();
 
-    return res;
-}
-
-std::bitset<34> Parseds::effA4Set() const
-{
-    return mParsed4s.effA4Set();
-}
-
-std::bitset<34> Parseds::effA7Set() const
-{
-    return mParsed7.has_value() ? mParsed7->effA7Set() : std::bitset<34>();
-}
-
-std::bitset<34> Parseds::effA13Set() const
-{
-    return mParsed13.has_value() ? mParsed13->effA13Set() : std::bitset<34>();
+    mEffASetCache = res;
 }
 
 
