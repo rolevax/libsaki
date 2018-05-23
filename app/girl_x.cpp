@@ -1,92 +1,10 @@
 #include "girl_x.h"
 #include "../table/table.h"
 
-#include <unordered_map>
-
 
 
 namespace saki
 {
-
-
-
-using CloneCache = std::unordered_map<const void *, kaguya::LuaRef>;
-
-void cloneLuaTable(kaguya::LuaTable lhs, kaguya::LuaTable rhs, CloneCache &cache);
-
-template<typename Key>
-void cloneLuaTableValue(kaguya::LuaTable lhs, kaguya::LuaTable rhs, Key key, CloneCache &cache)
-{
-    kaguya::LuaRef valRef = rhs[key];
-    if (valRef.type() == LUA_TTABLE) {
-        const void *valPtr = valRef.native_pointer();
-        auto it = cache.find(valPtr);
-        if (it == cache.end()) {
-            // creat new node
-            lhs[key] = kaguya::NewTable();
-            cache[valPtr] = lhs[key];
-
-            // deep copy
-            cloneLuaTable(lhs[key], valRef, cache);
-        } else {
-            // link existing node
-            kaguya::LuaRef ref = it->second;
-            lhs[key] = ref;
-        }
-    } else if (valRef.type() == LUA_TUSERDATA) {
-        kaguya::LuaUserData data = valRef;
-        std::string name = data.getMetatable().getRawField("__name");
-        if (name == kaguya::metatableName<T34>()) {
-            T34 t = data;
-            lhs[key] = t;
-        } else {
-            // TODO other userdata types
-        }
-        // TODO also cache userdata refs
-    } else if (valRef.type() == LUA_TFUNCTION) {
-        kaguya::LuaFunction func = valRef;
-        // TODO copy pointers for C functions, copy dump for Lua functions
-        // TODO copy upvalues
-    } else if (valRef.type() == LUA_TBOOLEAN
-               || valRef.type() == LUA_TNUMBER
-               || valRef.type() == LUA_TSTRING) {
-        // scalar
-        lhs[key] = rhs[key];
-    } else {
-        // cannot handle light userdata and thread
-        util::p("fucking type", valRef.type());
-    }
-}
-
-void cloneLuaTable(kaguya::LuaTable lhs, kaguya::LuaTable rhs, CloneCache &cache)
-{
-    for (kaguya::LuaRef keyRef : rhs.keys()) {
-        auto type = keyRef.type();
-        if (type == LUA_TSTRING) {
-            std::string key = keyRef;
-            cloneLuaTableValue(lhs, rhs, key, cache);
-        } else if (type == LUA_TNUMBER) {
-            int key = keyRef; // TODO float?
-            cloneLuaTableValue(lhs, rhs, key, cache);
-        } else {
-            util::p("fucking key type", type);
-            // TODO deal with other key types
-        }
-    }
-}
-
-///
-/// \brief Deep-copy a Lua table
-///
-/// Note that Lua table is a graph, not tree
-/// We use DFS with cycle handling
-///
-void cloneLuaTable(kaguya::LuaTable lhs, kaguya::LuaTable rhs)
-{
-    // TODO add cache[rhs] = lhs
-    CloneCache cache;
-    cloneLuaTable(lhs, rhs, cache);
-}
 
 
 
@@ -95,7 +13,7 @@ GirlX::GirlX(Who who, std::string luaCode)
 {
     setupLuaGlobal();
 
-    mLua.dostring(luaCode, mLua["girl"]);
+    runInGirlEnv(luaCode);
 }
 
 GirlX::GirlX(const GirlX &copy)
@@ -113,6 +31,7 @@ GirlX::GirlX(const GirlX &copy)
     // - Copy C functions (i.e. pointers), deep copy their upvalues
     // - Copy Lua functions by lua_dump, deep copy their upvalues
     // - Type-switch userdatas, use C++ copy ctor to copy them
+    // deep copy should detect cycle
 
 //    setupLuaGlobal();
 //    cloneLuaTable(mLua["girldata"], const_cast<GirlX &>(copy).mLua["girldata"]);
@@ -125,20 +44,20 @@ std::unique_ptr<Girl> GirlX::clone() const
 
 void GirlX::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
 {
-    kaguya::LuaTable girl = mLua["girl"];
-    kaguya::LuaRef cb = girl.getRawField("ondraw");
-    if (cb.isNilref() || cb.type() != LUA_TFUNCTION)
+    sol::environment girl = mLua["girl"];
+    sol::object cb = girl["ondraw"];
+    if (!cb.is<sol::function>())
         return;
 
-    girl.setRawField("game", &table);
-    girl.setRawField("mount", &mount);
-    girl.setRawField("who", who);
-    girl.setRawField("rinshan", rinshan);
+    girl.raw_set("game", &table);
+    girl.raw_set("mount", &mount);
+    girl.raw_set("who", who);
+    girl.raw_set("rinshan", rinshan);
 
-    mLua.dostring("ondraw()", girl);
+    runInGirlEnv("ondraw()");
 
-    girl.setRawField("game", nullptr);
-    girl.setRawField("mount", nullptr);
+    girl.raw_set("game", nullptr);
+    girl.raw_set("mount", nullptr);
 
     popUpIfAny(table);
 }
@@ -159,12 +78,9 @@ void GirlX::onTableEvent(const Table &table, const TableEvent &event)
 
 void GirlX::setupLuaGlobal()
 {
-    mLua.setErrorHandler([this](int errcode, const char *str) {
-        (void) errcode;
-        addError(str);
-    });
+    mLua.open_libraries();
 
-    mLua.dostring(R"(
+    mLua.script(R"(
         girldata = {}
         girl = {
             math = math,
@@ -188,17 +104,19 @@ void GirlX::setupLuaGlobal()
         }
     )");
 
-    kaguya::LuaTable girl = mLua["girl"];
-    setupLuaClasses(girl);
-    girl["self"] = mSelf; // TODO make readonly
-    girl["printone"] = kaguya::function([this](kaguya::LuaRef ref) {
-        mErrStream << static_cast<const char *>(mLua["tostring"](ref));
-    });
+    sol::table girl = mLua["girl"];
 
-    girl.setMetatable(girl);
+    setupLuaClasses(girl);
+    girl["self"] = mSelf;
+    girl["printone"] = [this](sol::reference ref) {
+        std::string str = mLua["tostring"](ref);
+        mErrStream << str;
+    };
+
+    girl[sol::metatable_key] = girl;
 }
 
-void GirlX::setupLuaClasses(kaguya::LuaTable girl)
+void GirlX::setupLuaClasses(sol::table girl)
 {
     setupLuaTile(girl);
     setupLuaWho(girl);
@@ -208,88 +126,95 @@ void GirlX::setupLuaClasses(kaguya::LuaTable girl)
     setupLuaGame(girl);
 }
 
-void GirlX::setupLuaWho(kaguya::LuaTable girl)
+void GirlX::setupLuaTile(sol::table girl)
 {
-    auto who = kaguya::UserdataMetatable<Who>();
-    who.addStaticFunction("__eq", [](Who a, Who b) { return a == b; });
-    who.addFunction("__tostring", &Who::index);
-    who.addFunction("right", &Who::right);
-    who.addFunction("cross", &Who::cross);
-    who.addFunction("left", &Who::left);
-    girl["Who"].setClass(who);
+    girl.new_usertype<T34>(
+        "T34",
+        sol::constructors<T34(int)>(),
+        "id34", &T34::id34,
+        sol::meta_function::to_string, &T34::str,
+        "all", sol::var(std::vector<T34>(tiles34::ALL34.begin(), tiles34::ALL34.end()))
+    );
 }
 
-void GirlX::setupLuaTile(kaguya::LuaTable girl)
+void GirlX::setupLuaWho(sol::table girl)
 {
-    auto t34 = kaguya::UserdataMetatable<T34>();
-    t34.setConstructors<T34(int)>();
-    t34.addFunction("id34", &T34::id34);
-    t34.addFunction("__tostring", &T34::str);
-    t34.addStaticField("all", std::vector<T34>(tiles34::ALL34.begin(), tiles34::ALL34.end()));
-    girl["T34"].setClass(t34);
+    girl.new_usertype<Who>(
+        "Who",
+        "right", &Who::right,
+        "cross", &Who::cross,
+        "left", &Who::left,
+        sol::meta_function::to_string, &Who::index,
+        sol::meta_function::equal_to, &Who::operator==
+    );
 }
 
-void GirlX::setupLuaMount(kaguya::LuaTable girl)
+void GirlX::setupLuaMount(sol::table girl)
 {
-    auto mount = kaguya::UserdataMetatable<Mount>();
-    mount.addStaticFunction("lighta", [](Mount *mount, T34 t, int mk) {
-        mount->lightA(t, mk, false);
-    });
-    girl["Mount"].setClass(mount);
-}
-
-void GirlX::setupLuaTileCount(kaguya::LuaTable girl)
-{
-    auto tc = kaguya::UserdataMetatable<TileCount>();
-    tc.addStaticFunction("ct", [](const TileCount *count, kaguya::LuaRef arg){
-        if (arg.type() == LUA_TUSERDATA) {
-            kaguya::LuaUserData data = arg;
-            std::string name = data.getMetatable().getRawField("__name");
-            if (name == kaguya::metatableName<T34>()) {
-                T34 t = data;
-                return count->ct(t);
+    girl.new_usertype<Mount>(
+        "Mount",
+        "lighta", sol::overload(
+            [](Mount &mount, T34 t, int mk, bool rin) {
+                mount.lightA(t, mk, rin);
+            },
+            [](Mount &mount, T34 t, int mk) {
+                mount.lightA(t, mk);
             }
-        }
-
-        util::p("fucking arg");
-        return 0;
-    });
-    girl["Tilecount"].setClass(tc);
+        )
+    );
 }
 
-void GirlX::setupLuaHand(kaguya::LuaTable girl)
+void GirlX::setupLuaTileCount(sol::table girl)
 {
-    auto hand = kaguya::UserdataMetatable<Hand>();
-    hand.addFunction("closed", &Hand::closed);
-    hand.addFunction("ct", &Hand::ct);
-    hand.addFunction("ready", &Hand::ready);
-    hand.addFunction("step4", &Hand::step4);
-    hand.addFunction("step7", &Hand::step7);
-    hand.addFunction("step13", &Hand::step13);
-    hand.addStaticFunction("effa", [](const Hand *hand) {
-        auto res = hand->effA();
-        return std::vector<T34>(res.begin(), res.end());
-    });
-    hand.addStaticFunction("effa4", [](const Hand *hand) {
-        auto res = hand->effA4();
-        return std::vector<T34>(res.begin(), res.end());
-    });
-    girl["Hand"].setClass(hand);
+    girl.new_usertype<TileCount>(
+        "Tilecount",
+        "ct", sol::overload(
+            [](const TileCount &tc, T34 t) {
+                return tc.ct(t);
+            }
+        )
+    );
 }
 
-void GirlX::setupLuaGame(kaguya::LuaTable girl)
+void GirlX::setupLuaHand(sol::table girl)
 {
-    auto game = kaguya::UserdataMetatable<Table>();
-    game.addFunction("gethand", &Table::getHand);
-    game.addFunction("getround", &Table::getRound);
-    game.addFunction("getextraround", &Table::getExtraRound);
-    game.addFunction("getdealer", &Table::getDealer);
-    girl["Game"].setClass(game);
+    girl.new_usertype<Hand>(
+        "Hand",
+        "closed", &Hand::closed,
+        "ct", &Hand::ct,
+        "ready", &Hand::ready,
+        "step", &Hand::step,
+        "step4", &Hand::step4,
+        "step7", &Hand::step7,
+        "step13", &Hand::step13,
+        "effa", &Hand::effA,
+        "effa4", &Hand::effA4
+    );
+}
+
+void GirlX::setupLuaGame(sol::table girl)
+{
+    girl.new_usertype<Table>(
+        "Game",
+        "gethand", &Table::getHand,
+        "getround", &Table::getRound,
+        "getextraround", &Table::getExtraRound,
+        "getdealer", &Table::getDealer
+    );
 }
 
 void GirlX::addError(const char *what)
 {
     mErrStream << what << '\n';
+}
+
+void GirlX::runInGirlEnv(const std::string_view &code)
+{
+    try {
+        mLua.safe_script(code, mLua.get<sol::environment>("girl"));
+    } catch (const sol::error &e) {
+        addError(e.what());
+    }
 }
 
 void GirlX::popUpIfAny(const Table &table)

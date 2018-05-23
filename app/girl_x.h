@@ -2,7 +2,7 @@
 #define SAKI_APP_GIRL_X_H
 
 #include "../table/girl.h"
-#include "../3rd/kaguya.hpp"
+#include "../3rd/sol.hpp"
 
 #include <sstream>
 
@@ -31,19 +31,21 @@ public:
 
 private:
     void setupLuaGlobal();
-    void setupLuaClasses(kaguya::LuaTable girl);
-    void setupLuaWho(kaguya::LuaTable girl);
-    void setupLuaTile(kaguya::LuaTable girl);
-    void setupLuaMount(kaguya::LuaTable girl);
-    void setupLuaTileCount(kaguya::LuaTable girl);
-    void setupLuaHand(kaguya::LuaTable girl);
-    void setupLuaGame(kaguya::LuaTable girl);
+    void setupLuaClasses(sol::table girl);
+    void setupLuaTile(sol::table girl);
+    void setupLuaWho(sol::table girl);
+    void setupLuaMount(sol::table girl);
+    void setupLuaTileCount(sol::table girl);
+    void setupLuaHand(sol::table girl);
+    void setupLuaGame(sol::table girl);
     void addError(const char *what);
+
+    void runInGirlEnv(const std::string_view &code);
 
     void popUpIfAny(const Table &table);
 
 private:
-    kaguya::State mLua;
+    sol::state mLua;
     std::ostringstream mErrStream;
 };
 

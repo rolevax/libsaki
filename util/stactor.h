@@ -63,6 +63,8 @@ public:
 
     /// enable std funcs
     using value_type = T;
+    using iterator = T *;
+    using const_iterator = const T *;
 
     const T *data() const noexcept
     {
