@@ -541,6 +541,9 @@ void Replay::lookAnkan(TableSnap &snap, TileCount &hand, T34 t34, Who who)
         hand.inc(pushes[1], -1);
         hand.inc(pushes[2], -1);
         hand.inc(pushes[3], -1);
+
+        hand.inc(snap.drawn, 1);
+        snap.whoDrawn = Who();
     } else {
         assert(hand.ct(t34) == 3 && snap.drawn == t34);
         assert(snap.whoDrawn == who);

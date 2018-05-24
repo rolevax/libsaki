@@ -17,11 +17,12 @@ public:
 
     static int workOfHeads(const Heads &heads);
 
-    explicit Parsed4(const Heads &heads);
+    explicit Parsed4(const Heads &heads, int barkCt);
 
     const Heads &heads() const;
+    int barkCt() const;
 
-    int step4(int barkCt) const;
+    int step4() const;
     std::bitset<34> effA4Set() const;
 
     util::Stactor<T34, 9> claim3sk() const;
@@ -36,6 +37,7 @@ private:
 
 private:
     Heads mHeads;
+    int mBarkCt;
     mutable std::optional<std::bitset<34>> mEffA4SetCache;
 };
 
@@ -53,20 +55,20 @@ class Parsed4s
 public:
     using Container = std::vector<Parsed4>;
 
-    explicit Parsed4s(Container &&parseds, int barkCt);
+    explicit Parsed4s(Container &&parseds);
 
     const Container &data() const;
     int size() const;
+    int barkCt() const;
     Container::const_iterator begin() const;
     Container::const_iterator end() const;
 
-    int step4(int barkCt) const;
+    int step4() const;
     util::Stactor<T34, 34> effA4() const;
     std::bitset<34> effA4Set() const;
 
 private:
     Container mParseds;
-    int mBarkCt;
     mutable std::optional<std::bitset<34>> mEffA4SetCache;
 };
 
@@ -110,7 +112,7 @@ public:
     static const int STEP_INF = 14;
 
     explicit Parseds(const Parsed4s &p4, const Parsed7 &p7, const Parsed13 &p13);
-    explicit Parseds(const Parsed4s &p4, int barkCt);
+    explicit Parseds(const Parsed4s &p4);
 
     const Parsed4s &get4s() const;
 
@@ -133,7 +135,6 @@ private:
     Parsed4s mParsed4s;
     std::optional<Parsed7> mParsed7;
     std::optional<Parsed13> mParsed13;
-    int mBarkCt;
     mutable std::optional<std::bitset<34>> mEffASetCache;
 };
 

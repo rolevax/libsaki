@@ -343,7 +343,7 @@ bool TileCount::dislike4(T34 t) const
 Parseds TileCount::parse(int barkCt) const
 {
     return barkCt == 0 ? Parseds(parse4(barkCt), parse7(), parse13())
-                       : Parseds(parse4(barkCt), barkCt);
+                       : Parseds(parse4(barkCt));
 }
 
 ///
@@ -374,7 +374,7 @@ Parsed4s TileCount::parse4(int barkCt) const
                     heads.emplaceBack(C34::Type::PAIR, h);
 
             for (Parsed4::Heads &heads : subreses) {
-                Parsed4 parsed(heads);
+                Parsed4 parsed(heads, barkCt);
                 if (!util::has(reses, parsed))
                     reses.emplace_back(parsed);
             }
@@ -394,7 +394,7 @@ Parsed4s TileCount::parse4(int barkCt) const
     // birdhead-less case
     update(false);
 
-    return Parsed4s(std::move(reses), barkCt);
+    return Parsed4s(std::move(reses));
 }
 
 Parsed7 TileCount::parse7() const

@@ -23,6 +23,7 @@ int Parsed4::workOfHeads(const Parsed4::Heads &heads)
 ///
 /// \brief Construct from raw comeld data
 /// \param heads Heads in any order, must not have comeld overflow
+/// \param barkCt Number of barks
 ///
 /// By "comeld overflow", we mean the shanten number cannot
 /// be calculated by simply counting comelds.
@@ -30,8 +31,9 @@ int Parsed4::workOfHeads(const Parsed4::Heads &heads)
 /// An example of comeld overflow: 112233m 12p 78p 45s 99s
 /// (has 2 medls, 3 waiters, 1 birdhead --- too many waiters, must discard one)
 ///
-Parsed4::Parsed4(const Parsed4::Heads &heads)
+Parsed4::Parsed4(const Parsed4::Heads &heads, int barkCt)
     : mHeads(heads)
+    , mBarkCt(barkCt)
 {
     std::sort(mHeads.begin(), mHeads.end());
 }
@@ -41,13 +43,18 @@ const Parsed4::Heads &Parsed4::heads() const
     return mHeads;
 }
 
+int Parsed4::barkCt() const
+{
+    return mBarkCt;
+}
+
 ///
 /// \brief Compute 4-meld shanten number with given bark count
 /// \param barkCt Number of barks
 ///
-int Parsed4::step4(int barkCt) const
+int Parsed4::step4() const
 {
-    return 8 - 2 * barkCt - workOfHeads(mHeads);
+    return 8 - 2 * mBarkCt - workOfHeads(mHeads);
 }
 
 ///
@@ -90,7 +97,7 @@ util::Stactor<T34, 9> Parsed4::claim3sk() const
 /// \brief ordered equal, not set equal
 bool Parsed4::operator==(const Parsed4 &that) const
 {
-    if (mHeads.size() != that.mHeads.size())
+    if (mHeads.size() != that.mHeads.size() || mBarkCt != that.mBarkCt)
         return false;
 
     return std::equal(mHeads.begin(), mHeads.end(), that.mHeads.begin());
@@ -133,14 +140,15 @@ void Parsed4::computeEffA4() const
     int faceCt = seq2End - mHeads.begin();
     const auto pairEnd = std::find_if_not(seq2End, mHeads.end(), isPair);
     int pairCt = pairEnd - seq2End;
-    if (faceCt < 4) { // lacking of faces except pairs
+    if (faceCt < 4 - mBarkCt) { // lacking of faces except pairs
         // regard all pair as triplet candidates
         // sacrificing bird-head candidates does not affect effA
         for (auto it = seq2End; it != pairEnd; ++it)
             res.set(it->head().id34());
 
-        // floating tiles affects effA only when non-floats are less than five
-        if (faceCt + pairCt < 5) {
+        // floating tiles affects effA only when
+        // non-floats are less than '5 - barkCt'
+        if (faceCt + pairCt < 5 - mBarkCt) {
             // regard all floating tiles as face or bird-head candidates
             for (auto it = pairEnd; it != mHeads.end(); ++it) {
                 assert(it->type() == C34::Type::FREE);
@@ -160,9 +168,8 @@ void Parsed4::computeEffA4() const
 /// \brief Contruct from raw data
 /// \param parseds Must have same shanten number for all element, w/o duplication
 ///
-Parsed4s::Parsed4s(Parsed4s::Container &&parseds, int barkCt)
+Parsed4s::Parsed4s(Parsed4s::Container &&parseds)
     : mParseds(parseds)
-    , mBarkCt(barkCt)
 {
 }
 
@@ -176,6 +183,11 @@ int Parsed4s::size() const
     return mParseds.size();
 }
 
+int Parsed4s::barkCt() const
+{
+    return mParseds.front().barkCt();
+}
+
 auto Parsed4s::begin() const -> Container::const_iterator
 {
     return mParseds.begin();
@@ -186,9 +198,9 @@ auto Parsed4s::end() const -> Container::const_iterator
     return mParseds.end();
 }
 
-int Parsed4s::step4(int barkCt) const
+int Parsed4s::step4() const
 {
-    return mParseds.front().step4(barkCt);
+    return mParseds.front().step4();
 }
 
 
@@ -278,13 +290,11 @@ Parseds::Parseds(const Parsed4s &p4, const Parsed7 &p7, const Parsed13 &p13)
     : mParsed4s(p4)
     , mParsed7(p7)
     , mParsed13(p13)
-    , mBarkCt(0)
 {
 }
 
-Parseds::Parseds(const Parsed4s &p4, int barkCt)
+Parseds::Parseds(const Parsed4s &p4)
     : mParsed4s(p4)
-    , mBarkCt(barkCt)
 {
 }
 
@@ -295,9 +305,10 @@ const Parsed4s &Parseds::get4s() const
 
 int Parseds::step() const
 {
-    int minStep = mParsed4s.step4(mBarkCt);
+    int minStep = mParsed4s.step4();
 
-    if (mBarkCt == 0) {
+    if (mParsed4s.barkCt() == 0) {
+        assert(mParsed7.has_value() && mParsed13.has_value());
         int step7 = mParsed7->step7();
         int step13 = mParsed13->step13();
         minStep = std::min(minStep, std::min(step7, step13));
@@ -308,7 +319,7 @@ int Parseds::step() const
 
 int Parseds::step4() const
 {
-    return mParsed4s.step4(mBarkCt);
+    return mParsed4s.step4();
 }
 
 int Parseds::step7() const
@@ -356,10 +367,14 @@ std::bitset<34> Parseds::effA13Set() const
 
 void Parseds::computeEffA() const
 {
-    if (mBarkCt > 0)
+    if (mParsed4s.barkCt() > 0) {
         mEffASetCache = mParsed4s.effA4Set();
+        return;
+    }
 
-    int step4 = mParsed4s.step4(0);
+    assert(mParsed7.has_value() && mParsed13.has_value());
+
+    int step4 = mParsed4s.step4();
     int step7 = mParsed7->step7();
     int step13 = mParsed13->step13();
     int minStep = std::min(step4, std::min(step7, step13));

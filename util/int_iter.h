@@ -56,6 +56,9 @@ template<typename T, int END>
 class IntRange
 {
 public:
+    using iterator = IntIter<T>;
+    using value_type = T;
+
     constexpr IntIter<T> begin() const
     {
         return IntIter<T>(0);

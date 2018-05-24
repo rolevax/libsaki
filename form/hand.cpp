@@ -451,6 +451,7 @@ int Hand::estimate(const Rule &rule, int sw, int rw, const util::Stactor<T37, 5>
     ctx.roundWind = rw;
 
     int max = 0;
+
     for (T34 t : effA()) {
         T37 pick(t.id34());
         Form form(*this, pick, ctx, rule, drids);

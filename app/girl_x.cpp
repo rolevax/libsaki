@@ -128,10 +128,54 @@ void GirlX::setupLuaClasses(sol::table girl)
 
 void GirlX::setupLuaTile(sol::table girl)
 {
+    girl.new_enum<Suit>(
+        "Suit", {
+            { "M", Suit::M },
+            { "P", Suit::P },
+            { "S", Suit::S },
+            { "F", Suit::F },
+            { "Y", Suit::Y }
+        }
+    );
+
     girl.new_usertype<T34>(
         "T34",
-        sol::constructors<T34(int)>(),
+        sol::meta_function::construct, sol::factories(
+            [this](int ti) {
+                if (ti < 0 || ti >= 34) {
+                    mLua["error"]("invalid T34 id");
+                    return T34();
+                }
+
+                return T34(ti);
+            },
+            [this](Suit s, int v) {
+                if (!(1 <= v && v <= 9)) {
+                    mLua["error"]("invalid T34 val");
+                    return T34();
+                }
+
+                return T34(s, v);
+            },
+            [this](const std::string s) {
+                static const std::array<std::string, 34> dict {
+                    "1m", "2m", "3m", "4m", "5m", "6m", "7m", "8m", "9m",
+                    "1p", "2p", "3p", "4p", "5p", "6p", "7p", "8p", "9p",
+                    "1s", "2s", "3s", "4s", "5s", "6s", "7s", "8s", "9s",
+                    "1f", "2f", "3f", "4f", "1y", "2y", "3y"
+                };
+
+                auto it = std::find(dict.begin(), dict.end(), s);
+                if (it == dict.end()) {
+                    mLua["error"]("invalid T34 string");
+                    return T34();
+                }
+
+                return T34(it - dict.begin());
+            }
+        ),
         "id34", &T34::id34,
+        "isyakuhai", &T34::isYakuhai,
         sol::meta_function::to_string, &T34::str,
         "all", sol::var(std::vector<T34>(tiles34::ALL34.begin(), tiles34::ALL34.end()))
     );
@@ -171,6 +215,9 @@ void GirlX::setupLuaTileCount(sol::table girl)
         "ct", sol::overload(
             [](const TileCount &tc, T34 t) {
                 return tc.ct(t);
+            },
+            [](const TileCount &tc, Suit s) {
+                return tc.ct(s);
             }
         )
     );
@@ -188,7 +235,8 @@ void GirlX::setupLuaHand(sol::table girl)
         "step7", &Hand::step7,
         "step13", &Hand::step13,
         "effa", &Hand::effA,
-        "effa4", &Hand::effA4
+        "effa4", &Hand::effA4,
+        "ismenzen", &Hand::isMenzen
     );
 }
 
@@ -199,7 +247,9 @@ void GirlX::setupLuaGame(sol::table girl)
         "gethand", &Table::getHand,
         "getround", &Table::getRound,
         "getextraround", &Table::getExtraRound,
-        "getdealer", &Table::getDealer
+        "getdealer", &Table::getDealer,
+        "getselfwind", &Table::getSelfWind,
+        "getroundwind", &Table::getRoundWind
     );
 }
 
