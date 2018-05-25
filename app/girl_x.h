@@ -31,13 +31,13 @@ public:
 
 private:
     void setupLuaGlobal();
-    void setupLuaClasses(sol::table girl);
-    void setupLuaTile(sol::table girl);
-    void setupLuaWho(sol::table girl);
-    void setupLuaMount(sol::table girl);
-    void setupLuaTileCount(sol::table girl);
-    void setupLuaHand(sol::table girl);
-    void setupLuaGame(sol::table girl);
+    void setupLuaClasses();
+    void setupLuaTile();
+    void setupLuaWho();
+    void setupLuaMount();
+    void setupLuaTileCount();
+    void setupLuaHand();
+    void setupLuaGame();
     void addError(const char *what);
 
     void runInGirlEnv(const std::string_view &code);
@@ -46,6 +46,7 @@ private:
 
 private:
     sol::state mLua;
+    sol::environment mGirlEnv;
     std::ostringstream mErrStream;
 };
 

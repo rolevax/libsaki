@@ -1,4 +1,5 @@
 #include "girl_x.h"
+#include "lua_var_scope.h"
 #include "../table/table.h"
 
 
@@ -44,21 +45,21 @@ std::unique_ptr<Girl> GirlX::clone() const
 
 void GirlX::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
 {
-    sol::environment girl = mLua["girl"];
-    sol::object cb = girl["ondraw"];
+    sol::object cb = mGirlEnv["ondraw"];
     if (!cb.is<sol::function>())
         return;
 
-    girl.raw_set("game", &table);
-    girl.raw_set("mount", &mount);
-    girl.raw_set("who", who);
-    girl.raw_set("rinshan", rinshan);
+    LuaVarScope scope(
+        mGirlEnv,
+        "game", &table,
+        "mount", &mount,
+        "who", who,
+        "rinshan", rinshan
+    );
+
+    (void) scope;
 
     runInGirlEnv("ondraw()");
-
-    girl.raw_set("game", nullptr);
-    girl.raw_set("mount", nullptr);
-
     popUpIfAny(table);
 }
 
@@ -104,31 +105,31 @@ void GirlX::setupLuaGlobal()
         }
     )");
 
-    sol::table girl = mLua["girl"];
+    mGirlEnv = mLua["girl"];
 
-    setupLuaClasses(girl);
-    girl["self"] = mSelf;
-    girl["printone"] = [this](sol::reference ref) {
+    setupLuaClasses();
+    mGirlEnv["self"] = mSelf;
+    mGirlEnv["printone"] = [this](sol::reference ref) {
         std::string str = mLua["tostring"](ref);
         mErrStream << str;
     };
 
-    girl[sol::metatable_key] = girl;
+    mGirlEnv[sol::metatable_key] = mGirlEnv;
 }
 
-void GirlX::setupLuaClasses(sol::table girl)
+void GirlX::setupLuaClasses()
 {
-    setupLuaTile(girl);
-    setupLuaWho(girl);
-    setupLuaMount(girl);
-    setupLuaTileCount(girl);
-    setupLuaHand(girl);
-    setupLuaGame(girl);
+    setupLuaTile();
+    setupLuaWho();
+    setupLuaMount();
+    setupLuaTileCount();
+    setupLuaHand();
+    setupLuaGame();
 }
 
-void GirlX::setupLuaTile(sol::table girl)
+void GirlX::setupLuaTile()
 {
-    girl.new_enum<Suit>(
+    mGirlEnv.new_enum<Suit>(
         "Suit", {
             { "M", Suit::M },
             { "P", Suit::P },
@@ -138,7 +139,7 @@ void GirlX::setupLuaTile(sol::table girl)
         }
     );
 
-    girl.new_usertype<T34>(
+    mGirlEnv.new_usertype<T34>(
         "T34",
         sol::meta_function::construct, sol::factories(
             [this](int ti) {
@@ -181,9 +182,9 @@ void GirlX::setupLuaTile(sol::table girl)
     );
 }
 
-void GirlX::setupLuaWho(sol::table girl)
+void GirlX::setupLuaWho()
 {
-    girl.new_usertype<Who>(
+    mGirlEnv.new_usertype<Who>(
         "Who",
         "right", &Who::right,
         "cross", &Who::cross,
@@ -193,9 +194,9 @@ void GirlX::setupLuaWho(sol::table girl)
     );
 }
 
-void GirlX::setupLuaMount(sol::table girl)
+void GirlX::setupLuaMount()
 {
-    girl.new_usertype<Mount>(
+    mGirlEnv.new_usertype<Mount>(
         "Mount",
         "lighta", sol::overload(
             [](Mount &mount, T34 t, int mk, bool rin) {
@@ -208,9 +209,9 @@ void GirlX::setupLuaMount(sol::table girl)
     );
 }
 
-void GirlX::setupLuaTileCount(sol::table girl)
+void GirlX::setupLuaTileCount()
 {
-    girl.new_usertype<TileCount>(
+    mGirlEnv.new_usertype<TileCount>(
         "Tilecount",
         "ct", sol::overload(
             [](const TileCount &tc, T34 t) {
@@ -223,9 +224,9 @@ void GirlX::setupLuaTileCount(sol::table girl)
     );
 }
 
-void GirlX::setupLuaHand(sol::table girl)
+void GirlX::setupLuaHand()
 {
-    girl.new_usertype<Hand>(
+    mGirlEnv.new_usertype<Hand>(
         "Hand",
         "closed", &Hand::closed,
         "ct", &Hand::ct,
@@ -240,9 +241,9 @@ void GirlX::setupLuaHand(sol::table girl)
     );
 }
 
-void GirlX::setupLuaGame(sol::table girl)
+void GirlX::setupLuaGame()
 {
-    girl.new_usertype<Table>(
+    mGirlEnv.new_usertype<Table>(
         "Game",
         "gethand", &Table::getHand,
         "getround", &Table::getRound,
@@ -261,7 +262,7 @@ void GirlX::addError(const char *what)
 void GirlX::runInGirlEnv(const std::string_view &code)
 {
     try {
-        mLua.safe_script(code, mLua.get<sol::environment>("girl"));
+        mLua.safe_script(code, mGirlEnv);
     } catch (const sol::error &e) {
         addError(e.what());
     }
