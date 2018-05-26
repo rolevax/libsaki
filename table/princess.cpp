@@ -29,6 +29,7 @@ std::array<Hand, 4> Princess::dealAndFlip()
 
 #ifdef LIBSAKI_CHEAT_PRINCESS
     debugCheat(inits);
+    mMount.flipIndic(mRand);
 #else
     raid(inits);
     bargain();
