@@ -567,11 +567,12 @@ void Replay::lookKakan(TableSnap &snap, TileCount &hand, const T37 &t37, Who who
 {
     assert(snap.whoDrawn == who);
 
-    if (snap.drawn == t37) { // from drawn
-        snap.whoDrawn = Who();
-    } else { // from hand
+    if (snap.drawn != t37) { // from closed, not drawn
         hand.inc(t37, -1);
+        hand.inc(snap.drawn, 1);
     }
+
+    snap.whoDrawn = Who();
 
     auto &barks = snap[who.index()].barks;
     auto same = [&t37](const M37 &m) { return m[0] == t37; };
