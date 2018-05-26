@@ -34,6 +34,7 @@ private:
     void setupLuaClasses();
     void setupLuaTile();
     void setupLuaWho();
+    void setupLuaMeld();
     void setupLuaMount();
     void setupLuaTileCount();
     void setupLuaHand();

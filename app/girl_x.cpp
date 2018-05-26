@@ -103,6 +103,8 @@ void GirlX::setupLuaGlobal()
                 girldata[k] = v
             end
         }
+        girl.math.random = nil
+        girl.math.randomseed = nil
     )");
 
     mGirlEnv = mLua["girl"];
@@ -121,6 +123,7 @@ void GirlX::setupLuaClasses()
 {
     setupLuaTile();
     setupLuaWho();
+    setupLuaMeld();
     setupLuaMount();
     setupLuaTileCount();
     setupLuaHand();
@@ -194,6 +197,26 @@ void GirlX::setupLuaWho()
     );
 }
 
+void GirlX::setupLuaMeld()
+{
+    mGirlEnv.new_usertype<M37>(
+        "M37",
+        "type", &M37::type,
+        sol::meta_function::index, &M37::operator[]
+    );
+
+    sol::table m37 = mGirlEnv["M37"];
+    m37.new_enum<M37::Type>(
+        "Type", {
+            { "CHII", M37::Type::CHII },
+            { "PON", M37::Type::PON },
+            { "DAIMINKAN", M37::Type::DAIMINKAN },
+            { "ANKAN", M37::Type::ANKAN },
+            { "KAKAN", M37::Type::KAKAN }
+        }
+    );
+}
+
 void GirlX::setupLuaMount()
 {
     mGirlEnv.new_usertype<Mount>(
@@ -237,7 +260,8 @@ void GirlX::setupLuaHand()
         "step13", &Hand::step13,
         "effa", &Hand::effA,
         "effa4", &Hand::effA4,
-        "ismenzen", &Hand::isMenzen
+        "ismenzen", &Hand::isMenzen,
+        "barks", &Hand::barks
     );
 }
 

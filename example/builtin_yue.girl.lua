@@ -47,6 +47,7 @@ function ondraw()
   end
 end
 
+-- get guest and non-guest winds of this round
 function getwinds(game, self)
   local guests = {}
   local hosts = {}
@@ -65,6 +66,7 @@ function getwinds(game, self)
   return guests, hosts
 end
 
+-- select the guest-wind tile in 'hand' with the max quantity
 function pickmaxguest(hand, guests)
   local maxguest = nil
   local maxguestcount = 0
@@ -80,6 +82,7 @@ function pickmaxguest(hand, guests)
   return maxguest, maxguestcount
 end
 
+-- increase possibilify of hon1tsu
 function dye(closed, mount, mk)
   local suits = { Suit.M, Suit.P, Suit.S }
   local max = 0
@@ -97,6 +100,7 @@ function dye(closed, mount, mk)
   end
 end
 
+-- check if 'hand' is fully dyed
 function dyed(hand)
   local suits = { Suit.M, Suit.P, Suit.S }
   local suitcount = 0
@@ -116,7 +120,15 @@ function dyed(hand)
   return true
 end
 
+-- count number of 'guest' in 'hand'
+-- count closed and ankan only, ignore open melds
 function countguest(hand, guest)
-  -- TODO count ankan
+  local barks = hand:barks()
+  for _, bark in ipairs(barks) do
+    if bark:type() == M37.Type.ANKAN and guest == m[0] then
+      return 4
+    end
+  end
+
   return hand:closed():ct(guest)
 end
