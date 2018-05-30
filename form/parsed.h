@@ -3,6 +3,9 @@
 
 #include "../unit/comeld.h"
 
+#include <optional>
+#include <vector>
+
 
 
 namespace saki
