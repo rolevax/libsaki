@@ -521,6 +521,9 @@ std::string Toki::popUpStr() const
 
 Girl::IrsCtrlGetter Toki::attachIrsOnDrawn(const Table &table)
 {
+    if (mInFuture) // forbid recursive prediction
+        return nullptr;
+
     const Choices &choices = table.getChoices(mSelf);
 
     if (mCd > 0) {
