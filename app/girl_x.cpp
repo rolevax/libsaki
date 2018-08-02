@@ -90,8 +90,9 @@ void GirlX::setupLuaGlobal()
             pairs = pairs,
             ipairs = ipairs,
             print = function(...)
-                for _, v in ipairs({...}) do
-                    girl.printone(v)
+                local args = table.pack(...)
+                for i = 1, args.n do
+                    girl.printone(args[i])
                     girl.printone(" ")
                 end
                 girl.printone("\n")
