@@ -1,8 +1,8 @@
 #ifndef SAKI_APP_GIRL_X_H
 #define SAKI_APP_GIRL_X_H
 
+#include "lua_class.h"
 #include "../table/girl.h"
-#include "../3rd/sol.hpp"
 
 #include <sstream>
 
@@ -15,7 +15,7 @@ namespace saki
 ///
 /// \brief Lua intepreter for custom characters
 ///
-class GirlX : public Girl
+class GirlX : public Girl, public LuaUserErrorHandler
 {
 public:
     GirlX(Who who, std::string luaCode);
@@ -31,19 +31,13 @@ public:
 
 private:
     void setupLuaGlobal();
-    void setupLuaClasses();
-    void setupLuaTile();
-    void setupLuaWho();
-    void setupLuaMeld();
-    void setupLuaMount();
-    void setupLuaTileCount();
-    void setupLuaHand();
-    void setupLuaGame();
     void addError(const char *what);
 
     void runInGirlEnv(const std::string_view &code);
 
     void popUpIfAny(const Table &table);
+
+    void handleUserError(const char *msg) override;
 
 private:
     sol::state mLua;
