@@ -108,6 +108,18 @@ void setupLuaMount(sol::environment env)
 {
     env.new_usertype<Mount>(
         "Mount",
+        "remainpii", &Mount::remainPii,
+        "remainrinshan", &Mount::remainRinshan,
+        "remaina", sol::overload(
+            [](Mount &mount, T34 t) {
+                mount.remainA(t);
+            },
+            [](Mount &mount, const T37 &t) {
+                mount.remainA(t);
+            }
+        ),
+        "getdrids", &Mount::getDrids,
+        "geturids", &Mount::getUrids,
         "lighta", sol::overload(
             [](Mount &mount, T34 t, int mk, bool rin) {
                 mount.lightA(t, mk, rin);
@@ -115,7 +127,38 @@ void setupLuaMount(sol::environment env)
             [](Mount &mount, T34 t, int mk) {
                 mount.lightA(t, mk);
             }
-        )
+        ),
+        "lightb", sol::overload(
+            [](Mount &mount, T34 t, int mk, bool rin) {
+                mount.lightB(t, mk, rin);
+            },
+            [](Mount &mount, T34 t, int mk) {
+                mount.lightB(t, mk);
+            }
+        ),
+        "incmk", sol::overload(
+            [](Mount &mount, Mount::Exit exit, size_t pos, T34 t, int delta, bool bSpace) {
+                mount.incMk(exit, pos, t, delta, bSpace);
+            },
+            [](Mount &mount, Mount::Exit exit, size_t pos, const T37 &t, int delta, bool bSpace) {
+                mount.incMk(exit, pos, t, delta, bSpace);
+            }
+        ),
+        "loadB", &Mount::loadB,
+        "dump", [](Mount &mount){
+            (void) mount;
+            // TODO return a table of mk
+        }
+    );
+
+    sol::table m37 = env["Mount"];
+    m37.new_enum<Mount::Exit>(
+        "Exit", {
+            { "PII", Mount::Exit::PII },
+            { "RINSHAN", Mount::Exit::RINSHAN },
+            { "DORAHYOU", Mount::Exit::DORAHYOU },
+            { "URAHYOU", Mount::Exit::URAHYOU }
+        }
     );
 }
 
