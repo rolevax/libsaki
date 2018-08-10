@@ -23,6 +23,7 @@ public:
 
     std::unique_ptr<Girl> clone() const override;
 
+    bool checkInit(Who who, const Hand &init, const Table &table, int iter) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
 
     std::string popUpStr() const override;
@@ -33,7 +34,7 @@ private:
     void setupLuaGlobal();
     void addError(const char *what);
 
-    void runInGirlEnv(const std::string_view &code);
+    sol::object runInGirlEnv(const std::string_view &code);
 
     void popUpIfAny(const Table &table);
 

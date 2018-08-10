@@ -43,6 +43,33 @@ std::unique_ptr<Girl> GirlX::clone() const
     return std::make_unique<GirlX>(*this);
 }
 
+bool GirlX::checkInit(Who who, const Hand &init, const Table &table, int iter)
+{
+    sol::object cb = mGirlEnv["checkinit"];
+    if (!cb.is<sol::function>())
+        return true;
+
+    if (iter > 1000)
+        return true;
+
+    LuaVarScope scope(
+        mGirlEnv,
+        "game", &table,
+        "init", &init,
+        "who", who,
+        "iter", iter
+    );
+
+    (void) scope;
+
+    auto res = runInGirlEnv("return checkinit()");
+    if (!res.is<bool>())
+        addError("non-boolean checkinit() result");
+
+    popUpIfAny(table);
+    return res.is<bool>() ? res.as<bool>() : true;
+}
+
 void GirlX::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
 {
     sol::object cb = mGirlEnv["ondraw"];
@@ -125,13 +152,23 @@ void GirlX::addError(const char *what)
     mErrStream << what << '\n';
 }
 
-void GirlX::runInGirlEnv(const std::string_view &code)
+sol::object GirlX::runInGirlEnv(const std::string_view &code)
 {
+    sol::object obj;
+
     try {
-        mLua.safe_script(code, mGirlEnv);
+        auto res = mLua.safe_script(code, mGirlEnv);
+        if (!res.valid()) {
+            sol::error e = res;
+            addError(e.what());
+        } else {
+            obj = res;
+        }
     } catch (const sol::error &e) {
         addError(e.what());
     }
+
+    return obj;
 }
 
 void GirlX::popUpIfAny(const Table &table)
