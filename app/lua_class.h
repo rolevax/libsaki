@@ -2,6 +2,7 @@
 #define SAKI_APP_LUA_CLASS_H
 
 #include "../3rd/sol.hpp"
+#include "../table/table_event.h"
 
 
 namespace saki
@@ -26,6 +27,7 @@ void setupLuaTileCount(sol::environment env);
 void setupLuaHand(sol::environment env);
 void setupLuaGame(sol::environment env);
 
+sol::table toLuaTable(sol::environment env, const TableEvent &event);
 
 
 } // namespace saki

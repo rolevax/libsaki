@@ -208,6 +208,29 @@ void setupLuaGame(sol::environment env)
     );
 }
 
+sol::table toLuaTable(sol::environment env, const TableEvent &event)
+{
+    using TE = TableEvent;
+
+    sol::table args = env.create();
+
+    switch (event.type()) {
+    case TE::Type::DICED: {
+        const auto &a = event.as<TE::Diced>();
+        args["die1"] = a.die1;
+        args["die2"] = a.die2;
+        break;
+    }
+    default:
+        break;
+    }
+
+    return env.create_with(
+        "type", event.type() == TE::Type::DICED ? "diced" : "fuck",
+        "args", args
+    );
+}
+
 
 
 } // namespace saki

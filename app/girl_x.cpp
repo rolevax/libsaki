@@ -100,8 +100,26 @@ std::string GirlX::popUpStr() const
 
 void GirlX::onTableEvent(const Table &table, const TableEvent &event)
 {
+    if (event.type() == TableEvent::Type::POPPED_UP)
+        return; // skills shouldn't peek private outputs
+
     if (event.type() == TableEvent::Type::TABLE_STARTED)
         popUpIfAny(table);
+
+    sol::object cb = mGirlEnv["ontableevent"];
+    if (!cb.is<sol::function>())
+        return;
+
+    LuaVarScope scope(
+        mGirlEnv,
+        "game", &table,
+        "event", toLuaTable(mGirlEnv, event)
+    );
+
+    (void) scope;
+
+    runInGirlEnv("ontableevent()");
+    popUpIfAny(table);
 }
 
 void GirlX::setupLuaGlobal()
