@@ -28,6 +28,8 @@ RoundResult roundResultOf(const char *str);
 
 const char *stringOf(Fan f);
 
+const char *stringOf(TableEvent::Type type);
+
 
 
 } // namespace util

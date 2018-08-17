@@ -42,7 +42,7 @@ ActCode actCodeOf(const char *str)
     return static_cast<ActCode>(it - actCodes.begin());
 }
 
-std::array<const char *, static_cast<int>(ActCode::NUM_ACTCODE)> m37Types
+std::array<const char *, 5> m37Types
 {
     "CHII", "PON", "DAIMINKAN", "ANKAN", "KAKAN"
 };
@@ -99,6 +99,18 @@ const char *stringOf(Fan f)
     return fans[static_cast<int>(f)];
 }
 
+std::array<const char *, static_cast<int>(TableEvent::Type::POPPED_UP) + 1> tableEventTypes
+{
+    "table-started", "first-dealer-chosen", "round-started", "cleaned",
+    "diced", "dealt", "flipped", "drawn", "discarded",
+    "riichi-called", "riichi-established", "barked", "round-ended",
+    "points-changed", "table-ended", "popped-up"
+};
+
+const char *stringOf(TableEvent::Type type)
+{
+    return tableEventTypes[static_cast<int>(type)];
+}
 
 
 } // namespace util

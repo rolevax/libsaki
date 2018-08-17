@@ -25,6 +25,7 @@ class TableEvent
 public:
     enum class Type
     {
+        // *** SYNC with util/string_enum.cpp ***
         TABLE_STARTED, FIRST_DEALER_CHOSEN, ROUND_STARTED, CLEANED,
         DICED, DEALT, FLIPPED, DRAWN, DISCARDED,
         RIICHI_CALLED, RIICHI_ESTABLISHED, BARKED, ROUND_ENDED,

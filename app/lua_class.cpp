@@ -1,5 +1,6 @@
 #include "lua_class.h"
 #include "../table/table.h"
+#include "../util/string_enum.h"
 
 namespace saki
 {
@@ -215,18 +216,70 @@ sol::table toLuaTable(sol::environment env, const TableEvent &event)
     sol::table args = env.create();
 
     switch (event.type()) {
+    case TE::Type::TABLE_STARTED:
+        args["seed"] = event.as<TE::TableStarted>().seed;
+        break;
+    case TE::Type::FIRST_DEALER_CHOSEN:
+        args["who"] = event.as<TE::FirstDealerChosen>().who;
+        break;
+    case TE::Type::ROUND_STARTED: {
+        const auto &a = event.as<TE::RoundStarted>();
+        args["round"] = a.round;
+        args["extraround"] = a.extraRound;
+        args["dealer"] = a.dealer;
+        args["alllast"] = a.allLast;
+        args["deposit"] = a.deposit;
+        args["seed"] = a.seed;
+        break;
+    }
     case TE::Type::DICED: {
         const auto &a = event.as<TE::Diced>();
         args["die1"] = a.die1;
         args["die2"] = a.die2;
         break;
     }
+    case TE::Type::DRAWN:
+        args["who"] = event.as<TE::Drawn>().who;
+        break;
+    case TE::Type::DISCARDED:
+        args["spin"] = event.as<TE::Discarded>().spin;
+        break;
+    case TE::Type::RIICHI_CALLED:
+        args["who"] = event.as<TE::RiichiCalled>().who;
+        break;
+    case TE::Type::RIICHI_ESTABLISHED:
+        args["who"] = event.as<TE::RiichiEstablished>().who;
+        break;
+    case TE::Type::BARKED: {
+        const auto &a = event.as<TE::Barked>();
+        args["who"] = a.who;
+        args["bark"] = a.bark;
+        args["spin"] = a.spin;
+        break;
+    }
+    case TE::Type::ROUND_ENDED: {
+        const auto &a = event.as<TE::RoundEnded>();
+        args["result"] = util::stringOf(a.result);
+        args["openers"] = a.openers;
+        args["gunner"] = a.gunner;
+        args["forms"] = a.forms;
+        break;
+    }
+    case TE::Type::TABLE_ENDED: {
+        const auto &a = event.as<TE::TableEnded>();
+        args["ranks"] = a.ranks;
+        args["scores"] = a.scores;
+        break;
+    }
+    case TE::Type::POPPED_UP:
+        args["who"] = event.as<TE::PoppedUp>().who;
+        break;
     default:
         break;
     }
 
     return env.create_with(
-        "type", event.type() == TE::Type::DICED ? "diced" : "fuck",
+        "type", util::stringOf(event.type()),
         "args", args
     );
 }
