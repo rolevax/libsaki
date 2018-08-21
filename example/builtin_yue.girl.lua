@@ -84,7 +84,7 @@ end
 
 -- increase possibilify of hon1tsu
 function dye(closed, mount, mk)
-  local suits = { Suit.M, Suit.P, Suit.S }
+  local suits = { "m", "p", "s" }
   local max = 0
   local maxsuit = nil
   for _, suit in ipairs(suits) do
@@ -102,7 +102,7 @@ end
 
 -- check if 'hand' is fully dyed
 function dyed(hand)
-  local suits = { Suit.M, Suit.P, Suit.S }
+  local suits = { "m", "p", "s" }
   local suitcount = 0
   for _, suit in ipairs(suits) do
     for i = 1,9 do
@@ -125,7 +125,7 @@ end
 function countguest(hand, guest)
   local barks = hand:barks()
   for _, bark in ipairs(barks) do
-    if bark:type() == M37.Type.ANKAN and guest == m[0] then
+    if bark:type() == "ankan" and guest == m[0] then
       return 4
     end
   end
