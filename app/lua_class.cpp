@@ -7,29 +7,50 @@ namespace saki
 
 
 
+bool isValidSuitStr(const std::string &s)
+{
+    return s.size() == 1 && T34::isValidSuit(s[0]);
+}
+
+std::string toLower(const char *s)
+{
+    std::string res(s);
+    std::for_each(res.begin(), res.end(), [](char &c) { c = std::tolower(c); });
+    return res;
+}
+
+std::pair<Mount::Exit, bool> parseMountExit(const std::string &s)
+{
+    std::pair<Mount::Exit, bool> res;
+
+    res.second = true;
+    if (s == "pii")
+        res.first = Mount::Exit::PII;
+    else if (s == "rinshan")
+        res.first = Mount::Exit::RINSHAN;
+    else if (s == "dorahyou")
+        res.first = Mount::Exit::DORAHYOU;
+    else if (s == "urahyou")
+        res.first = Mount::Exit::URAHYOU;
+    else
+        res.second = false;
+
+    return res;
+}
+
 void setupLuaClasses(sol::environment env, LuaUserErrorHandler &error)
 {
     setupLuaTile(env, error);
     setupLuaWho(env);
     setupLuaMeld(env);
-    setupLuaMount(env);
-    setupLuaTileCount(env);
+    setupLuaMount(env, error);
+    setupLuaTileCount(env, error);
     setupLuaHand(env);
     setupLuaGame(env);
 }
 
 void setupLuaTile(sol::environment env, LuaUserErrorHandler &error)
 {
-    env.new_enum<Suit>(
-        "Suit", {
-            { "M", Suit::M },
-            { "P", Suit::P },
-            { "S", Suit::S },
-            { "F", Suit::F },
-            { "Y", Suit::Y }
-        }
-    );
-
     env.new_usertype<T34>(
         "T34",
         sol::meta_function::construct, sol::factories(
@@ -41,13 +62,18 @@ void setupLuaTile(sol::environment env, LuaUserErrorHandler &error)
 
                 return T34(ti);
             },
-            [&error](Suit s, int v) {
+            [&error](std::string suit, int v) {
                 if (!(1 <= v && v <= 9)) {
                     error.handleUserError("invalid T34 val");
                     return T34();
                 }
 
-                return T34(s, v);
+                if (!isValidSuitStr(suit)) {
+                    error.handleUserError("invalid T34 suit");
+                    return T34();
+                }
+
+                return T34(T34::suitOf(suit[0]), v);
             },
             [&error](const std::string s) {
                 static const std::array<std::string, 34> dict {
@@ -67,6 +93,8 @@ void setupLuaTile(sol::environment env, LuaUserErrorHandler &error)
             }
         ),
         "id34", &T34::id34,
+        "suit", [](T34 t) { return T34::charOf(t.suit()); },
+        "val", &T34::val,
         "isyakuhai", &T34::isYakuhai,
         sol::meta_function::to_string, &T34::str,
         "all", sol::var(std::vector<T34>(tiles34::ALL34.begin(), tiles34::ALL34.end()))
@@ -89,23 +117,14 @@ void setupLuaMeld(sol::environment env)
 {
     env.new_usertype<M37>(
         "M37",
-        "type", &M37::type,
+        "type", [](const M37 &m) {
+            return toLower(util::stringOf(m.type()));
+        },
         sol::meta_function::index, &M37::operator[]
-    );
-
-    sol::table m37 = env["M37"];
-    m37.new_enum<M37::Type>(
-        "Type", {
-            { "CHII", M37::Type::CHII },
-            { "PON", M37::Type::PON },
-            { "DAIMINKAN", M37::Type::DAIMINKAN },
-            { "ANKAN", M37::Type::ANKAN },
-            { "KAKAN", M37::Type::KAKAN }
-        }
     );
 }
 
-void setupLuaMount(sol::environment env)
+void setupLuaMount(sol::environment env, LuaUserErrorHandler &error)
 {
     env.new_usertype<Mount>(
         "Mount",
@@ -138,11 +157,21 @@ void setupLuaMount(sol::environment env)
             }
         ),
         "incmk", sol::overload(
-            [](Mount &mount, Mount::Exit exit, size_t pos, T34 t, int delta, bool bSpace) {
-                mount.incMk(exit, pos, t, delta, bSpace);
+            [&error](Mount &mount, std::string exit, size_t pos, T34 t, int delta, bool bSpace) {
+                auto [e, ok] = parseMountExit(exit);
+                if (!ok) {
+                    error.handleUserError("invalid mount exit");
+                    return;
+                }
+                mount.incMk(e, pos, t, delta, bSpace);
             },
-            [](Mount &mount, Mount::Exit exit, size_t pos, const T37 &t, int delta, bool bSpace) {
-                mount.incMk(exit, pos, t, delta, bSpace);
+            [&error](Mount &mount, std::string exit, size_t pos, const T37 &t, int delta, bool bSpace) {
+                auto [e, ok] = parseMountExit(exit);
+                if (!ok) {
+                    error.handleUserError("invalid mount exit");
+                    return;
+                }
+                mount.incMk(e, pos, t, delta, bSpace);
             }
         ),
         "loadB", &Mount::loadB,
@@ -151,19 +180,9 @@ void setupLuaMount(sol::environment env)
             // TODO return a table of mk
         }
     );
-
-    sol::table m37 = env["Mount"];
-    m37.new_enum<Mount::Exit>(
-        "Exit", {
-            { "PII", Mount::Exit::PII },
-            { "RINSHAN", Mount::Exit::RINSHAN },
-            { "DORAHYOU", Mount::Exit::DORAHYOU },
-            { "URAHYOU", Mount::Exit::URAHYOU }
-        }
-    );
 }
 
-void setupLuaTileCount(sol::environment env)
+void setupLuaTileCount(sol::environment env, LuaUserErrorHandler &error)
 {
     env.new_usertype<TileCount>(
         "Tilecount",
@@ -171,8 +190,13 @@ void setupLuaTileCount(sol::environment env)
             [](const TileCount &tc, T34 t) {
                 return tc.ct(t);
             },
-            [](const TileCount &tc, Suit s) {
-                return tc.ct(s);
+            [&error](const TileCount &tc, std::string suit) {
+                if (!isValidSuitStr(suit)) {
+                    error.handleUserError("invalid suit");
+                    return 0;
+                }
+
+                return tc.ct(T34::suitOf(suit[0]));
             }
         )
     );

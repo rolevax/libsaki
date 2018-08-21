@@ -49,6 +49,12 @@ public:
         }
     }
 
+    static bool isValidSuit(char c)
+    {
+        c = std::tolower(c);
+        return c == 'm' || c == 'p' || c == 's' || c == 'f' || c == 'y';
+    }
+
     /// \brief Garbage value
     T34()
 #ifndef NDEBUG
