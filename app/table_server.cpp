@@ -135,7 +135,7 @@ void TableServer::onTableEvent(const Table &table, const TE::FirstDealerChosen &
     json args;
     for (Who to : whos::ALL4) {
         args["dealer"] = event.who.turnFrom(to);
-        pushPeerMsg(to, "first-dealer-choosen", args);
+        pushPeerMsg(to, util::stringOf(event.TYPE), args);
     }
 }
 
@@ -150,7 +150,7 @@ void TableServer::onTableEvent(const Table &table, const TE::RoundStarted &event
     args["deposit"] = event.deposit;
     for (Who to : whos::ALL4) {
         args["dealer"] = event.dealer.turnFrom(to);
-        pushPeerMsg(to, "round-started", args);
+        pushPeerMsg(to, util::stringOf(event.TYPE), args);
     }
 
     args["dealer"] = event.dealer.index();
@@ -163,7 +163,7 @@ void TableServer::onTableEvent(const Table &table, const TE::Cleaned &event)
     (void) table;
     (void) event;
 
-    pushBroadcastMsg("cleaned", json::object());
+    pushBroadcastMsg(util::stringOf(event.TYPE), json::object());
 }
 
 void TableServer::onTableEvent(const Table &table, const TE::Diced &event)
@@ -173,7 +173,7 @@ void TableServer::onTableEvent(const Table &table, const TE::Diced &event)
     json args;
     args["die1"] = event.die1;
     args["die2"] = event.die2;
-    pushBroadcastMsg("diced", args);
+    pushBroadcastMsg(util::stringOf(event.TYPE), args);
 }
 
 void TableServer::onTableEvent(const Table &table, const TE::Dealt &event)
@@ -184,7 +184,7 @@ void TableServer::onTableEvent(const Table &table, const TE::Dealt &event)
         const auto &init = table.getHand(to).closed().t37s13(true);
         json args;
         args["init"] = init.range();
-        pushPeerMsg(to, "dealt", args);
+        pushPeerMsg(to, util::stringOf(event.TYPE), args);
     }
 }
 
@@ -194,7 +194,7 @@ void TableServer::onTableEvent(const Table &table, const TE::Flipped &event)
 
     json args;
     args["newIndic"] = stringOf(table.getMount().getDrids().back());
-    pushBroadcastMsg("flipped", args);
+    pushBroadcastMsg(util::stringOf(event.TYPE), args);
 }
 
 void TableServer::onTableEvent(const Table &table, const TE::Drawn &event)
@@ -211,7 +211,7 @@ void TableServer::onTableEvent(const Table &table, const TE::Drawn &event)
         if (to == event.who)
             args["tile"] = stringOf(in);
 
-        pushPeerMsg(to, "drawn", args);
+        pushPeerMsg(to, util::stringOf(event.TYPE), args);
     }
 }
 
@@ -226,7 +226,7 @@ void TableServer::onTableEvent(const Table &table, const TE::Discarded &event)
     args["spin"] = event.spin;
     for (Who to : whos::ALL4) {
         args["who"] = discarder.turnFrom(to);
-        pushPeerMsg(to, "discarded", args);
+        pushPeerMsg(to, util::stringOf(event.TYPE), args);
     }
 }
 
@@ -237,7 +237,7 @@ void TableServer::onTableEvent(const Table &table, const TE::RiichiCalled &event
     for (Who to : whos::ALL4) {
         json args;
         args["who"] = event.who.turnFrom(to);
-        pushPeerMsg(to, "riichi-called", args);
+        pushPeerMsg(to, util::stringOf(event.TYPE), args);
     }
 }
 
@@ -248,7 +248,7 @@ void TableServer::onTableEvent(const Table &table, const TE::RiichiEstablished &
     for (Who to : whos::ALL4) {
         json args;
         args["who"] = event.who.turnFrom(to);
-        pushPeerMsg(to, "riichi-established", args);
+        pushPeerMsg(to, util::stringOf(event.TYPE), args);
     }
 }
 
@@ -263,7 +263,7 @@ void TableServer::onTableEvent(const Table &table, const TE::Barked &event)
     for (Who to : whos::ALL4) {
         args["who"] = event.who.turnFrom(to);
         args["fromWhom"] = from.somebody() ? from.turnFrom(to) : -1;
-        pushPeerMsg(to, "barked", args);
+        pushPeerMsg(to, util::stringOf(event.TYPE), args);
     }
 }
 
@@ -311,7 +311,7 @@ void TableServer::onTableEvent(const Table &table, const TE::RoundEnded &event)
 
         Who gunner = event.gunner;
         args["gunner"] = gunner.somebody() ? gunner.turnFrom(to) : -1;
-        pushPeerMsg(to, "round-ended", args);
+        pushPeerMsg(to, util::stringOf(event.TYPE), args);
     }
 }
 
@@ -336,7 +336,7 @@ void TableServer::onTableEvent(const Table &table, const TE::TableEnded &event)
             rankList.push_back(who.turnFrom(to));
 
         args["rank"] = rankList;
-        pushPeerMsg(to, "table-ended", args);
+        pushPeerMsg(to, util::stringOf(event.TYPE), args);
         rotate(args["scores"]);
     }
 
@@ -347,7 +347,7 @@ void TableServer::onTableEvent(const Table &table, const TE::PoppedUp &event)
 {
     json args;
     args["str"] = table.getGirl(event.who).popUpStr();
-    pushPeerMsg(event.who, "popped-up", args);
+    pushPeerMsg(event.who, util::stringOf(event.TYPE), args);
 }
 
 const Table &TableServer::table() const
@@ -428,7 +428,7 @@ void TableServer::pushPointsChanged(const Table &table)
     json args;
     args["points"] = table.getPoints();
     for (Who to : whos::ALL4) {
-        pushPeerMsg(to, "points-changed", args);
+        pushPeerMsg(to, util::stringOf(TE::Type::POINTS_CHANGED), args);
         rotate(args["points"]);
     }
 }
