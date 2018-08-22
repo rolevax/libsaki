@@ -170,20 +170,16 @@ void GirlX::addError(const char *what)
     mErrStream << what << '\n';
 }
 
-sol::object GirlX::runInGirlEnv(const std::string_view &code)
+sol::object GirlX::runInGirlEnv(const std::string_view &code) noexcept
 {
     sol::object obj;
 
-    try {
-        auto res = mLua.safe_script(code, mGirlEnv);
-        if (!res.valid()) {
-            sol::error e = res;
-            addError(e.what());
-        } else {
-            obj = res;
-        }
-    } catch (const sol::error &e) {
+    auto res = mLua.safe_script(code, mGirlEnv, sol::script_pass_on_error);
+    if (!res.valid()) {
+        sol::error e = res;
         addError(e.what());
+    } else {
+        obj = res;
     }
 
     return obj;

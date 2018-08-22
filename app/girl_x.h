@@ -34,7 +34,7 @@ private:
     void setupLuaGlobal();
     void addError(const char *what);
 
-    sol::object runInGirlEnv(const std::string_view &code);
+    sol::object runInGirlEnv(const std::string_view &code) noexcept;
 
     void popUpIfAny(const Table &table);
 

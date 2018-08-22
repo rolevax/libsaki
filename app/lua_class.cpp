@@ -174,11 +174,7 @@ void setupLuaMount(sol::environment env, LuaUserErrorHandler &error)
                 mount.incMk(e, pos, t, delta, bSpace);
             }
         ),
-        "loadB", &Mount::loadB,
-        "dump", [](Mount &mount){
-            (void) mount;
-            // TODO return a table of mk
-        }
+        "loadB", &Mount::loadB
     );
 }
 
