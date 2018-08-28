@@ -134,6 +134,7 @@ void GirlX::setupLuaGlobal()
             string = string,
             pairs = pairs,
             ipairs = ipairs,
+            tostring = tostring,
             print = function(...)
                 local args = table.pack(...)
                 for i = 1, args.n do

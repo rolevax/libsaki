@@ -99,6 +99,39 @@ void setupLuaTile(sol::environment env, LuaUserErrorHandler &error)
         sol::meta_function::to_string, &T34::str,
         "all", sol::var(std::vector<T34>(tiles34::ALL34.begin(), tiles34::ALL34.end()))
     );
+
+    env.new_usertype<T37>(
+        "T37",
+        sol::meta_function::construct, sol::factories(
+            [&error](int ti) {
+                if (ti < 0 || ti >= 34) {
+                    error.handleUserError("invalid T34 id");
+                    return T37();
+                }
+
+                return T37(ti);
+            },
+            [&error](std::string suit, int v) {
+                if (!(0 <= v && v <= 9)) {
+                    error.handleUserError("invalid T34 val");
+                    return T37();
+                }
+
+                if (!isValidSuitStr(suit)) {
+                    error.handleUserError("invalid T34 suit");
+                    return T37();
+                }
+
+                return T37(T34::suitOf(suit[0]), v);
+            },
+            [&error](const std::string s) {
+                // FUCK dummy T37::isValidStr()
+                // or T37::fromStr() -> optional<T37>
+                return T37();
+            }
+        ),
+        sol::base_classes, sol::bases<T34>()
+    );
 }
 
 void setupLuaWho(sol::environment env)
@@ -204,6 +237,7 @@ void setupLuaHand(sol::environment env)
         "Hand",
         "closed", &Hand::closed,
         "ct", &Hand::ct,
+        "ctaka5", &Hand::ctAka5,
         "ready", &Hand::ready,
         "step", &Hand::step,
         "step4", &Hand::step4,
@@ -212,7 +246,15 @@ void setupLuaHand(sol::environment env)
         "effa", &Hand::effA,
         "effa4", &Hand::effA4,
         "ismenzen", &Hand::isMenzen,
-        "barks", &Hand::barks
+        "barks", &Hand::barks,
+        sol::meta_function::modulus, sol::overload(
+            [](const util::Stactor<T37, 5> &ids, const Hand &hand) {
+                return ids % hand;
+            },
+            [](T34 indic, const Hand &hand) {
+                return indic % hand;
+            }
+        )
     );
 }
 
@@ -225,7 +267,8 @@ void setupLuaGame(sol::environment env)
         "getextraround", &Table::getExtraRound,
         "getdealer", &Table::getDealer,
         "getselfwind", &Table::getSelfWind,
-        "getroundwind", &Table::getRoundWind
+        "getroundwind", &Table::getRoundWind,
+        "getriver", &Table::getRiver
     );
 }
 
