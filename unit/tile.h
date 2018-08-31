@@ -138,7 +138,7 @@ public:
         unreached("T34::val(): invalid");
     }
 
-    const char *str() const
+    const char *str34() const
     {
         static const std::array<const char *, 34> STRS {
             "1m", "2m", "3m", "4m", "5m", "6m", "7m", "8m", "9m",
@@ -321,7 +321,7 @@ private:
 
 inline std::ostream &operator<<(std::ostream &os, T34 t)
 {
-    return os << t.str();
+    return os << t.str34();
 }
 
 template<size_t MAX>
@@ -378,11 +378,10 @@ public:
 
     ///
     /// \brief String representation of the tile
-    /// \return "0m", "0p", "0s" when the tile is an aka5, T34::str() otherwise.
+    /// \return "0m", "0p", "0s" when the tile is an aka5,
+    ///         T34::str34() otherwise.
     ///
-    /// This function is not virtual
-    ///
-    const char *str() const
+    const char *str37() const
     {
         if (isAka5()) {
             switch (suit()) {
@@ -392,7 +391,7 @@ public:
             default: unreached("T37::str(): aka5 but z");
             }
         } else {
-            return T34::str();
+            return T34::str34();
         }
     }
 
@@ -442,7 +441,7 @@ inline int operator%(const util::Stactor<T37, 5> &inds, const T37 &d)
 
 inline std::ostream &operator<<(std::ostream &os, const T37 &t)
 {
-    return os << t.str();
+    return os << t.str37();
 }
 
 template<size_t MAX>

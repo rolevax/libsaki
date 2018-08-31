@@ -96,7 +96,7 @@ void setupLuaTile(sol::environment env, LuaUserErrorHandler &error)
         "suit", [](T34 t) { return T34::charOf(t.suit()); },
         "val", &T34::val,
         "isyakuhai", &T34::isYakuhai,
-        sol::meta_function::to_string, &T34::str,
+        sol::meta_function::to_string, &T34::str34,
         "all", sol::var(std::vector<T34>(tiles34::ALL34.begin(), tiles34::ALL34.end()))
     );
 

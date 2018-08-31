@@ -219,7 +219,7 @@ TokiEventDrawn *TokiEventDrawn::clone() const
 void TokiEventDrawn::print(std::ostream &os, Who toki) const
 {
     (void) toki;
-    os << "\nDRAW " << mTile.str();
+    os << "\nDRAW " << mTile.str37();
 }
 
 TokiEventFlipped::TokiEventFlipped(const T37 &t)
@@ -258,7 +258,7 @@ bool TokiEventDiscarded::isDiscard() const
 void TokiEventDiscarded::print(std::ostream &os, Who toki) const
 {
     (void) toki;
-    os << (mSpin ? " *" : " ") << mTile.str() << (mRiichi ? "RII" : "");
+    os << (mSpin ? " *" : " ") << mTile.str37() << (mRiichi ? "RII" : "");
 }
 
 TokiMountTracker::TokiMountTracker(Mount &mount, Who self)

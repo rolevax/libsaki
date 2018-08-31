@@ -68,7 +68,7 @@ unsigned createSwapMask(const TileCount &closed,
 
 std::string stringOf(const T37 &t, bool lay)
 {
-    std::string res(t.str());
+    std::string res(t.str37());
     if (lay)
         res += '_';
 
@@ -180,13 +180,13 @@ void to_json(json &obj, const Replay::Round &round)
 
     json drids;
     for (const saki::T37 &t : round.drids)
-        drids.push_back(t.str());
+        drids.push_back(t.str37());
 
     obj["drids"] = drids;
 
     json urids;
     for (const saki::T37 &t : round.urids)
-        urids.push_back(t.str());
+        urids.push_back(t.str37());
 
     obj["urids"] = urids;
 
@@ -202,7 +202,7 @@ void to_json(json &obj, const Replay::Track &track)
         using In = Replay::In;
         switch (inAct.act) {
         case In::DRAW:
-            return inAct.t37.str();
+            return inAct.t37.str37();
         case In::CHII_AS_LEFT: // 'b' means 'begin'
             return str("b") + std::to_string(inAct.showAka5);
         case In::CHII_AS_MIDDLE: // 'm' means 'middle'
@@ -226,17 +226,17 @@ void to_json(json &obj, const Replay::Track &track)
         using Out = Replay::Out;
         switch (outAct.act) {
         case Out::ADVANCE:
-            return outAct.t37.str();
+            return outAct.t37.str37();
         case Out::SPIN:
             return "->";
         case Out::RIICHI_ADVANCE:
-            return str("!") + outAct.t37.str();
+            return str("!") + outAct.t37.str37();
         case Out::RIICHI_SPIN:
             return "!->";
         case Out::ANKAN:
-            return str("a") + outAct.t37.str();
+            return str("a") + outAct.t37.str37();
         case Out::KAKAN:
-            return str("k") + outAct.t37.str();
+            return str("k") + outAct.t37.str37();
         case Out::RYUUKYOKU:
             return "~";
         case Out::TSUMO:
@@ -251,7 +251,7 @@ void to_json(json &obj, const Replay::Track &track)
 
     json initArr;
     for (const saki::T37 &t : track.init)
-        initArr.push_back(t.str());
+        initArr.push_back(t.str37());
 
     obj["init"] = initArr;
 
