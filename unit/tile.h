@@ -343,6 +343,25 @@ inline std::ostream &operator<<(std::ostream &os, const util::Stactor<T34, MAX> 
 class T37 : public T34
 {
 public:
+    static bool isValidStr(const char *str)
+    {
+        if (str[2] != '\0')
+            return false;
+
+        switch (str[1]) {
+        case 'm':
+        case 'p':
+        case 's':
+            return '0' <= str[0] && str[0] <= '9';
+        case 'f':
+            return '1' <= str[0] && str[0] <= '4';
+        case 'y':
+            return '1' <= str[0] && str[0] <= '3';
+        default:
+            return false;
+        }
+    }
+
     /// \brief Garbage value
     T37()
         : T34()

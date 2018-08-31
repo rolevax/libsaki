@@ -62,19 +62,6 @@ void setupLuaTile(sol::environment env, LuaUserErrorHandler &error)
 
                 return T34(ti);
             },
-            [&error](std::string suit, int v) {
-                if (!(1 <= v && v <= 9)) {
-                    error.handleUserError("invalid T34 val");
-                    return T34();
-                }
-
-                if (!isValidSuitStr(suit)) {
-                    error.handleUserError("invalid T34 suit");
-                    return T34();
-                }
-
-                return T34(T34::suitOf(suit[0]), v);
-            },
             [&error](const std::string s) {
                 static const std::array<std::string, 34> dict {
                     "1m", "2m", "3m", "4m", "5m", "6m", "7m", "8m", "9m",
@@ -95,6 +82,7 @@ void setupLuaTile(sol::environment env, LuaUserErrorHandler &error)
         "id34", &T34::id34,
         "suit", [](T34 t) { return T34::charOf(t.suit()); },
         "val", &T34::val,
+        "str34", &T34::str34,
         "isyakuhai", &T34::isYakuhai,
         sol::meta_function::to_string, &T34::str34,
         "all", sol::var(std::vector<T34>(tiles34::ALL34.begin(), tiles34::ALL34.end()))
@@ -111,25 +99,17 @@ void setupLuaTile(sol::environment env, LuaUserErrorHandler &error)
 
                 return T37(ti);
             },
-            [&error](std::string suit, int v) {
-                if (!(0 <= v && v <= 9)) {
-                    error.handleUserError("invalid T34 val");
-                    return T37();
-                }
-
-                if (!isValidSuitStr(suit)) {
-                    error.handleUserError("invalid T34 suit");
-                    return T37();
-                }
-
-                return T37(T34::suitOf(suit[0]), v);
-            },
             [&error](const std::string s) {
-                // FUCK dummy T37::isValidStr()
-                // or T37::fromStr() -> optional<T37>
-                return T37();
+                if (!T37::isValidStr(s.c_str())) {
+                    error.handleUserError("invalid T37 suit");
+                    return T37();
+                }
+                return T37(s.c_str());
             }
         ),
+        "isaka5", &T37::isAka5,
+        "str37", &T37::str37,
+        sol::meta_function::to_string, &T37::str37,
         sol::base_classes, sol::bases<T34>()
     );
 }

@@ -53,21 +53,20 @@ function ondraw()
       mount:lighta(t:dora(), 80)
     end
 
-    -- FUCK add ctor to T37
-    mount:lighta(T37.new("m", 0), 30)
-    mount:lighta(T37.new("p", 0), 30)
-    mount:lighta(T37.new("s", 0), 30)
+    mount:lighta(T37.new("0m"), 30)
+    mount:lighta(T37.new("0p"), 30)
+    mount:lighta(T37.new("0s"), 30)
   end
 end
 
 function accelerate(mount, hand, river, mk)
   local trashes = {}
   for _, t in ipairs(river) do
-    trashes[tostring(t)] = true
+    trashes[t:id34()] = true
   end
 
   for _, t in ipairs(hand:effa()) do
-    if not trashes[tostring(t)] then
+    if not trashes[t:id34()] then
       mount:lighta(t, mk)
     end
   end

@@ -96,7 +96,7 @@ function dye(closed, mount, mk)
   end
 
   for i = 1,9 do
-    mount:lighta(T34.new(maxsuit, i), mk)
+    mount:lighta(T34.new(i .. maxsuit), mk)
   end
 end
 
@@ -105,8 +105,8 @@ function dyed(hand)
   local suits = { "m", "p", "s" }
   local suitcount = 0
   for _, suit in ipairs(suits) do
-    for i = 1,9 do
-      if hand:ct(T34.new(suit, i)) > 0 then
+    for i = 1, 9 do
+      if hand:ct(T34.new(i .. suit)) > 0 then
         suitcount = suitcount + 1
         if suitcount >= 2 then
           return false
