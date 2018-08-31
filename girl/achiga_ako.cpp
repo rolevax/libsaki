@@ -92,7 +92,7 @@ int Ako::ittDist(const TileCount &closed, T34 head)
         for (int i = 1; i <= 3; i++)
             sum += (closed.ct(T34(s, i)) > 0);
 
-        for (int i = 7; i <= 8; i++)
+        for (int i = 7; i <= 9; i++)
             sum += (closed.ct(T34(s, i)) > 0);
     } else if (v == 7) {
         for (int i = 1; i <= 6; i++)
