@@ -187,7 +187,7 @@ void setupLuaMount(sol::environment env, LuaUserErrorHandler &error)
                 mount.incMk(e, pos, t, delta, bSpace);
             }
         ),
-        "loadB", &Mount::loadB
+        "loadb", &Mount::loadB
     );
 }
 
@@ -227,6 +227,12 @@ void setupLuaHand(sol::environment env)
         "effa4", &Hand::effA4,
         "ismenzen", &Hand::isMenzen,
         "barks", &Hand::barks,
+        "canchii", &Hand::canChii,
+        "canchiiasleft", &Hand::canChiiAsLeft,
+        "canchiiasmiddle", &Hand::canChiiAsMiddle,
+        "canchiiasright", &Hand::canChiiAsRight,
+        "canpon", &Hand::canPon,
+        "candaiminkan", &Hand::canDaiminkan,
         sol::meta_function::modulus, sol::overload(
             [](const util::Stactor<T37, 5> &ids, const Hand &hand) {
                 return ids % hand;
@@ -248,7 +254,8 @@ void setupLuaGame(sol::environment env)
         "getdealer", &Table::getDealer,
         "getselfwind", &Table::getSelfWind,
         "getroundwind", &Table::getRoundWind,
-        "getriver", &Table::getRiver
+        "getriver", &Table::getRiver,
+        "riichiestablished", &Table::riichiEstablished
     );
 }
 
