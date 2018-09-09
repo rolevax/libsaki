@@ -76,7 +76,7 @@ void setupLuaTile(sol::environment env, LuaUserErrorHandler &error)
                     return T34();
                 }
 
-                return T34(it - dict.begin());
+                return T34(static_cast<int>(it - dict.begin()));
             }
         ),
         "id34", &T34::id34,

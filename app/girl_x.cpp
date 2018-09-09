@@ -106,7 +106,7 @@ void GirlX::onTableEvent(const Table &table, const TableEvent &event)
     if (event.type() == TableEvent::Type::TABLE_STARTED)
         popUpIfAny(table);
 
-    sol::object cb = mGirlEnv["ontableevent"];
+    sol::object cb = mGirlEnv["ongameevent"];
     if (!cb.is<sol::function>())
         return;
 
@@ -118,7 +118,7 @@ void GirlX::onTableEvent(const Table &table, const TableEvent &event)
 
     (void) scope;
 
-    runInGirlEnv("ontableevent()");
+    runInGirlEnv("ongameevent()");
     popUpIfAny(table);
 }
 

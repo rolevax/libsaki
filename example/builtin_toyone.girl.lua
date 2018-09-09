@@ -59,7 +59,7 @@ function accelerate(mount, hand)
     effaset[t:id34()] = true
   end
 
-  for _, t in T34.all34 do
+  for _, t in ipairs(T34.all) do
     local mk = effaset[t:id34()] and 1400 or -100
     mount:lighta(t, mk)
     mount:lightb(t, mk / 10)
