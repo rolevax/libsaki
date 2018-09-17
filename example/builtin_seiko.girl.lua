@@ -16,8 +16,9 @@ function checkinit()
     "1f", "2f", "3f", "4f", "1y", "2y", "3y"
   }
   
-  for _, t in ipairs(yaos) do
-    if init:closed();ct(t) == 2 then
+  for _, str in ipairs(yaos) do
+    local t = T34.new(str)
+    if init:closed():ct(t) == 2 then
       yaopairct = yaopairct + 1
     end
   end
@@ -66,7 +67,8 @@ function ondraw()
         "1y", "2y", "3y"
       }
 
-      for _, t in ipairs(nextpairs) do
+      for _, str in ipairs(nextpairs) do
+        local t = T34.new(str)
         if closed:ct(t) == 1 then
           mount:lighta(t, 400)
         end
