@@ -15,7 +15,9 @@ bool isValidSuitStr(const std::string &s)
 std::string toLower(const char *s)
 {
     std::string res(s);
-    std::for_each(res.begin(), res.end(), [](char &c) { c = std::tolower(c); });
+    std::for_each(res.begin(), res.end(), [](char &c) {
+        c = static_cast<char>(std::tolower(c));
+    });
     return res;
 }
 
@@ -38,11 +40,32 @@ std::pair<Mount::Exit, bool> parseMountExit(const std::string &s)
     return res;
 }
 
-void setupLuaClasses(sol::environment env, LuaUserErrorHandler &error)
+template<typename Class, typename Ret, typename... Args>
+class AsTable
+{
+public:
+    using Method = Ret (Class::*)(Args...) const;
+    using Table = sol::as_table_t<sol::meta::unqualified_t<Ret>>;
+
+    explicit AsTable(Method method)
+        : mMethod(method)
+    {
+    }
+
+    Table operator()(Class &thiz, Args... args)
+    {
+        return sol::as_table((thiz.*mMethod)(args...));
+    }
+
+private:
+    Method mMethod;
+};
+
+void setupLuaClasses(const sol::environment &env, LuaUserErrorHandler &error)
 {
     setupLuaTile(env, error);
     setupLuaWho(env);
-    setupLuaMeld(env);
+    setupLuaMeld(env, error);
     setupLuaMount(env, error);
     setupLuaTileCount(env, error);
     setupLuaHand(env);
@@ -126,14 +149,23 @@ void setupLuaWho(sol::environment env)
     );
 }
 
-void setupLuaMeld(sol::environment env)
+void setupLuaMeld(sol::environment env, LuaUserErrorHandler &error)
 {
     env.new_usertype<M37>(
         "M37",
         "type", [](const M37 &m) {
             return toLower(util::stringOf(m.type()));
         },
-        sol::meta_function::index, &M37::operator[]
+        sol::meta_function::index, [&error](const M37 &m, int index) {
+            int zeroIndex = index - 1;
+            int size = static_cast<int>(m.tiles().size());
+            if (zeroIndex < 0 || zeroIndex > size) {
+                error.handleUserError("invalid meld index");
+                return T37();
+            }
+
+            return m[index];
+        }
     );
 }
 
@@ -151,8 +183,8 @@ void setupLuaMount(sol::environment env, LuaUserErrorHandler &error)
                 mount.remainA(t);
             }
         ),
-        "getdrids", &Mount::getDrids,
-        "geturids", &Mount::getUrids,
+        "getdrids", AsTable(&Mount::getDrids),
+        "geturids", AsTable(&Mount::getUrids),
         "lighta", sol::overload(
             [](Mount &mount, T34 t, int mk, bool rin) {
                 mount.lightA(t, mk, rin);
@@ -223,10 +255,10 @@ void setupLuaHand(sol::environment env)
         "step4", &Hand::step4,
         "step7", &Hand::step7,
         "step13", &Hand::step13,
-        "effa", &Hand::effA,
-        "effa4", &Hand::effA4,
+        "effa", AsTable(&Hand::effA),
+        "effa4", AsTable(&Hand::effA4),
         "ismenzen", &Hand::isMenzen,
-        "barks", &Hand::barks,
+        "barks", AsTable(&Hand::barks),
         "canchii", &Hand::canChii,
         "canchiiasleft", &Hand::canChiiAsLeft,
         "canchiiasmiddle", &Hand::canChiiAsMiddle,
@@ -254,7 +286,7 @@ void setupLuaGame(sol::environment env)
         "getdealer", &Table::getDealer,
         "getselfwind", &Table::getSelfWind,
         "getroundwind", &Table::getRoundWind,
-        "getriver", &Table::getRiver,
+        "getriver", AsTable(&Table::getRiver),
         "riichiestablished", &Table::riichiEstablished
     );
 }

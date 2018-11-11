@@ -13,15 +13,21 @@ namespace saki
 class LuaUserErrorHandler
 {
 public:
+    LuaUserErrorHandler(const LuaUserErrorHandler &copy) = default;
+    LuaUserErrorHandler(LuaUserErrorHandler &&move) = default;
+    LuaUserErrorHandler &operator=(const LuaUserErrorHandler &copy) = default;
+    LuaUserErrorHandler &operator=(LuaUserErrorHandler &&move) = default;
+    virtual ~LuaUserErrorHandler() = default;
+
     virtual void handleUserError(const char *msg) = 0;
 };
 
 
 
-void setupLuaClasses(sol::environment env, LuaUserErrorHandler &error);
+void setupLuaClasses(const sol::environment &env, LuaUserErrorHandler &error);
 void setupLuaTile(sol::environment env, LuaUserErrorHandler &error);
 void setupLuaWho(sol::environment env);
-void setupLuaMeld(sol::environment env);
+void setupLuaMeld(sol::environment env, LuaUserErrorHandler &error);
 void setupLuaMount(sol::environment env, LuaUserErrorHandler &error);
 void setupLuaTileCount(sol::environment env, LuaUserErrorHandler &error);
 void setupLuaHand(sol::environment env);

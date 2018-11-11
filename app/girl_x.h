@@ -20,6 +20,10 @@ class GirlX : public Girl, public LuaUserErrorHandler
 public:
     GirlX(Who who, std::string luaCode);
     GirlX(const GirlX &copy);
+    GirlX(GirlX &&move) = default;
+    GirlX &operator=(const GirlX &copy) = delete;
+    GirlX &operator=(GirlX &&move) = delete;
+    ~GirlX() override = default;
 
     std::unique_ptr<Girl> clone() const override;
 
