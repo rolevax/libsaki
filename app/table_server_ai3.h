@@ -26,6 +26,8 @@ public:
     Msgs start();
     Msgs action(const Action &action);
 
+    const Table &table();
+
 private:
     Msgs filterMsgs(const TableServer::Msgs &srcs);
     void filterSystemMsg(const TableMsgContent &content, MsgBackInserter it);

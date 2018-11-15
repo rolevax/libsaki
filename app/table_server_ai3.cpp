@@ -28,6 +28,11 @@ TableServerAi3::Msgs TableServerAi3::action(const Action &action)
     return filterMsgs(msgs);
 }
 
+const Table &TableServerAi3::table()
+{
+    return mServer.table();
+}
+
 TableServerAi3::Msgs TableServerAi3::filterMsgs(const TableServer::Msgs &srcs)
 {
     Msgs msgs;
