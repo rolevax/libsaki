@@ -13,6 +13,7 @@ namespace saki
 class LuaUserErrorHandler
 {
 public:
+    LuaUserErrorHandler() = default;
     LuaUserErrorHandler(const LuaUserErrorHandler &copy) = default;
     LuaUserErrorHandler(LuaUserErrorHandler &&move) = default;
     LuaUserErrorHandler &operator=(const LuaUserErrorHandler &copy) = default;
