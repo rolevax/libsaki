@@ -29,6 +29,7 @@ void setupLuaClasses(const sol::environment &env, LuaUserErrorHandler &error);
 void setupLuaTile(sol::environment env, LuaUserErrorHandler &error);
 void setupLuaWho(sol::environment env);
 void setupLuaMeld(sol::environment env, LuaUserErrorHandler &error);
+void setupLuaExist(sol::environment env, LuaUserErrorHandler &error);
 void setupLuaMount(sol::environment env, LuaUserErrorHandler &error);
 void setupLuaTileCount(sol::environment env, LuaUserErrorHandler &error);
 void setupLuaHand(sol::environment env);

@@ -20,18 +20,18 @@ void Kuro::onMonkey(std::array<Exist, 4> &exists, const Table &table)
 
     int self = mSelf.index();
     if (mCd) {
-        exists[self].inc(dora, -EJECT_MK);
-        exists[self].inc(0_m, -EJECT_MK);
-        exists[self].inc(0_p, -EJECT_MK);
-        exists[self].inc(0_s, -EJECT_MK);
+        exists[self].incMk(dora, -EJECT_MK);
+        exists[self].incMk(0_m, -EJECT_MK);
+        exists[self].incMk(0_p, -EJECT_MK);
+        exists[self].incMk(0_s, -EJECT_MK);
     } else {
         for (int w = 0; w < 4; w++) {
             int doraDelta = w == self ? 150 : -EJECT_MK;
             int akadoraDelta = w == self ? 60 : -EJECT_MK;
-            exists[w].inc(dora, doraDelta);
-            exists[w].inc(0_m, akadoraDelta);
-            exists[w].inc(0_p, akadoraDelta);
-            exists[w].inc(0_s, akadoraDelta);
+            exists[w].incMk(dora, doraDelta);
+            exists[w].incMk(0_m, akadoraDelta);
+            exists[w].incMk(0_p, akadoraDelta);
+            exists[w].incMk(0_s, akadoraDelta);
         }
     }
 }

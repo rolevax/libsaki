@@ -19,6 +19,7 @@ GirlX::GirlX(Who who, std::string luaCode)
 
 GirlX::GirlX(const GirlX &copy)
     : Girl(copy)
+    , LuaUserErrorHandler(copy)
 {
     // TODO
     // support cloning Lua state to enable skills inside future vision
@@ -68,6 +69,30 @@ bool GirlX::checkInit(Who who, const Hand &init, const Table &table, int iter)
 
     popUpIfAny(table);
     return res.is<bool>() ? res.as<bool>() : true;
+}
+
+void GirlX::onMonkey(std::array<Exist, 4> &exists, const Table &table)
+{
+    sol::object cb = mGirlEnv["onmonkey"];
+    if (!cb.is<sol::function>())
+        return;
+
+    // first use pointers to prevent copy,
+    // then use sol::as_table to round off index-out-of-bound
+    std::array<Exist *, 4> existPtrs;
+    std::transform(exists.begin(), exists.end(), existPtrs.begin(),
+                   [](Exist &e) { return &e; });
+
+    LuaVarScope scope(
+        mGirlEnv,
+        "game", &table,
+        "exists", sol::as_table(existPtrs)
+    );
+
+    (void) scope;
+
+    runInGirlEnv("onmonkey()");
+    popUpIfAny(table);
 }
 
 void GirlX::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)

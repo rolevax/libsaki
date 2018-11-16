@@ -66,6 +66,7 @@ void setupLuaClasses(const sol::environment &env, LuaUserErrorHandler &error)
     setupLuaTile(env, error);
     setupLuaWho(env);
     setupLuaMeld(env, error);
+    setupLuaExist(env, error);
     setupLuaMount(env, error);
     setupLuaTileCount(env, error);
     setupLuaHand(env);
@@ -166,6 +167,22 @@ void setupLuaMeld(sol::environment env, LuaUserErrorHandler &error)
 
             return m[index];
         }
+    );
+}
+
+void setupLuaExist(sol::environment env, LuaUserErrorHandler &error)
+{
+    (void) error;
+    env.new_usertype<Exist>(
+        "Exist",
+        "incmk", sol::overload(
+            [](Exist &exist, T34 t, int delta) {
+                exist.incMk(t, delta);
+            },
+            [](Exist &exist, const T37 &t, int delta) {
+                exist.incMk(t, delta);
+            }
+        )
     );
 }
 
@@ -363,7 +380,7 @@ sol::table toLuaTable(sol::environment env, const TableEvent &event)
     return env.create_with(
         "type", util::stringOf(event.type()),
         "args", args
-    );
+                );
 }
 
 

@@ -29,12 +29,12 @@ void Awai::onMonkey(std::array<Exist, 4> &exists, const Table &table)
     int self = mSelf.index();
 
     T34 dora = table.getMount().getDrids().front().dora();
-    exists[self].inc(dora, -EJECT_MK);
+    exists[self].incMk(dora, -EJECT_MK);
 
     using namespace tiles37;
-    exists[self].inc(0_m, -EJECT_MK);
-    exists[self].inc(0_p, -EJECT_MK);
-    exists[self].inc(0_s, -EJECT_MK);
+    exists[self].incMk(0_m, -EJECT_MK);
+    exists[self].incMk(0_p, -EJECT_MK);
+    exists[self].incMk(0_s, -EJECT_MK);
 }
 
 void Awai::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)

@@ -33,10 +33,10 @@ void Suzu::onMonkey(std::array<Exist, 4> &exists, const Table &table)
 
     for (Suit s : { Suit::M, Suit::P, Suit::S })
         for (int i = 0; i < 4; i++)
-            exists[mSelf.index()].inc(T34(s, 6 + i), POWERS[i]);
+            exists[mSelf.index()].incMk(T34(s, 6 + i), POWERS[i]);
 
     for (T34 t : tiles34::Z7)
-        exists[mSelf.index()].inc(t, Z_POWER);
+        exists[mSelf.index()].incMk(t, Z_POWER);
 }
 
 bool Suzu::checkInit(Who who, const Hand &init, const Table &table, int iter)

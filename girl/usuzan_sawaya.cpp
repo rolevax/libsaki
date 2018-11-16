@@ -57,15 +57,15 @@ void Sawaya::onMonkey(std::array<Exist, 4> &exists, const Table &table)
     if (usingCloud(Cloud::RED) && usingCloud(Cloud::RED_RIVALS)) {
         for (T34 t : tiles34::Z7)
             for (int w = 0; w < 4; w++)
-                exists[w].inc(t, w == mSelf.index() ? 100 : -1000);
+                exists[w].incMk(t, w == mSelf.index() ? 100 : -1000);
     } else if (usingCloud(Cloud::RED) && usingCloud(Cloud::RED_SELF)) {
         for (T34 t : tiles34::Z7)
-            exists[mSelf.index()].inc(t, -1000);
+            exists[mSelf.index()].incMk(t, -1000);
     }
 
     if (usingCloud(Cloud::WHITE))
         for (int i = 18; i < 27; i++) // bamboo
-            exists[mSelf.index()].inc(T34(i), 70);
+            exists[mSelf.index()].incMk(T34(i), 70);
 }
 
 void Sawaya::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)

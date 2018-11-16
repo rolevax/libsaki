@@ -34,10 +34,10 @@ void Kasumi::onMonkey(std::array<Exist, 4> &exists, const Table &table)
             if (t.isNum()
                 && ((t.suit() == mZimSuit && Who(w) != mSelf)
                     || (t.suit() != mZimSuit && Who(w) == mSelf)))
-                exists[w].inc(t, -1000);
+                exists[w].incMk(t, -1000);
 
             if (t.isZ() && Who(w) == mSelf)
-                exists[w].inc(t, -20);
+                exists[w].incMk(t, -20);
         }
     }
 }

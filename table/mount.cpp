@@ -17,7 +17,7 @@ Exist::Exist()
     mRed.fill(0);
 }
 
-void Exist::inc(const T37 &t, int delta)
+void Exist::incMk(const T37 &t, int delta)
 {
     if (t.isAka5())
         mRed[static_cast<int>(t.suit())] += delta;
@@ -25,7 +25,7 @@ void Exist::inc(const T37 &t, int delta)
         mBlack[t.id34()] += delta;
 }
 
-void Exist::inc(T34 t, int delta)
+void Exist::incMk(T34 t, int delta)
 {
     if (t.val() == 5) {
         int red = delta / 4;
@@ -40,11 +40,11 @@ void Exist::inc(T34 t, int delta)
 void Exist::addBaseMk(const TileCount &stoch)
 {
     for (T34 t : tiles34::ALL34)
-        inc(t, stoch.ct(T37(t.id34())) * BASE_MK);
+        incMk(t, stoch.ct(T37(t.id34())) * BASE_MK);
 
     using namespace tiles37;
     for (const T37 &t : { 0_m, 0_p, 0_s })
-        inc(t, stoch.ct(t) * BASE_MK);
+        incMk(t, stoch.ct(t) * BASE_MK);
 }
 
 Exist::Polar Exist::polarize(const TileCount &stoch) const
@@ -168,7 +168,7 @@ void Mount::incMk(Exit exit, size_t pos, T34 t, int delta, bool bSpace)
     Erwin &erwin = prepareSuperpos(exit, pos);
     if (!erwin.earlyCollapse) {
         Exist &exist = bSpace ? erwin.exB : erwin.exA;
-        exist.inc(t, delta);
+        exist.incMk(t, delta);
     }
 }
 
@@ -177,7 +177,7 @@ void Mount::incMk(Mount::Exit exit, size_t pos, const T37 &t, int delta, bool bS
     Erwin &erwin = prepareSuperpos(exit, pos);
     if (!erwin.earlyCollapse) {
         Exist &exist = bSpace ? erwin.exB : erwin.exA;
-        exist.inc(t, delta);
+        exist.incMk(t, delta);
     }
 }
 

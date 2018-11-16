@@ -38,8 +38,8 @@ public:
     Exist(const Exist &copy) = default;
     Exist &operator=(const Exist &assign) = default;
 
-    void inc(const T37 &t, int delta);
-    void inc(T34 t, int delta);
+    void incMk(const T37 &t, int delta);
+    void incMk(T34 t, int delta);
     void addBaseMk(const TileCount &stoch);
 
     Polar polarize(const TileCount &stoch) const;

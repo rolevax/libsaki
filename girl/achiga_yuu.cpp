@@ -22,13 +22,13 @@ void Yuu::onMonkey(std::array<Exist, 4> &exists, const Table &table)
     (void) table;
 
     for (T34 t : LV5_TARS)
-        exists[mSelf.index()].inc(t, LV5_VAL);
+        exists[mSelf.index()].incMk(t, LV5_VAL);
 
     for (T34 t : LV4_TARS)
-        exists[mSelf.index()].inc(t, LV4_VAL);
+        exists[mSelf.index()].incMk(t, LV4_VAL);
 
     for (T34 t : LV3_TARS)
-        exists[mSelf.index()].inc(t, LV3_VAL);
+        exists[mSelf.index()].incMk(t, LV3_VAL);
 }
 
 void Yuu::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
