@@ -107,8 +107,17 @@ void setupLuaTile(sol::environment env, LuaUserErrorHandler &error)
         "suit", [](T34 t) { return T34::charOf(t.suit()); },
         "val", &T34::val,
         "str34", &T34::str34,
+        "isz", &T34::isZ,
+        "isnum", &T34::isNum,
+        "isnum19", &T34::isNum19,
+        "isyao", &T34::isYao,
         "isyakuhai", &T34::isYakuhai,
+        "dora", &T34::dora,
+        "indicator", &T34::indicator,
         sol::meta_function::to_string, &T34::str34,
+        sol::meta_function::equal_to, &T34::operator==,
+        sol::meta_function::less_than, &T34::operator<,
+        sol::meta_function::modulus, &T34::operator%,
         "all", sol::var(std::vector<T34>(tiles34::ALL34.begin(), tiles34::ALL34.end()))
     );
 
@@ -132,6 +141,7 @@ void setupLuaTile(sol::environment env, LuaUserErrorHandler &error)
             }
         ),
         "isaka5", &T37::isAka5,
+        "lookssame", &T37::looksSame,
         "str37", &T37::str37,
         sol::meta_function::to_string, &T37::str37,
         sol::base_classes, sol::bases<T34>()
@@ -145,7 +155,12 @@ void setupLuaWho(sol::environment env)
         "right", &Who::right,
         "cross", &Who::cross,
         "left", &Who::left,
-        sol::meta_function::to_string, &Who::index,
+        "bydice", &Who::byDice,
+        "byturn", &Who::byTurn,
+        "looksat", &Who::looksAt,
+        "turnfrom", &Who::turnFrom,
+        "index", [](Who w) { return w.index() + 1; },
+        sol::meta_function::to_string, [](Who w) { return w.index() + 1; },
         sol::meta_function::equal_to, &Who::operator==
     );
 }
@@ -157,6 +172,7 @@ void setupLuaMeld(sol::environment env, LuaUserErrorHandler &error)
         "type", [](const M37 &m) {
             return toLower(util::stringOf(m.type()));
         },
+        "has", &M37::has,
         sol::meta_function::index, [&error](const M37 &m, int index) {
             int zeroIndex = index - 1;
             int size = static_cast<int>(m.tiles().size());
