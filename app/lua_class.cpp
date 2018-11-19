@@ -315,8 +315,23 @@ void setupLuaHand(sol::environment env)
         "canpon", &Hand::canPon,
         "candaiminkan", &Hand::canDaiminkan,
         sol::meta_function::modulus, sol::overload(
-            [](const util::Stactor<T37, 5> &ids, const Hand &hand) {
-                return ids % hand;
+            [](sol::table ids, const Hand &hand) {
+                int ct = 0;
+                for (auto [key, ref] : ids) {
+                    (void) ref; // conv-to-opt doesn't work somehow
+
+                    std::optional<T34> id;
+                    id = ids[key];
+                    if (id == std::nullopt) {
+                        std::optional<T37> id37 = ids[key];
+                        id = id37;
+                    }
+
+                    if (id != std::nullopt)
+                        ct += *id % hand;
+                }
+
+                return ct;
             },
             [](T34 indic, const Hand &hand) {
                 return indic % hand;
