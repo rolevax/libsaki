@@ -222,7 +222,13 @@ void setupLuaMount(sol::environment env, LuaUserErrorHandler &error)
             [](Mount &mount, T34 t, int mk, bool rin) {
                 mount.lightA(t, mk, rin);
             },
+            [](Mount &mount, const T37 &t, int mk, bool rin) {
+                mount.lightA(t, mk, rin);
+            },
             [](Mount &mount, T34 t, int mk) {
+                mount.lightA(t, mk);
+            },
+            [](Mount &mount, const T37 &t, int mk) {
                 mount.lightA(t, mk);
             }
         ),
@@ -230,7 +236,13 @@ void setupLuaMount(sol::environment env, LuaUserErrorHandler &error)
             [](Mount &mount, T34 t, int mk, bool rin) {
                 mount.lightB(t, mk, rin);
             },
+            [](Mount &mount, const T37 &t, int mk, bool rin) {
+                mount.lightB(t, mk, rin);
+            },
             [](Mount &mount, T34 t, int mk) {
+                mount.lightB(t, mk);
+            },
+            [](Mount &mount, const T37 &t, int mk) {
                 mount.lightB(t, mk);
             }
         ),
