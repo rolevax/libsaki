@@ -276,6 +276,9 @@ void setupLuaTileCount(sol::environment env, LuaUserErrorHandler &error)
             [](const TileCount &tc, T34 t) {
                 return tc.ct(t);
             },
+            [](const TileCount &tc, const T37 &t) {
+                return tc.ct(t);
+            },
             [&error](const TileCount &tc, std::string suit) {
                 if (!isValidSuitStr(suit)) {
                     error.handleUserError("invalid suit");
@@ -299,6 +302,7 @@ void setupLuaHand(sol::environment env)
         "step", &Hand::step,
         "step4", &Hand::step4,
         "step7", &Hand::step7,
+        "step7gb", &Hand::step7Gb,
         "step13", &Hand::step13,
         "effa", AsTable(&Hand::effA),
         "effa4", AsTable(&Hand::effA4),
