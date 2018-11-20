@@ -317,11 +317,10 @@ void setupLuaHand(sol::environment env)
         sol::meta_function::modulus, sol::overload(
             [](sol::table ids, const Hand &hand) {
                 int ct = 0;
-                for (auto [key, ref] : ids) {
+                for (const auto &[key, ref] : ids) {
                     (void) ref; // conv-to-opt doesn't work somehow
 
-                    std::optional<T34> id;
-                    id = ids[key];
+                    std::optional<T34> id = ids[key];
                     if (id == std::nullopt) {
                         std::optional<T37> id37 = ids[key];
                         id = id37;
