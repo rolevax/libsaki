@@ -53,7 +53,7 @@ Gen Gen::genForm4Mangan(util::Rand &rand, int han, int selfWind, int roundWind,
     while (true) {
         Gen res = genForm4(rand, tri, quad, open, selfWind, roundWind, rule, ron);
         if (res.form.han() == han
-            && res.form.gain() >= 8000
+            && res.form.manganType() != ManganType::HR
             && !res.form.isPrototypalYakuman()) {
             return res;
         }
