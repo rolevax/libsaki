@@ -55,7 +55,6 @@ private:
     bool usingKamuy(Kamuy which) const;
 
 private:
-    std::array<bool, 4> mRivalMask;
     bool mPredice;
     Who mPaKorTarget;
     bool mConsumedPaKor = false;
