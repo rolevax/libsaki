@@ -32,8 +32,11 @@ private:
     bool aimable(const Table &table);
     bool shootable(const Table &table);
     void pickBullet(const Table &table, Mount &mount);
+    void closeUpToPrey(const Table &table, Mount &mount, bool rinshan);
 
     void shapeYaku(const Table &table, Mount &mount, bool rinshan);
+    bool shapeYakuhai(const Table &table, Mount &mount, bool rinshan);
+    bool shapeTanyao(const Table &table, Mount &mount, bool rinshan);
 
 private:
     // *** SYNC order with 'mIrsCtrl' ***

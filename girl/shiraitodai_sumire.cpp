@@ -1,4 +1,5 @@
 #include "shiraitodai_sumire.h"
+#include "../form/parsed_view.h"
 #include "../table/princess.h"
 #include "../table/table.h"
 #include "../table/table_view_hand.h"
@@ -89,44 +90,10 @@ void Sumire::handleDrawSelf(const Table &table, Mount &mount, bool rinshan)
         return;
     }
 
-    // *INDENT-OFF*
-    auto recoverReady = [&]() {
-        for (T34 t : tiles34::ALL34) {
-            auto equal = [t](const T37 &r) { return t == r; };
-            const auto &river = table.getRiver(mSelf);
-            bool need = t != mWant && hand.hasEffA(t) && util::none(river, equal);
-            mount.lightA(t, need ? 100 : -40, rinshan);
-        }
-    };
-    // *INDENT-ON*
+    if (hand.ready() && hand.hasEffA(mWant))
+        return;
 
-    const TileCount &closed = hand.closed();
-    if (mWant.isYao()) {
-        // isoride
-        if (closed.ct(mWant) == 0) {
-            for (T34 t : tiles34::ALL34) {
-                mount.lightA(t, -40, rinshan);
-                mount.lightB(t, t == mWant ? 100 : -40, rinshan);
-            }
-        } else if (hand.step() > 0) {
-            recoverReady();
-        }
-    } else {
-        // clamp
-        if (closed.ct(mWant.prev()) == 0) {
-            for (T34 t : tiles34::ALL34) {
-                mount.lightA(t, -40, rinshan);
-                mount.lightB(t, t | mWant ? 100 : -40, rinshan);
-            }
-        } else if (closed.ct(mWant.next()) == 0) {
-            for (T34 t : tiles34::ALL34) {
-                mount.lightA(t, -40, rinshan);
-                mount.lightB(t, mWant | t ? 100 : -40, rinshan);
-            }
-        } else {
-            recoverReady();
-        }
-    }
+    closeUpToPrey(table, mount, rinshan);
 }
 
 void Sumire::handleDrawTarget(const Table &table, Mount &mount, bool rinshan)
@@ -264,6 +231,56 @@ void Sumire::pickBullet(const Table &table, Mount &mount)
     }
 }
 
+void Sumire::closeUpToPrey(const Table &table, Mount &mount, bool rinshan)
+{
+    const Hand &hand = table.getHand(mSelf);
+
+    // *INDENT-OFF*
+    auto recoverReady = [&]() {
+        for (T34 t : tiles34::ALL34) {
+            auto equal = [t](const T37 &r) { return t == r; };
+            const auto &river = table.getRiver(mSelf);
+            bool need = t != mWant && hand.hasEffA(t) && util::none(river, equal);
+            mount.lightA(t, need ? 100 : -40, rinshan);
+        }
+    };
+    // *INDENT-ON*
+
+    if (hand.step7() == 0) {
+        util::p("TODO case: 7 pair case, just swap");
+    } if (mWant.isYao()) {
+        util::p("TODO case: mWant is yao");
+        // FUCK
+    } else {
+        // clamp
+        Parsed4s parses = hand.parse4();
+        if (parses.step4() == 0) {
+            for (const auto &parse : parses) {
+                ParsedView4Ready view(parse);
+                if (std::optional<T34> isorider = view.getIsorider()) {
+                    for (T34 t : tiles34::ALL34)
+                        mount.lightA(t, t == *isorider ? 100 : -40, rinshan);
+                } else {
+                    util::Stactor<C34, 2> comelds = view.get2s();
+                    auto need = [&](T34 t) {
+                        auto has =  [t](const C34 &c) { return c.has(t); };
+                        bool related = (t | mWant) || (mWant | t);
+                        return related && util::none(comelds, has);
+                    };
+
+                    for (T34 t : tiles34::ALL34)
+                        mount.lightA(t, need(t) ? 100 : -40, rinshan);
+                }
+            }
+        } else if (parses.step4() == 1) {
+            // FUCK must be in 3 meld + 1 pair + 2 float form,
+            //      otherwise the user is an SB, and just ignore
+        } else { // step4 > 1
+            recoverReady();
+        }
+    }
+}
+
 void Sumire::shapeYaku(const Table &table, Mount &mount, bool rinshan)
 {
     const Hand &hand = table.getHand(mSelf);
@@ -271,23 +288,48 @@ void Sumire::shapeYaku(const Table &table, Mount &mount, bool rinshan)
     if (!hand.isMenzen())
         return;
 
-    // yakuhai
-    int sw = table.getSelfWind(mSelf);
-    int rw = table.getRoundWind();
-    for (T34 z : tiles34::Z7) {
-        if (z.isYakuhai(sw, rw) && hand.closed().ct(z) == 2) {
-            mount.lightA(z, 500, rinshan);
-            return;
-        }
-    }
+    if (shapeYakuhai(table, mount, rinshan))
+        return;
 
-    // tanyao
-    if (hand.closed().sum() - hand.closed().ctYao() <= 2)
-        for (int v = 3; v <= 7; v++)
-            for (Suit s : { Suit::M, Suit::P, Suit::S })
-                mount.lightA(T34(s, v), 100, rinshan);
+    shapeTanyao(table, mount, rinshan);
 
     // TODO 3sk and 1pk (?)
+}
+
+bool Sumire::shapeYakuhai(const Table &table, Mount &mount, bool rinshan)
+{
+    const Hand &hand = table.getHand(mSelf);
+
+    int sw = table.getSelfWind(mSelf);
+    int rw = table.getRoundWind();
+    auto isPluralYakuhai = [&](T34 z) {
+        return z.isYakuhai(sw, rw) && hand.closed().ct(z) >= 2;
+    };
+
+    const auto &z7 = tiles34::Z7;
+    if (util::none(z7, isPluralYakuhai))
+        return false;
+
+    for (T34 z : z7)
+        if (hand.closed().ct(z) == 2)
+            mount.lightA(z, 500, rinshan);
+
+    return true;
+}
+
+bool Sumire::shapeTanyao(const Table &table, Mount &mount, bool rinshan)
+{
+    const Hand &hand = table.getHand(mSelf);
+
+    if (hand.closed().ctYao() > 2)
+        return false;
+
+    for (int v = 3; v <= 7; v++)
+        for (Suit s : { Suit::M, Suit::P, Suit::S })
+            if (hand.hasEffA(T34(s, v)))
+                mount.lightA(T34(s, v), 100, rinshan);
+
+    return true;
 }
 
 
