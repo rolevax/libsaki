@@ -50,6 +50,17 @@ ParsedView4Step1::ParsedView4Step1(const Parsed4 &parsed)
     assert(parsed.step4() == 1);
 }
 
+util::Stactor<T34, 2> ParsedView4Step1::getFrees() const
+{
+    util::Stactor<T34, 2> res;
+
+    for (const C34 &c : mParsed.heads())
+        if (c.type() == C34::Type::FREE)
+            res.pushBack(c.head());
+
+    return res;
+}
+
 
 
 } // namespace saki

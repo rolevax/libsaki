@@ -254,29 +254,58 @@ void Sumire::closeUpToPrey(const Table &table, Mount &mount, bool rinshan)
     } else {
         // clamp
         Parsed4s parses = hand.parse4();
+        util::Stactor<T34, 2> plan; // missing bow parts
+        auto updatePlan = [&](decltype(plan) newPlan) {
+        if (plan.empty() || newPlan.size() < plan.size())
+            plan = std::move(newPlan);
+        };
+
         if (parses.step4() == 0) {
             for (const auto &parse : parses) {
                 ParsedView4Ready view(parse);
                 if (std::optional<T34> isorider = view.getIsorider()) {
-                    for (T34 t : tiles34::ALL34)
-                        mount.lightA(t, t == *isorider ? 100 : -40, rinshan);
+                    if (*isorider != mWant)
+                        updatePlan({ mWant });
                 } else {
                     util::Stactor<C34, 2> comelds = view.get2s();
-                    auto need = [&](T34 t) {
+                    auto missing = [&](T34 t) {
                         auto has =  [t](const C34 &c) { return c.has(t); };
-                        bool related = (t | mWant) || (mWant | t);
-                        return related && util::none(comelds, has);
+                        return util::none(comelds, has);
                     };
 
-                    for (T34 t : tiles34::ALL34)
-                        mount.lightA(t, need(t) ? 100 : -40, rinshan);
+                    util::Stactor<T34, 2> clampers { mWant.prev(), mWant.next() };
+                    util::Stactor<T34, 2> newPlan;
+                    std::copy_if(clampers.begin(), clampers.end(), std::back_inserter(newPlan), missing);
+
+                    updatePlan(newPlan);
                 }
             }
+
+            for (T34 t : tiles34::ALL34)
+                mount.lightA(t, util::has(plan, t) ? 100 : -40, rinshan);
         } else if (parses.step4() == 1) {
-            // FUCK must be in 3 meld + 1 pair + 2 float form,
-            //      otherwise the user is an SB, and just ignore
+            for (const auto &parse : parses) {
+                ParsedView4Step1 view(parse);
+
+                // must be in "3 meld + 1 pair + 2 free" form,
+                // otherwise the user is an SB, and just ignore
+                if (auto frees = view.getFrees(); frees.size() == 2) {
+                    auto missing = [&](T34 t) {
+                        return !util::has(frees, t);
+                    };
+
+                    util::Stactor<T34, 2> clampers { mWant.prev(), mWant.next() };
+                    util::Stactor<T34, 2> newPlan;
+                    std::copy_if(clampers.begin(), clampers.end(), std::back_inserter(newPlan), missing);
+
+                    updatePlan(newPlan);
+                }
+            }
+
+            for (T34 t : tiles34::ALL34)
+                mount.lightA(t, util::has(plan, t) ? 100 : -40, rinshan);
         } else { // step4 > 1
-            recoverReady();
+            recoverReady(); // FUCK improve?
         }
     }
 }

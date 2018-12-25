@@ -26,6 +26,7 @@ class ParsedView4Step1
 {
 public:
     explicit ParsedView4Step1(const Parsed4 &parsed);
+    util::Stactor<T34, 2> getFrees() const;
 
 private:
     const Parsed4 &mParsed;
