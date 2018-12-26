@@ -22,6 +22,8 @@ public:
 
     std::string popUpStr() const override;
 
+    void onTableEvent(const Table &table, const TableEvent &event) override;
+
 protected:
     IrsCtrlGetter attachIrsOnDrawn(const Table &table) override;
 
@@ -32,7 +34,9 @@ private:
     bool aimable(const Table &table);
     bool shootable(const Table &table);
     void pickBullet(const Table &table, Mount &mount);
-    void closeUpToPrey(const Table &table, Mount &mount, bool rinshan);
+    void planAimming(const Table &table);
+    void updateFeedSelf(util::Stactor<T34, 2> plan);
+    void updateFeedSelfByClamp(std::function<bool(T34)> missing);
 
     void shapeYaku(const Table &table, Mount &mount, bool rinshan);
     bool shapeYakuhai(const Table &table, Mount &mount, bool rinshan);
@@ -58,6 +62,7 @@ private:
     Who mTarget;
     T34 mWant;
     T37 mFeed;
+    util::Stactor<T34, 2> mFeedSelf;
     int mShootTrial;
 };
 

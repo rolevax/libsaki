@@ -12,17 +12,28 @@ ParsedView4Ready::ParsedView4Ready(const Parsed4 &parsed)
 }
 
 ///
-/// \brief Get the isorider of this waiting hand
-/// \return The isorider if this hand is in isoride form;
-///         nullopt otherwise
+/// \brief Get the possible isorider of this waiting hand
+/// \return One isorider tile if the hand is in 13 - 3k isoride form;
+///         Two isorider candidates if the hand is in 14 - 3k isoride form;
+///         Empty if the hand is not in isoride form.
 ///
-std::optional<T34> ParsedView4Ready::getIsorider() const
+util::Stactor<T34, 2> ParsedView4Ready::getIsoriders() const
 {
-    std::optional<T34> res;
+    util::Stactor<T34, 2> res;
 
-    const C34 &last = mParsed.heads().back();
-    if (last.type() == C34::Type::FREE)
-        res = last.head();
+    // An isoride ready hand must have no 2-tile comeld
+    if (get2s().empty()) {
+        auto isFree = [](const C34 &c) { return c.type() == C34::Type::FREE; };
+        const auto &heads = mParsed.heads();
+        if (isFree(heads.back())) {
+            if (heads.size() >= 2 && isFree(heads[heads.size() - 2])) {
+                res.pushBack(heads[heads.size() - 2].head());
+                res.pushBack(heads.back().head());
+            } else {
+                res.pushBack(heads.back().head());
+            }
+        }
+    }
 
     return res;
 }

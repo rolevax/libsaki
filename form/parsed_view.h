@@ -15,7 +15,7 @@ class ParsedView4Ready
 public:
     explicit ParsedView4Ready(const Parsed4 &parsed);
 
-    std::optional<T34> getIsorider() const;
+    util::Stactor<T34, 2> getIsoriders() const;
     util::Stactor<C34, 2> get2s() const;
 
 private:

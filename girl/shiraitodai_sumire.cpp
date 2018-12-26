@@ -59,8 +59,10 @@ void Sumire::onIrsChecked(const Table &table, Mount &mount)
             mTarget = mSelf.left();
     }
 
-    if (mTarget.somebody())
+    if (mTarget.somebody()) {
         pickBullet(table, mount);
+        planAimming(table);
+    }
 }
 
 std::string Sumire::popUpStr() const
@@ -68,6 +70,23 @@ std::string Sumire::popUpStr() const
     std::ostringstream oss;
     oss << ">> " << mWant << " <<";
     return oss.str();
+}
+
+void Sumire::onTableEvent(const Table &table, const TableEvent &event)
+{
+    if (event.type() != TableEvent::Type::DRAWN)
+        return;
+
+    auto args = event.as<TableEvent::Drawn>();
+    if (args.who == mSelf && !mFeedSelf.empty()) {
+        T34 drawn = table.getFocusTile();
+        if (drawn == mFeedSelf.back()) {
+            mFeedSelf.popBack();
+        } else if (drawn == mFeedSelf.front()) { // implies size > 1
+            mFeedSelf.front() = mFeedSelf.back();
+            mFeedSelf.popBack();
+        }
+    }
 }
 
 Girl::IrsCtrlGetter Sumire::attachIrsOnDrawn(const Table &table)
@@ -93,7 +112,13 @@ void Sumire::handleDrawSelf(const Table &table, Mount &mount, bool rinshan)
     if (hand.ready() && hand.hasEffA(mWant))
         return;
 
-    closeUpToPrey(table, mount, rinshan);
+    if (!mFeedSelf.empty()) {
+        util::p("========== drag", mFeedSelf); // FUCK
+        for (T34 t : tiles34::ALL34) {
+            mount.lightA(t, util::has(mFeedSelf, t) ? 100 : -40, rinshan);
+            mount.lightB(t, util::has(mFeedSelf, t) ? 100 : 0, rinshan);
+        }
+    }
 }
 
 void Sumire::handleDrawTarget(const Table &table, Mount &mount, bool rinshan)
@@ -136,7 +161,6 @@ bool Sumire::aimable(const Table &table)
         } else {
             if (hand.ready())
                 return false; // must be the first readyer
-
         }
     }
 
@@ -149,12 +173,9 @@ bool Sumire::shootable(const Table &table)
         return false;
 
     const Hand &myHand = table.getHand(mSelf);
-    bool dama = myHand.isMenzen() && myHand.ready()
-        && !table.riichiEstablished(mSelf);
-    if (!dama)
-        return false;
+    bool dama = myHand.isMenzen() && myHand.ready() && !table.riichiEstablished(mSelf);
 
-    return myHand.hasEffA(mWant);
+    return dama && myHand.hasEffA(mWant);
 }
 
 void Sumire::pickBullet(const Table &table, Mount &mount)
@@ -215,99 +236,64 @@ void Sumire::pickBullet(const Table &table, Mount &mount)
     if (maxHappy > 0) {
         mount.loadB(mFeed, 1);
 
-        // reserve isorider or clamper
-        if (mWant.isYao()) { // isoride
-            if (myHand.closed().ct(mWant) == 0)
-                mount.loadB(T37(mWant.id34()), 1);
-        } else { // clamp
-            if (myHand.closed().ct(mWant.prev()) == 0)
-                mount.loadB(T37(mWant.prev().id34()), 1);
-
-            if (myHand.closed().ct(mWant.next()) == 0)
-                mount.loadB(T37(mWant.next().id34()), 1);
+        // reserve meterial for final waiter
+        // wasting the B space: maybe unused
+        mount.loadB(T37(mWant.id34()), 1); // isoride
+        if (!mWant.isYao()) { // clamp
+            mount.loadB(T37(mWant.prev().id34()), 1);
+            mount.loadB(T37(mWant.next().id34()), 1);
         }
 
         table.popUp(mSelf);
     }
 }
 
-void Sumire::closeUpToPrey(const Table &table, Mount &mount, bool rinshan)
+void Sumire::planAimming(const Table &table)
 {
     const Hand &hand = table.getHand(mSelf);
 
-    // *INDENT-OFF*
-    auto recoverReady = [&]() {
-        for (T34 t : tiles34::ALL34) {
-            auto equal = [t](const T37 &r) { return t == r; };
-            const auto &river = table.getRiver(mSelf);
-            bool need = t != mWant && hand.hasEffA(t) && util::none(river, equal);
-            mount.lightA(t, need ? 100 : -40, rinshan);
-        }
-    };
-    // *INDENT-ON*
-
     if (hand.step7() == 0) {
         util::p("TODO case: 7 pair case, just swap");
-    } if (mWant.isYao()) {
+    } else if (mWant.isYao()) {
         util::p("TODO case: mWant is yao");
         // FUCK
     } else {
         // clamp
         Parsed4s parses = hand.parse4();
-        util::Stactor<T34, 2> plan; // missing bow parts
-        auto updatePlan = [&](decltype(plan) newPlan) {
-        if (plan.empty() || newPlan.size() < plan.size())
-            plan = std::move(newPlan);
-        };
-
         if (parses.step4() == 0) {
             for (const auto &parse : parses) {
                 ParsedView4Ready view(parse);
-                if (std::optional<T34> isorider = view.getIsorider()) {
-                    if (*isorider != mWant)
-                        updatePlan({ mWant });
-                } else {
-                    util::Stactor<C34, 2> comelds = view.get2s();
+                util::Stactor<C34, 2> comelds = view.get2s();
+                if (comelds.empty()) { // isoride
+                    for (T34 rider : view.getIsoriders())
+                        if (rider != mWant)
+                            updateFeedSelf({ mWant });
+                } else { // non-isoride
                     auto missing = [&](T34 t) {
                         auto has =  [t](const C34 &c) { return c.has(t); };
                         return util::none(comelds, has);
                     };
 
-                    util::Stactor<T34, 2> clampers { mWant.prev(), mWant.next() };
-                    util::Stactor<T34, 2> newPlan;
-                    std::copy_if(clampers.begin(), clampers.end(), std::back_inserter(newPlan), missing);
-
-                    updatePlan(newPlan);
+                    updateFeedSelfByClamp(std::move(missing));
                 }
             }
-
-            for (T34 t : tiles34::ALL34)
-                mount.lightA(t, util::has(plan, t) ? 100 : -40, rinshan);
-        } else if (parses.step4() == 1) {
-            for (const auto &parse : parses) {
-                ParsedView4Step1 view(parse);
-
-                // must be in "3 meld + 1 pair + 2 free" form,
-                // otherwise the user is an SB, and just ignore
-                if (auto frees = view.getFrees(); frees.size() == 2) {
-                    auto missing = [&](T34 t) {
-                        return !util::has(frees, t);
-                    };
-
-                    util::Stactor<T34, 2> clampers { mWant.prev(), mWant.next() };
-                    util::Stactor<T34, 2> newPlan;
-                    std::copy_if(clampers.begin(), clampers.end(), std::back_inserter(newPlan), missing);
-
-                    updatePlan(newPlan);
-                }
-            }
-
-            for (T34 t : tiles34::ALL34)
-                mount.lightA(t, util::has(plan, t) ? 100 : -40, rinshan);
-        } else { // step4 > 1
-            recoverReady(); // FUCK improve?
         }
     }
+}
+
+void Sumire::updateFeedSelf(util::Stactor<T34, 2> plan)
+{
+    if (mFeedSelf.empty() || plan.size() < mFeedSelf.size())
+        mFeedSelf = std::move(plan);
+}
+
+void Sumire::updateFeedSelfByClamp(std::function<bool (T34)> missing)
+{
+    util::Stactor<T34, 2> clampers { mWant.prev(), mWant.next() };
+    util::Stactor<T34, 2> newPlan;
+    std::copy_if(clampers.begin(), clampers.end(), std::back_inserter(newPlan), std::move(missing));
+
+    updateFeedSelf(newPlan);
 }
 
 void Sumire::shapeYaku(const Table &table, Mount &mount, bool rinshan)
