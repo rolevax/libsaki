@@ -236,7 +236,7 @@ Mount::Erwin &Mount::prepareSuperpos(Exit exit, std::size_t pos)
     if (!opt.has_value())
         opt.emplace(Erwin());
 
-    return opt.value();
+    return *opt;
 }
 
 T37 Mount::popFrom(util::Rand &rand, Exit exit)
@@ -248,7 +248,7 @@ T37 Mount::popFrom(util::Rand &rand, Exit exit)
         eq.pop_front();
         return popScientific(rand);
     } else {
-        Erwin &e = eq.front().value();
+        Erwin &e = *(eq.front());
         T37 res = e.earlyCollapse ? e.tile : popExist(rand, e.exA, e.exB);
         eq.pop_front();
         return res;
