@@ -210,10 +210,10 @@ void setupLuaMount(sol::environment env, LuaUserErrorHandler &error)
         "remainrinshan", &Mount::remainRinshan,
         "remaina", sol::overload(
             [](Mount &mount, T34 t) {
-                mount.remainA(t);
+                return mount.remainA(t);
             },
             [](Mount &mount, const T37 &t) {
-                mount.remainA(t);
+                return mount.remainA(t);
             }
         ),
         "getdrids", AsTable(&Mount::getDrids),
