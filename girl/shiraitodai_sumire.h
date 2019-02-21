@@ -31,9 +31,9 @@ private:
     void handleDrawSelf(const Table &table, Mount &mount, bool rinshan);
     void handleDrawTarget(const Table &table, Mount &mount, bool rinshan);
 
-    bool aimable(const Table &table);
-    bool shootable(const Table &table);
-    void pickBullet(const Table &table, Mount &mount);
+    bool canStartAiming(const Table &table);
+    bool canShootTarget(const Table &table);
+    void chooseFinalWait(const Table &table, Mount &mount);
     void planAimming(const Table &table);
     void updateFeedSelf(util::Stactor<T34, 2> plan);
     void updateFeedSelfByClamp(std::function<bool(T34)> missing);
@@ -60,8 +60,8 @@ private:
     };
 
     Who mTarget;
-    T34 mWant;
-    T37 mFeed;
+    T34 mFinalWait;
+    T37 mFeedTarget;
     util::Stactor<T34, 2> mFeedSelf;
     int mShootTrial;
 };

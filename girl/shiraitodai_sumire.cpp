@@ -60,7 +60,7 @@ void Sumire::onIrsChecked(const Table &table, Mount &mount)
     }
 
     if (mTarget.somebody()) {
-        pickBullet(table, mount);
+        chooseFinalWait(table, mount);
         planAimming(table);
     }
 }
@@ -68,7 +68,7 @@ void Sumire::onIrsChecked(const Table &table, Mount &mount)
 std::string Sumire::popUpStr() const
 {
     std::ostringstream oss;
-    oss << ">> " << mWant << " <<";
+    oss << ">> " << mFinalWait << " <<";
     return oss.str();
 }
 
@@ -79,11 +79,12 @@ void Sumire::onTableEvent(const Table &table, const TableEvent &event)
 
     auto args = event.as<TableEvent::Drawn>();
     if (args.who == mSelf && !mFeedSelf.empty()) {
-        T34 drawn = table.getFocusTile();
-        if (drawn == mFeedSelf.back()) {
-            mFeedSelf.popBack();
-        } else if (drawn == mFeedSelf.front()) { // implies size > 1
-            mFeedSelf.front() = mFeedSelf.back();
+        // consume one self feed if success
+        T34 drawn = table.getHand(mSelf).drawn();
+        util::p("check feed got or not", drawn, "feed:", mFeedSelf);
+        if (auto it = std::find(mFeedSelf.begin(), mFeedSelf.end(), drawn); it != mFeedSelf.end()) {
+            util::p("FUCK got feed, remove", drawn);
+            *it = mFeedSelf.back();
             mFeedSelf.popBack();
         }
     }
@@ -91,7 +92,7 @@ void Sumire::onTableEvent(const Table &table, const TableEvent &event)
 
 Girl::IrsCtrlGetter Sumire::attachIrsOnDrawn(const Table &table)
 {
-    if (aimable(table)) {
+    if (canStartAiming(table)) {
         mIrsCtrl.setClickHost(table.getChoices(mSelf));
         return &Sumire::mIrsCtrl;
     }
@@ -109,7 +110,7 @@ void Sumire::handleDrawSelf(const Table &table, Mount &mount, bool rinshan)
         return;
     }
 
-    if (hand.ready() && hand.hasEffA(mWant))
+    if (hand.ready() && hand.hasEffA(mFinalWait))
         return;
 
     if (!mFeedSelf.empty()) {
@@ -123,12 +124,12 @@ void Sumire::handleDrawSelf(const Table &table, Mount &mount, bool rinshan)
 
 void Sumire::handleDrawTarget(const Table &table, Mount &mount, bool rinshan)
 {
-    if (shootable(table)) {
+    if (canShootTarget(table)) {
         // feed
         if (mShootTrial == 0) {
             for (T34 t : tiles34::ALL34) {
                 mount.lightA(t, -500, rinshan);
-                mount.lightB(t, t == mFeed ? 100 : -100, rinshan);
+                mount.lightB(t, t == mFeedTarget ? 100 : -100, rinshan);
             }
 
             mShootTrial++;
@@ -144,13 +145,12 @@ void Sumire::handleDrawTarget(const Table &table, Mount &mount, bool rinshan)
     }
 }
 
-bool Sumire::aimable(const Table &table)
+bool Sumire::canStartAiming(const Table &table)
 {
     if (mTarget.somebody())
         return false;
 
-    for (int w = 0; w < 4; w++) {
-        Who who(w);
+    for (Who who : whos::ALL4) {
         const Hand &hand = table.getHand(who);
 
         if (who == mSelf) {
@@ -167,7 +167,7 @@ bool Sumire::aimable(const Table &table)
     return true;
 }
 
-bool Sumire::shootable(const Table &table)
+bool Sumire::canShootTarget(const Table &table)
 {
     if (mTarget.nobody())
         return false;
@@ -175,13 +175,13 @@ bool Sumire::shootable(const Table &table)
     const Hand &myHand = table.getHand(mSelf);
     bool dama = myHand.isMenzen() && myHand.ready() && !table.riichiEstablished(mSelf);
 
-    return dama && myHand.hasEffA(mWant);
+    return dama && myHand.hasEffA(mFinalWait);
 }
 
-void Sumire::pickBullet(const Table &table, Mount &mount)
+void Sumire::chooseFinalWait(const Table &table, Mount &mount)
 {
     int maxHappy = 0;
-    mWant = table.getHand(mSelf).effA().front();
+    mFinalWait = table.getHand(mSelf).effA().front();
 
     const Hand &taragetHand = table.getHand(mTarget);
     const Hand &myHand = table.getHand(mSelf);
@@ -226,22 +226,22 @@ void Sumire::pickBullet(const Table &table, Mount &mount)
             int doraCt = mount.getDrids() % dream + dream.ctAka5();
             int happy = 100 * (13 - step) + 3 * effACt + doraCt;
             if (happy > maxHappy) {
-                mWant = act.act() == ActCode::SWAP_OUT ? act.t37() : dream.drawn();
-                mFeed = feed;
+                mFinalWait = act.act() == ActCode::SWAP_OUT ? act.t37() : dream.drawn();
+                mFeedTarget = feed;
                 maxHappy = happy;
             }
         }
     }
 
     if (maxHappy > 0) {
-        mount.loadB(mFeed, 1);
+        mount.loadB(mFeedTarget, 1);
 
         // reserve meterial for final waiter
         // wasting the B space: maybe unused
-        mount.loadB(T37(mWant.id34()), 1); // isoride
-        if (!mWant.isYao()) { // clamp
-            mount.loadB(T37(mWant.prev().id34()), 1);
-            mount.loadB(T37(mWant.next().id34()), 1);
+        mount.loadB(T37(mFinalWait.id34()), 1); // isoride
+        if (!mFinalWait.isYao()) { // clamp
+            mount.loadB(T37(mFinalWait.prev().id34()), 1);
+            mount.loadB(T37(mFinalWait.next().id34()), 1);
         }
 
         table.popUp(mSelf);
@@ -252,9 +252,10 @@ void Sumire::planAimming(const Table &table)
 {
     const Hand &hand = table.getHand(mSelf);
 
+    mFeedSelf.clear();
     if (hand.step7() == 0) {
         util::p("TODO case: 7 pair case, just swap");
-    } else if (mWant.isYao()) {
+    } else if (mFinalWait.isYao()) {
         util::p("TODO case: mWant is yao");
         // FUCK
     } else {
@@ -266,8 +267,8 @@ void Sumire::planAimming(const Table &table)
                 util::Stactor<C34, 2> comelds = view.get2s();
                 if (comelds.empty()) { // isoride
                     for (T34 rider : view.getIsoriders())
-                        if (rider != mWant)
-                            updateFeedSelf({ mWant });
+                        if (rider != mFinalWait)
+                            updateFeedSelf({ mFinalWait });
                 } else { // non-isoride
                     auto missing = [&](T34 t) {
                         auto has =  [t](const C34 &c) { return c.has(t); };
@@ -289,7 +290,7 @@ void Sumire::updateFeedSelf(util::Stactor<T34, 2> plan)
 
 void Sumire::updateFeedSelfByClamp(std::function<bool (T34)> missing)
 {
-    util::Stactor<T34, 2> clampers { mWant.prev(), mWant.next() };
+    util::Stactor<T34, 2> clampers { mFinalWait.prev(), mFinalWait.next() };
     util::Stactor<T34, 2> newPlan;
     std::copy_if(clampers.begin(), clampers.end(), std::back_inserter(newPlan), std::move(missing));
 
