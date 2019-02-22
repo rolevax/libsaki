@@ -33,8 +33,8 @@ private:
 
     bool canStartAiming(const Table &table);
     bool canShootTarget(const Table &table);
-    void chooseFinalWait(const Table &table, Mount &mount);
-    void planAimming(const Table &table);
+    bool chooseFinalWait(const Table &table, Mount &mount);
+    void planAimming(const Table &table, Mount &mount);
     void updateFeedSelf(util::Stactor<T34, 2> plan);
     void updateFeedSelfByClamp(std::function<bool(T34)> missing);
 

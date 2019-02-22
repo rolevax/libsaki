@@ -59,16 +59,21 @@ void Sumire::onIrsChecked(const Table &table, Mount &mount)
             mTarget = mSelf.left();
     }
 
-    if (mTarget.somebody()) {
-        chooseFinalWait(table, mount);
-        planAimming(table);
+    if (mTarget.somebody() && chooseFinalWait(table, mount)) {
+        planAimming(table, mount);
+        table.popUp(mSelf);
     }
 }
 
 std::string Sumire::popUpStr() const
 {
     std::ostringstream oss;
-    oss << ">> " << mFinalWait << " <<";
+
+    if (!mFeedSelf.empty())
+        oss << "DRAW" << mFeedSelf << std::endl;
+
+    oss << "DISCARD" << mFinalWait;
+
     return oss.str();
 }
 
@@ -81,9 +86,7 @@ void Sumire::onTableEvent(const Table &table, const TableEvent &event)
     if (args.who == mSelf && !mFeedSelf.empty()) {
         // consume one self feed if success
         T34 drawn = table.getHand(mSelf).drawn();
-        util::p("check feed got or not", drawn, "feed:", mFeedSelf);
         if (auto it = std::find(mFeedSelf.begin(), mFeedSelf.end(), drawn); it != mFeedSelf.end()) {
-            util::p("FUCK got feed, remove", drawn);
             *it = mFeedSelf.back();
             mFeedSelf.popBack();
         }
@@ -126,6 +129,7 @@ void Sumire::handleDrawTarget(const Table &table, Mount &mount, bool rinshan)
 {
     if (canShootTarget(table)) {
         // feed
+        util::p("=----===== shoot: feed target"); // FUCK
         if (mShootTrial == 0) {
             for (T34 t : tiles34::ALL34) {
                 mount.lightA(t, -500, rinshan);
@@ -139,6 +143,7 @@ void Sumire::handleDrawTarget(const Table &table, Mount &mount, bool rinshan)
         }
     } else {
         // block
+        util::p("=----===== blocking target"); // FUCK
         for (T34 t : tiles34::ALL34)
             if (table.getHand(mTarget).hasEffA(t))
                 mount.lightA(t, -40, rinshan);
@@ -158,9 +163,8 @@ bool Sumire::canStartAiming(const Table &table)
                 && !table.riichiEstablished(mSelf);
             if (!dama)
                 return false;
-        } else {
-            if (hand.ready())
-                return false; // must be the first readyer
+        } else if (hand.ready()) {
+            return false; // must be the first readyer
         }
     }
 
@@ -178,7 +182,7 @@ bool Sumire::canShootTarget(const Table &table)
     return dama && myHand.hasEffA(mFinalWait);
 }
 
-void Sumire::chooseFinalWait(const Table &table, Mount &mount)
+bool Sumire::chooseFinalWait(const Table &table, Mount &mount)
 {
     int maxHappy = 0;
     mFinalWait = table.getHand(mSelf).effA().front();
@@ -235,24 +239,20 @@ void Sumire::chooseFinalWait(const Table &table, Mount &mount)
 
     if (maxHappy > 0) {
         mount.loadB(mFeedTarget, 1);
-
-        // reserve meterial for final waiter
-        // wasting the B space: maybe unused
-        mount.loadB(T37(mFinalWait.id34()), 1); // isoride
-        if (!mFinalWait.isYao()) { // clamp
-            mount.loadB(T37(mFinalWait.prev().id34()), 1);
-            mount.loadB(T37(mFinalWait.next().id34()), 1);
-        }
-
-        table.popUp(mSelf);
+        return true;
     }
+
+    return false;
 }
 
-void Sumire::planAimming(const Table &table)
+void Sumire::planAimming(const Table &table, Mount &mount)
 {
     const Hand &hand = table.getHand(mSelf);
 
     mFeedSelf.clear();
+    if (hand.hasEffA(mFinalWait))
+        return; // too lucky, no need to aim
+
     if (hand.step7() == 0) {
         util::p("TODO case: 7 pair case, just swap");
     } else if (mFinalWait.isYao()) {
@@ -270,16 +270,24 @@ void Sumire::planAimming(const Table &table)
                         if (rider != mFinalWait)
                             updateFeedSelf({ mFinalWait });
                 } else { // non-isoride
+                    // *INDENT-OFF*
                     auto missing = [&](T34 t) {
-                        auto has =  [t](const C34 &c) { return c.has(t); };
-                        return util::none(comelds, has);
+                        auto inBreakableComeld = [t](const C34 &c) {
+                            return !c.is3() && c.has(t);
+                        };
+
+                        return util::none(parse.heads(), std::move(inBreakableComeld));
                     };
+                    // *INDENT-ON*
 
                     updateFeedSelfByClamp(std::move(missing));
                 }
             }
         }
     }
+
+    for (T34 feed : mFeedSelf)
+        mount.loadB(T37(feed.id34()), 1);
 }
 
 void Sumire::updateFeedSelf(util::Stactor<T34, 2> plan)
@@ -288,7 +296,7 @@ void Sumire::updateFeedSelf(util::Stactor<T34, 2> plan)
         mFeedSelf = std::move(plan);
 }
 
-void Sumire::updateFeedSelfByClamp(std::function<bool (T34)> missing)
+void Sumire::updateFeedSelfByClamp(std::function<bool(T34)> missing)
 {
     util::Stactor<T34, 2> clampers { mFinalWait.prev(), mFinalWait.next() };
     util::Stactor<T34, 2> newPlan;
@@ -318,9 +326,11 @@ bool Sumire::shapeYakuhai(const Table &table, Mount &mount, bool rinshan)
 
     int sw = table.getSelfWind(mSelf);
     int rw = table.getRoundWind();
+    // *INDENT-OFF*
     auto isPluralYakuhai = [&](T34 z) {
         return z.isYakuhai(sw, rw) && hand.closed().ct(z) >= 2;
     };
+    // *INDENT-ON*
 
     const auto &z7 = tiles34::Z7;
     if (util::none(z7, isPluralYakuhai))
