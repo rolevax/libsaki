@@ -1,6 +1,7 @@
 #ifndef SAKI_GIRL_SHIRAITODAI_SUMIRE_H
 #define SAKI_GIRL_SHIRAITODAI_SUMIRE_H
 
+#include "../form/parsed_view.h"
 #include "../table/irs_ctrl.h"
 
 
@@ -37,6 +38,7 @@ private:
     void planAimming(const Table &table, Mount &mount);
     void updateFeedSelf(util::Stactor<T34, 2> plan);
     void updateFeedSelfByClamp(std::function<bool(T34)> missing);
+    void updateFeedSelfByParse(ParsedView4Ready view, Mount &mount);
 
     void shapeYaku(const Table &table, Mount &mount, bool rinshan);
     bool shapeYakuhai(const Table &table, Mount &mount, bool rinshan);

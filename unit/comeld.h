@@ -23,7 +23,7 @@ public:
     /// TRI: triplet, 111m
     /// BIFACE: biface-waiter, 23m
     /// CLAMP: clamp-waiter, 13m
-    /// SIZE: side-waiter, 12m
+    /// SIDE: side-waiter, 12m
     /// PAIR: pair, either triplet-waiter or bird-head, 11m
     /// FREE: single floating tile, 1m
     ///

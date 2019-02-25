@@ -1,5 +1,4 @@
 #include "shiraitodai_sumire.h"
-#include "../form/parsed_view.h"
 #include "../table/princess.h"
 #include "../table/table.h"
 #include "../table/table_view_hand.h"
@@ -254,36 +253,12 @@ void Sumire::planAimming(const Table &table, Mount &mount)
         return; // too lucky, no need to aim
 
     if (hand.step7() == 0) {
-        util::p("TODO case: 7 pair case, just swap");
-    } else if (mFinalWait.isYao()) {
-        util::p("TODO case: mWant is yao");
-        // FUCK
-    } else {
-        // clamp
-        Parsed4s parses = hand.parse4();
-        if (parses.step4() == 0) {
-            for (const auto &parse : parses) {
-                ParsedView4Ready view(parse);
-                util::Stactor<C34, 2> comelds = view.get2s();
-                if (comelds.empty()) { // isoride
-                    for (T34 rider : view.getIsoriders())
-                        if (rider != mFinalWait)
-                            updateFeedSelf({ mFinalWait });
-                } else { // non-isoride
-                    // *INDENT-OFF*
-                    auto missing = [&](T34 t) {
-                        auto inBreakableComeld = [t](const C34 &c) {
-                            return !c.is3() && c.has(t);
-                        };
-
-                        return util::none(parse.heads(), std::move(inBreakableComeld));
-                    };
-                    // *INDENT-ON*
-
-                    updateFeedSelfByClamp(std::move(missing));
-                }
-            }
-        }
+        updateFeedSelf({ mFinalWait }); // simply replace waiter
+    } else if (hand.step13() == 0) {
+        // uncurable, go die, good bye
+    } else if (Parsed4s parses = hand.parse4(); parses.step4() == 0) {
+        for (const auto &parse : parses)
+            updateFeedSelfByParse(ParsedView4Ready(parse), mount);
     }
 
     for (T34 feed : mFeedSelf)
@@ -303,6 +278,52 @@ void Sumire::updateFeedSelfByClamp(std::function<bool(T34)> missing)
     std::copy_if(clampers.begin(), clampers.end(), std::back_inserter(newPlan), std::move(missing));
 
     updateFeedSelf(newPlan);
+}
+
+///
+/// \brief Try to update the aiming plan with a given 4-meld ready parse
+/// \pre 'view' should not already waiting 'mFinalWait'
+///
+void Sumire::updateFeedSelfByParse(ParsedView4Ready view, Mount &mount)
+{
+    util::Stactor<C34, 2> comelds = view.get2s();
+    if (comelds.empty()) { // isoride, simply replace
+        updateFeedSelf({ mFinalWait });
+    } else if (mFinalWait.isYao()) { // non-isoride, but waiting yao
+        // fill comeld
+        std::optional<T34> maxFiller;
+        int maxFillerRemain = 0;
+        for (C34 c : comelds) {
+            for (T34 filler : c.effA4()) {
+                int remain = mount.remainA(filler);
+                if (remain > maxFillerRemain) {
+                    maxFiller = filler;
+                    maxFillerRemain = remain;
+                }
+            }
+        }
+
+        if (maxFiller) {
+            util::Stactor<T34, 2> feeds { *maxFiller };
+            // transform to isoride form
+            if (!util::has(view.getIsoriders(), mFinalWait))
+                feeds.pushBack(mFinalWait);
+
+            updateFeedSelf(feeds);
+        }
+    } else { // non-isoride and waiting yao, transform to clamp
+        // *INDENT-OFF*
+        auto missing = [&](T34 t) {
+            auto inBreakableComeld = [t](const C34 &c) {
+                return !c.is3() && c.has(t);
+            };
+
+            return util::none(view.getParsed().heads(), std::move(inBreakableComeld));
+        };
+        // *INDENT-ON*
+
+        updateFeedSelfByClamp(std::move(missing));
+    }
 }
 
 void Sumire::shapeYaku(const Table &table, Mount &mount, bool rinshan)

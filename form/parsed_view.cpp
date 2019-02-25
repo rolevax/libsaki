@@ -11,6 +11,11 @@ ParsedView4Ready::ParsedView4Ready(const Parsed4 &parsed)
     assert(parsed.step4() == 0);
 }
 
+const Parsed4 &ParsedView4Ready::getParsed() const
+{
+    return mParsed;
+}
+
 ///
 /// \brief Get the possible isorider of this waiting hand
 /// \return One isorider tile if the hand is in 13 - 3k isoride form;
