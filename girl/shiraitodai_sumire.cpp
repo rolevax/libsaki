@@ -20,6 +20,7 @@ void Sumire::onDice(util::Rand &rand, const Table &table)
     (void) table;
 
     mTarget = Who();
+    mShootTrial = 0;
 }
 
 bool Sumire::checkInit(Who who, const Hand &init, const Table &table, int iter)
@@ -128,8 +129,8 @@ void Sumire::handleDrawTarget(const Table &table, Mount &mount, bool rinshan)
 {
     if (canShootTarget(table)) {
         // feed
-        util::p("=----===== shoot: feed target"); // FUCK
         if (mShootTrial == 0) {
+            util::p("=----===== shoot: feed target by", mFeedTarget); // FUCK
             for (T34 t : tiles34::ALL34) {
                 mount.lightA(t, -500, rinshan);
                 mount.lightB(t, t == mFeedTarget ? 100 : -100, rinshan);
@@ -187,33 +188,8 @@ bool Sumire::chooseFinalWait(const Table &table, Mount &mount)
     mFinalWait = table.getHand(mSelf).effA().front();
 
     const Hand &taragetHand = table.getHand(mTarget);
-    const Hand &myHand = table.getHand(mSelf);
-
-    // *INDENT-OFF*
-    auto niceMount = [&myHand, &mount](const T37 feed) {
-        if (mount.remainA(feed) == 0)
-            return false;
-
-        T34 feed34(feed);
-        if (feed34.isYao()) {
-            int got = myHand.closed().ct(feed34);
-            int fetchPlusFeed = mount.remainA(feed34);
-            return got + fetchPlusFeed >= 2; // can form a pair
-        } else {
-            bool gotL = myHand.closed().ct(feed34.prev()) > 0;
-            bool gotR = myHand.closed().ct(feed34.next()) > 0;
-
-            // consider only black tiles to kill all headache
-            bool canGetL = mount.remainA(T37(feed34.prev().id34())) > 0;
-            bool canGetR = mount.remainA(T37(feed34.next().id34())) > 0;
-
-            return (gotL || canGetL) && (gotR || canGetR);
-        }
-    };
-    // *INDENT-ON*
-
     for (const T37 &feed : tiles37::ORDER37) {
-        if (!niceMount(feed))
+        if (mount.remainA(feed) == 0)
             continue;
 
         Hand dream = taragetHand; // copy
