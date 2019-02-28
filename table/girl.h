@@ -13,7 +13,6 @@
 
 #define GIRL_CTORS(Name) \
     Name(Who who, Id id) : Girl(who, id) {} \
-    Name(const Name &copy) = default; \
     std::unique_ptr<Girl> clone() const override \
     { \
         return std::make_unique<Name>(*this); \

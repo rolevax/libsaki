@@ -36,7 +36,7 @@ private:
     bool canShootTarget(const Table &table);
     bool chooseFinalWait(const Table &table, Mount &mount);
     void planAimming(const Table &table, Mount &mount);
-    void updateFeedSelf(util::Stactor<T34, 2> plan);
+    void updateFeedSelf(const util::Stactor<T34, 2> &plan);
     void updateFeedSelfByClamp(std::function<bool(T34)> missing);
     void updateFeedSelfByParse(ParsedView4Ready view, Mount &mount);
 
@@ -46,7 +46,7 @@ private:
 
 private:
     // *** SYNC order with 'mIrsCtrl' ***
-    enum IrsIndex { MAIN, RIGHT, CROSS, LEFT };
+    enum IrsIndex { MAIN, RIGHT, CROSS, LEFT, ALLOW_NUM19, ALLOW_Z };
 
     IrsCtrlClickCheck<Sumire> mIrsCtrl {
         Choices::ModeIrsCheck {
@@ -56,6 +56,8 @@ private:
                 IrsCheckItem::CHILD_RADIO_DEFAULT,
                 IrsCheckItem::CHILD_RADIO,
                 IrsCheckItem::CHILD_RADIO,
+                IrsCheckItem::CHILD_CHECK,
+                IrsCheckItem::CHILD_CHECK
             }
         },
         &Sumire::mIrsCtrl
@@ -65,7 +67,7 @@ private:
     T34 mFinalWait;
     T37 mFeedTarget;
     util::Stactor<T34, 2> mFeedSelf;
-    int mShootTrial;
+    int mShootTrial = 0;
 };
 
 

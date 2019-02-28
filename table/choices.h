@@ -20,7 +20,9 @@ public:
         // Choices::sweep() of IRS_CHECK relys on the fact
         // that radio button can only be child of a check box
         // by assuming checking nothing is always a legal action
-        CHECK_DISABLED, CHECK_ENABLED, CHILD_RADIO_DEFAULT, CHILD_RADIO
+        CHECK_DISABLED, CHECK_ENABLED,
+        CHILD_RADIO_DEFAULT, CHILD_RADIO,
+        CHILD_CHECK
     };
 
     IrsCheckItem(Init config)
@@ -37,6 +39,9 @@ public:
             break;
         case CHILD_RADIO:
             init(true, true, false, false);
+            break;
+        case CHILD_CHECK:
+            init(false, true, false, false);
             break;
         default:
             break;

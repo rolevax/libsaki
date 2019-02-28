@@ -59,9 +59,16 @@ void Sumire::onIrsChecked(const Table &table, Mount &mount)
             mTarget = mSelf.left();
     }
 
-    if (mTarget.somebody() && chooseFinalWait(table, mount)) {
-        planAimming(table, mount);
-        table.popUp(mSelf);
+    if (mTarget.somebody()) {
+        bool allowNum19 = mIrsCtrl.itemAt(ALLOW_NUM19).on();
+        bool allowZ = mIrsCtrl.itemAt(ALLOW_Z).on();
+        (void) allowNum19;
+        (void) allowZ;
+        // FUCK
+        if (chooseFinalWait(table, mount)) {
+            planAimming(table, mount);
+            table.popUp(mSelf);
+        }
     }
 }
 
@@ -141,7 +148,7 @@ void Sumire::handleDrawTarget(const Table &table, Mount &mount, bool rinshan)
             // TODO re-aim logic
             mShootTrial++;
         }
-    } else {
+    } else if (!mFeedSelf.empty()) {
         // block
         util::p("=----===== blocking target"); // FUCK
         for (T34 t : tiles34::ALL34)
@@ -241,10 +248,10 @@ void Sumire::planAimming(const Table &table, Mount &mount)
         mount.loadB(T37(feed.id34()), 1);
 }
 
-void Sumire::updateFeedSelf(util::Stactor<T34, 2> plan)
+void Sumire::updateFeedSelf(const util::Stactor<T34, 2> &plan)
 {
     if (mFeedSelf.empty() || plan.size() < mFeedSelf.size())
-        mFeedSelf = std::move(plan);
+        mFeedSelf = plan;
 }
 
 void Sumire::updateFeedSelfByClamp(std::function<bool(T34)> missing)
