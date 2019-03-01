@@ -166,6 +166,11 @@ public:
         return isNum() && (val() == 1 || val() == 9);
     }
 
+    bool isNum1928() const
+    {
+        return isNum() && (val() == 1 || val() == 2 || val() == 8 || val() == 9);
+    }
+
     bool isYao() const
     {
         return isZ() || val() == 1 || val() == 9;

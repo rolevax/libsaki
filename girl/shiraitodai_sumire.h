@@ -34,7 +34,8 @@ private:
 
     bool canStartAiming(const Table &table);
     bool canShootTarget(const Table &table);
-    bool chooseFinalWait(const Table &table, Mount &mount);
+    bool chooseFinalWait(const Table &table, Mount &mount, bool allowNum19, bool allowZ);
+    int evalTargetHappy(const Table &table, const Mount &mount, const Hand &dream, const Action &act);
     void planAimming(const Table &table, Mount &mount);
     void updateFeedSelf(const util::Stactor<T34, 2> &plan);
     void updateFeedSelfByClamp(std::function<bool(T34)> missing);
@@ -67,6 +68,7 @@ private:
     T34 mFinalWait;
     T37 mFeedTarget;
     util::Stactor<T34, 2> mFeedSelf;
+    std::bitset<34> mTargetShits;
     int mShootTrial = 0;
 };
 

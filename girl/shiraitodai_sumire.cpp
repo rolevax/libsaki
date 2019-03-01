@@ -62,13 +62,12 @@ void Sumire::onIrsChecked(const Table &table, Mount &mount)
     if (mTarget.somebody()) {
         bool allowNum19 = mIrsCtrl.itemAt(ALLOW_NUM19).on();
         bool allowZ = mIrsCtrl.itemAt(ALLOW_Z).on();
-        (void) allowNum19;
-        (void) allowZ;
-        // FUCK
-        if (chooseFinalWait(table, mount)) {
+        if (chooseFinalWait(table, mount, allowNum19, allowZ))
             planAimming(table, mount);
-            table.popUp(mSelf);
-        }
+        else
+            mTarget = Who();
+
+        table.popUp(mSelf);
     }
 }
 
@@ -76,10 +75,14 @@ std::string Sumire::popUpStr() const
 {
     std::ostringstream oss;
 
-    if (!mFeedSelf.empty())
-        oss << "DRAW" << mFeedSelf << std::endl;
+    if (mTarget.somebody()) {
+        if (!mFeedSelf.empty())
+            oss << "DRAW" << mFeedSelf << std::endl;
 
-    oss << "DISCARD" << mFinalWait;
+        oss << "DISCARD" << mFinalWait;
+    } else {
+        oss << "AIM_FAILURE";
+    }
 
     return oss.str();
 }
@@ -124,7 +127,6 @@ void Sumire::handleDrawSelf(const Table &table, Mount &mount, bool rinshan)
         return;
 
     if (!mFeedSelf.empty()) {
-        util::p("========== drag", mFeedSelf); // FUCK
         for (T34 t : tiles34::ALL34) {
             mount.lightA(t, util::has(mFeedSelf, t) ? 100 : -40, rinshan);
             mount.lightB(t, util::has(mFeedSelf, t) ? 100 : 0, rinshan);
@@ -152,7 +154,7 @@ void Sumire::handleDrawTarget(const Table &table, Mount &mount, bool rinshan)
         // block
         util::p("=----===== blocking target"); // FUCK
         for (T34 t : tiles34::ALL34)
-            if (table.getHand(mTarget).hasEffA(t))
+            if (!mTargetShits[size_t(t.id34())])
                 mount.lightA(t, -40, rinshan);
     }
 }
@@ -189,30 +191,34 @@ bool Sumire::canShootTarget(const Table &table)
     return dama && myHand.hasEffA(mFinalWait);
 }
 
-bool Sumire::chooseFinalWait(const Table &table, Mount &mount)
+bool Sumire::chooseFinalWait(const Table &table, Mount &mount, bool allowNum19, bool allowZ)
 {
     int maxHappy = 0;
     mFinalWait = table.getHand(mSelf).effA().front();
+    mTargetShits.reset();
 
     const Hand &taragetHand = table.getHand(mTarget);
     for (const T37 &feed : tiles37::ORDER37) {
         if (mount.remainA(feed) == 0)
             continue;
 
-        Hand dream = taragetHand; // copy
+        Hand dream(taragetHand); // copy
         dream.draw(feed);
-        TableViewHand view(table, dream, mTarget);
-
-        Action act = Ai::thinkStdDrawnAttack(view);
+        Action act = Ai::thinkStdDrawnAttack(TableViewHand(table, dream, mTarget));
         if (act.isDiscard() || act.isRiichi()) {
             act = act.toDiscard();
-            int step = dream.peekDiscard(act, &Hand::step);
-            auto effA = dream.peekDiscard(act, &Hand::effA);
-            int effACt = table.visibleRemain(mTarget).ct(effA);
-            int doraCt = mount.getDrids() % dream + dream.ctAka5();
-            int happy = 100 * (13 - step) + 3 * effACt + doraCt;
-            if (happy > maxHappy) {
-                mFinalWait = act.act() == ActCode::SWAP_OUT ? act.t37() : dream.drawn();
+            T34 discard = act.act() == ActCode::SWAP_OUT ? act.t37() : dream.drawn();
+            if (act.act() == ActCode::SPIN_OUT)
+                mTargetShits[size_t(feed.id34())] = true;
+
+            if (util::has(table.getRiver(mSelf), discard))
+                continue;
+
+            if ((!allowNum19 && discard.isNum1928()) || (!allowZ && discard.isZ()))
+                continue;
+
+            if (int happy = evalTargetHappy(table, mount, dream, act); happy > maxHappy) {
+                mFinalWait = discard;
                 mFeedTarget = feed;
                 maxHappy = happy;
             }
@@ -225,6 +231,21 @@ bool Sumire::chooseFinalWait(const Table &table, Mount &mount)
     }
 
     return false;
+}
+
+///
+/// \brief Compute target's happiness when given drawn-hand and action
+/// \param dream A hand in "14 - 3k" status
+/// \param act   A discard action
+/// \return Happiness value, higher is happier
+///
+int Sumire::evalTargetHappy(const Table &table, const Mount &mount, const Hand &dream, const Action &act)
+{
+    int step = dream.peekDiscard(act, &Hand::step);
+    auto effA = dream.peekDiscard(act, &Hand::effA);
+    int effACt = table.visibleRemain(mTarget).ct(effA);
+    int doraCt = mount.getDrids() % dream + dream.ctAka5();
+    return 100 * (13 - step) + 3 * effACt + doraCt;
 }
 
 void Sumire::planAimming(const Table &table, Mount &mount)

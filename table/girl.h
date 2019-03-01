@@ -167,7 +167,7 @@ public:
     static std::unique_ptr<Girl> create(Who who, Id id);
 
     Girl(Who who, Id id);
-    virtual ~Girl() = default;
+    ~Girl() override = default;
     Girl(const Girl &copy) = default;
     Girl &operator=(const Girl &assign) = delete;
 
