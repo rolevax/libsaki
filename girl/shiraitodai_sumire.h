@@ -36,14 +36,13 @@ private:
     bool canShootTarget(const Table &table);
     bool chooseFinalWait(const Table &table, Mount &mount, bool allowNum19, bool allowZ);
     int evalTargetHappy(const Table &table, const Mount &mount, const Hand &dream, const Action &act);
-    void planAimming(const Table &table, Mount &mount);
+    bool planAimming(const Table &table, Mount &mount);
     void updateFeedSelf(const util::Stactor<T34, 2> &plan);
     void updateFeedSelfByClamp(std::function<bool(T34)> missing);
     void updateFeedSelfByParse(ParsedView4Ready view, Mount &mount);
 
     void shapeYaku(const Table &table, Mount &mount, bool rinshan);
     bool shapeYakuhai(const Table &table, Mount &mount, bool rinshan);
-    bool shapeTanyao(const Table &table, Mount &mount, bool rinshan);
 
 private:
     // *** SYNC order with 'mIrsCtrl' ***

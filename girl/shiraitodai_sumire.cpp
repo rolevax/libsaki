@@ -62,12 +62,13 @@ void Sumire::onIrsChecked(const Table &table, Mount &mount)
     if (mTarget.somebody()) {
         bool allowNum19 = mIrsCtrl.itemAt(ALLOW_NUM19).on();
         bool allowZ = mIrsCtrl.itemAt(ALLOW_Z).on();
-        if (chooseFinalWait(table, mount, allowNum19, allowZ))
-            planAimming(table, mount);
-        else
+        bool planOk = chooseFinalWait(table, mount, allowNum19, allowZ)
+                   && planAimming(table, mount);
+        if (!planOk)
             mTarget = Who();
 
         table.popUp(mSelf);
+        mIrsCtrl.setOnAt(IrsIndex::MAIN, false);
     }
 }
 
@@ -139,7 +140,6 @@ void Sumire::handleDrawTarget(const Table &table, Mount &mount, bool rinshan)
     if (canShootTarget(table)) {
         // feed
         if (mShootTrial == 0) {
-            util::p("=----===== shoot: feed target by", mFeedTarget); // FUCK
             for (T34 t : tiles34::ALL34) {
                 mount.lightA(t, -500, rinshan);
                 mount.lightB(t, t == mFeedTarget ? 100 : -100, rinshan);
@@ -150,12 +150,13 @@ void Sumire::handleDrawTarget(const Table &table, Mount &mount, bool rinshan)
             // TODO re-aim logic
             mShootTrial++;
         }
-    } else if (!mFeedSelf.empty()) {
-        // block
-        util::p("=----===== blocking target"); // FUCK
+    } else if (!mFeedSelf.empty()) { // block target, give shit
         for (T34 t : tiles34::ALL34)
             if (!mTargetShits[size_t(t.id34())])
                 mount.lightA(t, -40, rinshan);
+
+        for (Suit s : { Suit::M, Suit::P, Suit::S })
+            mount.lightA(T37(s, 0), -40, rinshan); // aka5 is usually not shit
     }
 }
 
@@ -248,13 +249,13 @@ int Sumire::evalTargetHappy(const Table &table, const Mount &mount, const Hand &
     return 100 * (13 - step) + 3 * effACt + doraCt;
 }
 
-void Sumire::planAimming(const Table &table, Mount &mount)
+bool Sumire::planAimming(const Table &table, Mount &mount)
 {
     const Hand &hand = table.getHand(mSelf);
 
     mFeedSelf.clear();
     if (hand.hasEffA(mFinalWait))
-        return; // too lucky, no need to aim
+        return true; // too lucky, no need to aim
 
     if (hand.step7() == 0) {
         updateFeedSelf({ mFinalWait }); // simply replace waiter
@@ -267,6 +268,8 @@ void Sumire::planAimming(const Table &table, Mount &mount)
 
     for (T34 feed : mFeedSelf)
         mount.loadB(T37(feed.id34()), 1);
+
+    return !mFeedSelf.empty();
 }
 
 void Sumire::updateFeedSelf(const util::Stactor<T34, 2> &plan)
@@ -340,9 +343,8 @@ void Sumire::shapeYaku(const Table &table, Mount &mount, bool rinshan)
     if (shapeYakuhai(table, mount, rinshan))
         return;
 
-    shapeTanyao(table, mount, rinshan);
-
-    // TODO 3sk and 1pk (?)
+    if (hand.step() <= 2)
+        accelerate(mount, hand, table.getRiver(mSelf), 30);
 }
 
 bool Sumire::shapeYakuhai(const Table &table, Mount &mount, bool rinshan)
@@ -364,21 +366,6 @@ bool Sumire::shapeYakuhai(const Table &table, Mount &mount, bool rinshan)
     for (T34 z : z7)
         if (hand.closed().ct(z) == 2)
             mount.lightA(z, 500, rinshan);
-
-    return true;
-}
-
-bool Sumire::shapeTanyao(const Table &table, Mount &mount, bool rinshan)
-{
-    const Hand &hand = table.getHand(mSelf);
-
-    if (hand.closed().ctYao() > 2)
-        return false;
-
-    for (int v = 3; v <= 7; v++)
-        for (Suit s : { Suit::M, Suit::P, Suit::S })
-            if (hand.hasEffA(T34(s, v)))
-                mount.lightA(T34(s, v), 100, rinshan);
 
     return true;
 }
