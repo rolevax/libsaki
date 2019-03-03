@@ -263,7 +263,7 @@ bool Sumire::planAimming(const Table &table, Mount &mount)
         // uncurable, go die, good bye
     } else if (Parsed4s parses = hand.parse4(); parses.step4() == 0) {
         for (const auto &parse : parses)
-            updateFeedSelfByParse(ParsedView4Ready(parse), mount);
+            updateFeedSelfParse(ParsedView4Ready(parse), mount);
     }
 
     for (T34 feed : mFeedSelf)
@@ -278,59 +278,71 @@ void Sumire::updateFeedSelf(const util::Stactor<T34, 2> &plan)
         mFeedSelf = plan;
 }
 
-void Sumire::updateFeedSelfByClamp(std::function<bool(T34)> missing)
-{
-    util::Stactor<T34, 2> clampers { mFinalWait.prev(), mFinalWait.next() };
-    util::Stactor<T34, 2> newPlan;
-    std::copy_if(clampers.begin(), clampers.end(), std::back_inserter(newPlan), std::move(missing));
-
-    updateFeedSelf(newPlan);
-}
-
 ///
 /// \brief Try to update the aiming plan with a given 4-meld ready parse
 /// \pre 'view' should not already waiting 'mFinalWait'
 ///
-void Sumire::updateFeedSelfByParse(ParsedView4Ready view, Mount &mount)
+void Sumire::updateFeedSelfParse(ParsedView4Ready view, Mount &mount)
 {
     util::Stactor<C34, 2> comelds = view.get2s();
     if (comelds.empty()) { // isoride, simply replace
         updateFeedSelf({ mFinalWait });
-    } else if (mFinalWait.isYao()) { // non-isoride, but waiting yao
-        // fill comeld
-        std::optional<T34> maxFiller;
-        int maxFillerRemain = 0;
-        for (C34 c : comelds) {
-            for (T34 filler : c.effA4()) {
-                int remain = mount.remainA(filler);
-                if (remain > maxFillerRemain) {
-                    maxFiller = filler;
-                    maxFillerRemain = remain;
-                }
-            }
-        }
+    } else if (mFinalWait.isYao()) { // non-isoride, and waiting yao
+        util::Stactor<T34, 2> isoriders = view.getIsoriders();
+        assert(comelds.size() == 2 && isoriders.size() == 1);
+        updateFeedSelfYao(comelds, isoriders[0], mount);
+    } else { // non-isoride and waiting non-yao, transform to clamp
+        updateFeedSelfClamp(view, mount);
+    }
+}
 
-        if (maxFiller) {
-            util::Stactor<T34, 2> feeds { *maxFiller };
+void Sumire::updateFeedSelfYao(const util::Stactor<C34, 2> &comelds, T34 free, Mount &mount)
+{
+    size_t pairIndex = comelds[0].type() == C34::Type::PAIR ? 0 : 1;
+    T34 pair = comelds[pairIndex].head();
+    C34 another = comelds[1 - pairIndex]; // seq, or another bibump pair
+    if (pair != mFinalWait) {
+        if (mount.remainA(pair) > 0) {
+            util::Stactor<T34, 2> feeds { pair };
             // transform to isoride form
-            if (!util::has(view.getIsoriders(), mFinalWait))
+            if (!another.has(mFinalWait) && mFinalWait != free)
                 feeds.pushBack(mFinalWait);
 
             updateFeedSelf(feeds);
         }
-    } else { // non-isoride and waiting yao, transform to clamp
-        // *INDENT-OFF*
-        auto missing = [&](T34 t) {
-            auto inBreakableComeld = [t](const C34 &c) {
-                return !c.is3() && c.has(t);
-            };
-
-            return util::none(view.getParsed().heads(), std::move(inBreakableComeld));
-        };
-        // *INDENT-ON*
-
-        updateFeedSelfByClamp(std::move(missing));
+    } else { // pair is final wait
+        // transfer another seq to bibump pair
+        if (!another.has(mFinalWait)) { // otherwise, 1113m form, give up
+            for (T34 bibumpCandidate : another.t34s()) {
+                if (mount.remainA(bibumpCandidate) > 0) {
+                    updateFeedSelf({ bibumpCandidate });
+                    break;
+                }
+            }
+        }
     }
+}
+
+void Sumire::updateFeedSelfClamp(const ParsedView4Ready &view, Mount &mount)
+{
+    // *INDENT-OFF*
+    auto missing = [&](T34 t) {
+        auto inBreakableComeld = [t](const C34 &c) {
+            return !c.is3() && c.has(t);
+        };
+
+        return util::none(view.getParsed().heads(), std::move(inBreakableComeld));
+    };
+    // *INDENT-ON*
+
+    util::Stactor<T34, 2> clampers { mFinalWait.prev(), mFinalWait.next() };
+    if (!util::all(clampers, [&mount](T34 t) { return mount.remainA(t) > 0; }))
+        return;
+
+    util::Stactor<T34, 2> newPlan;
+    std::copy_if(clampers.begin(), clampers.end(), std::back_inserter(newPlan), std::move(missing));
+
+    updateFeedSelf(newPlan);
 }
 
 void Sumire::shapeYaku(const Table &table, Mount &mount, bool rinshan)
@@ -340,11 +352,10 @@ void Sumire::shapeYaku(const Table &table, Mount &mount, bool rinshan)
     if (!hand.isMenzen())
         return;
 
-    if (shapeYakuhai(table, mount, rinshan))
-        return;
-
     if (hand.step() <= 2)
         accelerate(mount, hand, table.getRiver(mSelf), 30);
+
+    shapeYakuhai(table, mount, rinshan);
 }
 
 bool Sumire::shapeYakuhai(const Table &table, Mount &mount, bool rinshan)

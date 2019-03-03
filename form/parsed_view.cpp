@@ -46,8 +46,7 @@ util::Stactor<T34, 2> ParsedView4Ready::getIsoriders() const
 ///
 /// \brief Get 2-tile comelds in this parse result
 /// \return Empty stacktor if the parse result in in isoride form;
-///         Size-1 stactor if in sequence-waiting form;
-///         Size-2 stactor if in bi-bump form.
+///         Size-2 stactor if in sequence-waiting or bi-bump form.
 ///
 util::Stactor<C34, 2> ParsedView4Ready::get2s() const
 {

@@ -38,8 +38,9 @@ private:
     int evalTargetHappy(const Table &table, const Mount &mount, const Hand &dream, const Action &act);
     bool planAimming(const Table &table, Mount &mount);
     void updateFeedSelf(const util::Stactor<T34, 2> &plan);
-    void updateFeedSelfByClamp(std::function<bool(T34)> missing);
-    void updateFeedSelfByParse(ParsedView4Ready view, Mount &mount);
+    void updateFeedSelfParse(ParsedView4Ready view, Mount &mount);
+    void updateFeedSelfYao(const util::Stactor<C34, 2> &comelds, T34 free, Mount &mount);
+    void updateFeedSelfClamp(const ParsedView4Ready &view, Mount &mount);
 
     void shapeYaku(const Table &table, Mount &mount, bool rinshan);
     bool shapeYakuhai(const Table &table, Mount &mount, bool rinshan);
