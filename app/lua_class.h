@@ -33,6 +33,9 @@ void setupLuaExist(sol::environment env, LuaUserErrorHandler &error);
 void setupLuaMount(sol::environment env, LuaUserErrorHandler &error);
 void setupLuaTileCount(sol::environment env, LuaUserErrorHandler &error);
 void setupLuaHand(sol::environment env);
+void setupLuaForm(sol::environment env);
+void setupLuaRule(sol::environment env);
+void setupLuaFormCtx(sol::environment env);
 void setupLuaGame(sol::environment env);
 
 sol::table toLuaTable(sol::environment env, const TableEvent &event);

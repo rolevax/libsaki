@@ -61,6 +61,50 @@ private:
     Method mMethod;
 };
 
+template<typename Class, typename Ret, typename... Args>
+class ReturnCopy
+{
+public:
+    using Method = Ret (Class::*)(Args...) const;
+
+    explicit ReturnCopy(Method method)
+        : mMethod(method)
+    {
+    }
+
+    std::remove_reference_t<Ret> operator()(Class &thiz, Args &&... args)
+    {
+        return (thiz.*mMethod)(std::forward<Args>(args)...);
+    }
+
+private:
+    Method mMethod;
+};
+
+int handMod1(sol::table ids, const Hand &hand)
+{
+    int ct = 0;
+    for (const auto &[key, ref] : ids) {
+        (void) ref; // conv-to-opt doesn't work somehow
+
+        std::optional<T34> id = ids[key];
+        if (id == std::nullopt) {
+            std::optional<T37> id37 = ids[key];
+            id = id37;
+        }
+
+        if (id != std::nullopt)
+            ct += *id % hand;
+    }
+
+    return ct;
+}
+
+int handMod2(T34 indic, const Hand &hand)
+{
+    return indic % hand;
+}
+
 void setupLuaClasses(const sol::environment &env, LuaUserErrorHandler &error)
 {
     setupLuaTile(env, error);
@@ -70,6 +114,9 @@ void setupLuaClasses(const sol::environment &env, LuaUserErrorHandler &error)
     setupLuaMount(env, error);
     setupLuaTileCount(env, error);
     setupLuaHand(env);
+    setupLuaForm(env);
+    setupLuaRule(env);
+    setupLuaFormCtx(env);
     setupLuaGame(env);
 }
 
@@ -314,28 +361,58 @@ void setupLuaHand(sol::environment env)
         "canchiiasright", &Hand::canChiiAsRight,
         "canpon", &Hand::canPon,
         "candaiminkan", &Hand::canDaiminkan,
-        sol::meta_function::modulus, sol::overload(
-            [](sol::table ids, const Hand &hand) {
-                int ct = 0;
-                for (const auto &[key, ref] : ids) {
-                    (void) ref; // conv-to-opt doesn't work somehow
+        sol::meta_function::modulus, sol::overload(handMod1, handMod2)
+    );
+}
 
-                    std::optional<T34> id = ids[key];
-                    if (id == std::nullopt) {
-                        std::optional<T37> id37 = ids[key];
-                        id = id37;
-                    }
+void setupLuaForm(sol::environment env)
+{
+    env.new_usertype<Form>(
+        "Form",
+        "fu", &Form::fu,
+        "han", &Form::han
+    );
+}
 
-                    if (id != std::nullopt)
-                        ct += *id % hand;
-                }
-
-                return ct;
+void setupLuaRule(sol::environment env)
+{
+    env.new_usertype<Rule>(
+        "Rule",
+        "fly", &Rule::fly,
+        "headjump", &Rule::headJump,
+        "nagashimangan", &Rule::nagashimangan,
+        "ippatsu", &Rule::ippatsu,
+        "uradora", &Rule::uradora,
+        "kandora", &Rule::kandora,
+        "daiminkanpao", &Rule::daiminkanPao,
+        "akadora", sol::property(
+            [](const Rule &r) {
+                return r.akadora == TileCount::AKADORA0 ? 0
+                     : r.akadora == TileCount::AKADORA3 ? 3 : 4;
             },
-            [](T34 indic, const Hand &hand) {
-                return indic % hand;
+            [](Rule &r, int a) {
+                r.akadora = a == 0 ? TileCount::AKADORA0
+                          : a == 3 ? TileCount::AKADORA3 : TileCount::AKADORA4;
             }
-        )
+        ),
+        "hill", &Rule::hill,
+        "returnlevel", &Rule::returnLevel,
+        "roundlimit", &Rule::roundLimit
+    );
+}
+
+void setupLuaFormCtx(sol::environment env)
+{
+    env.new_usertype<FormCtx>(
+        "Formctx",
+        "ippatsu", &FormCtx::ippatsu,
+        "bless", &FormCtx::bless,
+        "duringkan", &FormCtx::duringKan,
+        "emptymount", &FormCtx::emptyMount,
+        "riichi", &FormCtx::riichi,
+        "roundwind", &FormCtx::roundWind,
+        "selfwind", &FormCtx::selfWind,
+        "extraround", &FormCtx::extraRound
     );
 }
 
@@ -350,7 +427,9 @@ void setupLuaGame(sol::environment env)
         "getselfwind", &Table::getSelfWind,
         "getroundwind", &Table::getRoundWind,
         "getriver", AsTable(&Table::getRiver),
-        "riichiestablished", &Table::riichiEstablished
+        "riichiestablished", &Table::riichiEstablished,
+        "getrule", ReturnCopy(&Table::getRule),
+        "getformctx", &Table::getFormCtx
     );
 }
 
