@@ -462,6 +462,11 @@ int Hand::estimate(const Rule &rule, int sw, int rw, const util::Stactor<T37, 5>
     return max;
 }
 
+int Hand::peekPickStep(T34 pick) const
+{
+    return mClosed.peekDraw(pick, &TileCount::step, static_cast<int>(mBarks.size()));
+}
+
 int Hand::peekPickStep4(T34 pick) const
 {
     return mClosed.peekDraw(pick, &TileCount::step4, static_cast<int>(mBarks.size()));

@@ -114,7 +114,7 @@ void setupLuaClasses(const sol::environment &env, LuaUserErrorHandler &error)
     setupLuaMount(env, error);
     setupLuaTileCount(env, error);
     setupLuaHand(env);
-    setupLuaForm(env);
+    setupLuaForm(env, error);
     setupLuaRule(env);
     setupLuaFormCtx(env);
     setupLuaGame(env);
@@ -365,12 +365,49 @@ void setupLuaHand(sol::environment env)
     );
 }
 
-void setupLuaForm(sol::environment env)
+void setupLuaForm(sol::environment env, LuaUserErrorHandler &error)
 {
     env.new_usertype<Form>(
         "Form",
+        sol::meta_function::construct, sol::factories(
+            [&error](const Hand &full, const FormCtx &ctx, const Rule &rule) -> sol::optional<Form> {
+                if (full.step() != -1) {
+                    error.handleUserError("No agari you form a J8");
+                    return sol::nullopt;
+                }
+
+                return Form(full, ctx, rule);
+            },
+            [&error](const Hand &ready, const T37 &pick, const FormCtx &ctx, const Rule &rule) -> sol::optional<Form> {
+                if (ready.peekPickStep(pick) != -1) {
+                    error.handleUserError("No agari you form a J8");
+                    return sol::nullopt;
+                }
+
+                return Form(ready, pick, ctx, rule);
+            }
+        ),
+        "isprototypalyakuman", &Form::isPrototypalYakuman,
         "fu", &Form::fu,
-        "han", &Form::han
+        "han", &Form::han,
+        "base", &Form::base,
+//        "dora", &Form::dora,
+//        "uradora", &Form::uradora,
+//        "akadora", &Form::akadora,
+        "yakus", [&env](const Form &f) {
+            sol::table set = env.create();
+            for (const char *key : f.keys())
+                set[key] = true;
+
+            return set;
+        },
+        "hasyaku", &Form::hasYaku,
+        "netloss", &Form::netLoss,
+        "netgain", &Form::netGain,
+        "loss", &Form::loss,
+        "gain", &Form::gain,
+        "spell", &Form::spell,
+        "charge", &Form::charge
     );
 }
 

@@ -75,6 +75,7 @@ public:
 
     int estimate(const Rule &rule, int sw, int rw, const util::Stactor<T37, 5> &drids) const;
 
+    int peekPickStep(T34 pick) const;
     int peekPickStep4(T34 pick) const;
     int peekPickStep7(T34 pick) const;
     int peekPickStep7Gb(T34 pick) const;
