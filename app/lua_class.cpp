@@ -7,6 +7,15 @@ namespace saki
 
 
 
+class LuaDreamHand : public Hand
+{
+public:
+    explicit LuaDreamHand(const Hand &hand)
+        : Hand(hand)
+    {
+    }
+};
+
 bool isValidSuitStr(const std::string &s)
 {
     return s.size() == 1 && T34::isValidSuit(s[0]);
@@ -362,6 +371,23 @@ void setupLuaHand(sol::environment env)
         "canpon", &Hand::canPon,
         "candaiminkan", &Hand::canDaiminkan,
         sol::meta_function::modulus, sol::overload(handMod1, handMod2)
+    );
+
+    env.new_usertype<LuaDreamHand>(
+        "Dreamhand",
+        sol::constructors<LuaDreamHand(const Hand &)>(),
+        "draw", &Hand::draw,
+        "swapout", &Hand::swapOut,
+        "spinout", &Hand::spinOut,
+        "barkout", &Hand::barkOut,
+        "chiiasleft", &Hand::chiiAsLeft,
+        "chiiasmiddle", &Hand::chiiAsMiddle,
+        "chiiasright", &Hand::chiiAsRight,
+        "pon", &Hand::pon,
+        "daiminkan", &Hand::daiminkan,
+        "ankan", &Hand::ankan,
+        "kakan", &Hand::kakan,
+        sol::base_classes, sol::bases<Hand>()
     );
 }
 
