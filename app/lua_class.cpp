@@ -129,7 +129,7 @@ void setupLuaTile(sol::environment env, LuaUserErrorHandler &error)
         sol::meta_function::construct, sol::factories(
             [&error](int ti) {
                 if (ti < 0 || ti >= 34) {
-                    error.handleUserError("invalid T34 id");
+                    error.handleUserError("EInvT34Id");
                     return T34();
                 }
 
@@ -145,7 +145,7 @@ void setupLuaTile(sol::environment env, LuaUserErrorHandler &error)
 
                 auto it = std::find(dict.begin(), dict.end(), s);
                 if (it == dict.end()) {
-                    error.handleUserError("invalid T34 string");
+                    error.handleUserError("EInvT34Str");
                     return T34();
                 }
 
@@ -175,7 +175,7 @@ void setupLuaTile(sol::environment env, LuaUserErrorHandler &error)
         sol::meta_function::construct, sol::factories(
             [&error](int ti) {
                 if (ti < 0 || ti >= 34) {
-                    error.handleUserError("invalid T34 id");
+                    error.handleUserError("EInvT34Id");
                     return T37();
                 }
 
@@ -183,7 +183,7 @@ void setupLuaTile(sol::environment env, LuaUserErrorHandler &error)
             },
             [&error](const std::string s) {
                 if (!T37::isValidStr(s.c_str())) {
-                    error.handleUserError("invalid T37 suit");
+                    error.handleUserError("EInvT37Str");
                     return T37();
                 }
                 return T37(s.c_str());
@@ -226,7 +226,7 @@ void setupLuaMeld(sol::environment env, LuaUserErrorHandler &error)
             int zeroIndex = index - 1;
             int size = static_cast<int>(m.tiles().size());
             if (zeroIndex < 0 || zeroIndex > size) {
-                error.handleUserError("invalid meld index");
+                error.handleUserError("EInvM37Idx");
                 return T37();
             }
 
@@ -299,7 +299,7 @@ void setupLuaMount(sol::environment env, LuaUserErrorHandler &error)
             [&error](Mount &mount, std::string exit, size_t pos, T34 t, int delta, bool bSpace) {
                 auto [e, ok] = parseMountExit(exit);
                 if (!ok) {
-                    error.handleUserError("invalid mount exit");
+                    error.handleUserError("EInvMntExt");
                     return;
                 }
                 mount.incMk(e, pos, t, delta, bSpace);
@@ -307,7 +307,7 @@ void setupLuaMount(sol::environment env, LuaUserErrorHandler &error)
             [&error](Mount &mount, std::string exit, size_t pos, const T37 &t, int delta, bool bSpace) {
                 auto [e, ok] = parseMountExit(exit);
                 if (!ok) {
-                    error.handleUserError("invalid mount exit");
+                    error.handleUserError("EInvMntExt");
                     return;
                 }
                 mount.incMk(e, pos, t, delta, bSpace);
@@ -330,7 +330,7 @@ void setupLuaTileCount(sol::environment env, LuaUserErrorHandler &error)
             },
             [&error](const TileCount &tc, std::string suit) {
                 if (!isValidSuitStr(suit)) {
-                    error.handleUserError("invalid suit");
+                    error.handleUserError("EInvSuit");
                     return 0;
                 }
 
@@ -388,7 +388,7 @@ void setupLuaForm(sol::environment env, LuaUserErrorHandler &error)
         sol::meta_function::construct, sol::factories(
             [&error](const Hand &full, const FormCtx &ctx, const Rule &rule) -> sol::optional<Form> {
                 if (full.step() != -1) {
-                    error.handleUserError("No agari you form a J8");
+                    error.handleUserError("EFrmNoAgr");
                     return sol::nullopt;
                 }
 
@@ -396,7 +396,7 @@ void setupLuaForm(sol::environment env, LuaUserErrorHandler &error)
             },
             [&error](const Hand &ready, const T37 &pick, const FormCtx &ctx, const Rule &rule) -> sol::optional<Form> {
                 if (ready.peekPickStep(pick) != -1) {
-                    error.handleUserError("No agari you form a J8");
+                    error.handleUserError("EFrmNoAgr");
                     return sol::nullopt;
                 }
 

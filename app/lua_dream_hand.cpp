@@ -16,7 +16,7 @@ LuaDreamHand::LuaDreamHand(const Hand &hand, LuaUserErrorHandler &error)
 void LuaDreamHand::safeDraw(const T37 &in)
 {
     if (hasDrawn()) {
-        mError.handleUserError("already drawn");
+        mError.handleUserError("EDrmCntDrw");
         return;
     }
 
@@ -26,7 +26,7 @@ void LuaDreamHand::safeDraw(const T37 &in)
 void LuaDreamHand::safeSwapOut(const T37 &out)
 {
     if (!(closed().ct(out) > 0) && hasDrawn()) {
-        mError.handleUserError("cannot swap out");
+        mError.handleUserError("EDrmCntSwp");
         return;
     }
 
@@ -36,7 +36,7 @@ void LuaDreamHand::safeSwapOut(const T37 &out)
 void LuaDreamHand::safeSpinOut()
 {
     if (!hasDrawn()) {
-        mError.handleUserError("no drawm you spin a J8");
+        mError.handleUserError("EDrmCntSwp");
         return;
     }
 
