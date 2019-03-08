@@ -18,6 +18,7 @@ public:
     const Parsed4 &getParsed() const;
 
     util::Stactor<T34, 2> getIsoriders() const;
+    util::Stactor<T34, 2> get1s() const;
     util::Stactor<C34, 2> get2s() const;
 
 private:

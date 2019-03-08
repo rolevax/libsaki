@@ -24,20 +24,21 @@ const Parsed4 &ParsedView4Ready::getParsed() const
 ///
 util::Stactor<T34, 2> ParsedView4Ready::getIsoriders() const
 {
-    util::Stactor<T34, 2> res;
+    return get2s().empty() ? get1s() : decltype(getIsoriders())();
+}
 
-    // An isoride ready hand must have no 2-tile comeld
-    if (get2s().empty()) {
-        auto isFree = [](const C34 &c) { return c.type() == C34::Type::FREE; };
-        const auto &heads = mParsed.heads();
-        if (isFree(heads.back())) {
-            if (heads.size() >= 2 && isFree(heads[heads.size() - 2])) {
-                res.pushBack(heads[heads.size() - 2].head());
-                res.pushBack(heads.back().head());
-            } else {
-                res.pushBack(heads.back().head());
-            }
-        }
+util::Stactor<T34, 2> ParsedView4Ready::get1s() const
+{
+    decltype(get1s()) res;
+
+    auto isFree = [](const C34 &c) { return c.type() == C34::Type::FREE; };
+    const auto &heads = mParsed.heads();
+    if (isFree(heads.back())) { // free tiles are always sorted to the back
+        if (auto size = heads.size(); size >= 2)
+            if (C34 bback = heads[size - 2]; isFree(bback))
+                res.pushBack(bback.head());
+
+        res.pushBack(heads.back().head());
     }
 
     return res;
@@ -50,7 +51,7 @@ util::Stactor<T34, 2> ParsedView4Ready::getIsoriders() const
 ///
 util::Stactor<C34, 2> ParsedView4Ready::get2s() const
 {
-    util::Stactor<C34, 2> res;
+    decltype(get2s()) res;
 
     const auto &heads = mParsed.heads();
     auto is2 = [](const C34 &c) { return c.is2(); };
@@ -67,7 +68,7 @@ ParsedView4Step1::ParsedView4Step1(const Parsed4 &parsed)
 
 util::Stactor<T34, 2> ParsedView4Step1::getFrees() const
 {
-    util::Stactor<T34, 2> res;
+    decltype(getFrees()) res;
 
     for (const C34 &c : mParsed.heads())
         if (c.type() == C34::Type::FREE)

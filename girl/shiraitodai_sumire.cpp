@@ -288,9 +288,9 @@ void Sumire::updateFeedSelfParse(ParsedView4Ready view, Mount &mount)
     if (comelds.empty()) { // isoride, simply replace
         updateFeedSelf({ mFinalWait });
     } else if (mFinalWait.isYao()) { // non-isoride, and waiting yao
-        util::Stactor<T34, 2> isoriders = view.getIsoriders();
-        assert(comelds.size() == 2 && isoriders.size() == 1);
-        updateFeedSelfYao(comelds, isoriders[0], mount);
+        util::Stactor<T34, 2> frees = view.get1s();
+        assert(comelds.size() == 2 && frees.size() == 1);
+        updateFeedSelfYao(comelds, frees[0], mount);
     } else { // non-isoride and waiting non-yao, transform to clamp
         updateFeedSelfClamp(view, mount);
     }
