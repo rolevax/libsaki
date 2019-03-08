@@ -106,6 +106,16 @@ int handMod2(T34 indic, const Hand &hand)
     return indic % hand;
 }
 
+std::tuple<sol::optional<Who>, sol::optional<T37>, bool> tableGetFocus(const Table &table)
+{
+    using Tuple = decltype(tableGetFocus(*static_cast<Table *>(nullptr)));
+    TableFocus focus = table.getFocus();
+    if (focus.who().nobody())
+        return Tuple(sol::nullopt, sol::nullopt, false);
+
+    return Tuple(focus.who(), table.getFocusTile(), focus.isDiscard());
+}
+
 void setupLuaClasses(const sol::environment &env, LuaUserErrorHandler &error)
 {
     setupLuaTile(env, error);
@@ -482,7 +492,8 @@ void setupLuaGame(sol::environment env)
         "getriver", AsTable(&Table::getRiver),
         "riichiestablished", &Table::riichiEstablished,
         "getrule", ReturnCopy(&Table::getRule),
-        "getformctx", &Table::getFormCtx
+        "getformctx", &Table::getFormCtx,
+        "getfocus", tableGetFocus
     );
 }
 
@@ -558,7 +569,7 @@ sol::table toLuaTable(sol::environment env, const TableEvent &event)
     return env.create_with(
         "type", util::stringOf(event.type()),
         "args", args
-                );
+    );
 }
 
 
