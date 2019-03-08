@@ -614,6 +614,7 @@ void Table::clean()
     mToEstablishRiichi = false;
     mToFlip = false;
 
+    mFocus = TableFocus();
     mKanContext = KanCtx();
     mDice = 0; // zero to mark not rolled yet
 
