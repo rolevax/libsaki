@@ -1,4 +1,5 @@
 #include "lua_class.h"
+#include "lua_dream_hand.h"
 #include "../table/table.h"
 #include "../util/string_enum.h"
 
@@ -6,15 +7,6 @@ namespace saki
 {
 
 
-
-class LuaDreamHand : public Hand
-{
-public:
-    explicit LuaDreamHand(const Hand &hand)
-        : Hand(hand)
-    {
-    }
-};
 
 bool isValidSuitStr(const std::string &s)
 {
@@ -123,6 +115,7 @@ void setupLuaClasses(const sol::environment &env, LuaUserErrorHandler &error)
     setupLuaMount(env, error);
     setupLuaTileCount(env, error);
     setupLuaHand(env);
+    setupLuaDreamHand(env, error);
     setupLuaForm(env, error);
     setupLuaRule(env);
     setupLuaFormCtx(env);
@@ -372,21 +365,18 @@ void setupLuaHand(sol::environment env)
         "candaiminkan", &Hand::canDaiminkan,
         sol::meta_function::modulus, sol::overload(handMod1, handMod2)
     );
+}
 
+void setupLuaDreamHand(sol::environment env, LuaUserErrorHandler &error)
+{
     env.new_usertype<LuaDreamHand>(
         "Dreamhand",
-        sol::constructors<LuaDreamHand(const Hand &)>(),
-        "draw", &Hand::draw,
-        "swapout", &Hand::swapOut,
-        "spinout", &Hand::spinOut,
-        "barkout", &Hand::barkOut,
-        "chiiasleft", &Hand::chiiAsLeft,
-        "chiiasmiddle", &Hand::chiiAsMiddle,
-        "chiiasright", &Hand::chiiAsRight,
-        "pon", &Hand::pon,
-        "daiminkan", &Hand::daiminkan,
-        "ankan", &Hand::ankan,
-        "kakan", &Hand::kakan,
+        sol::meta_function::construct, [&error](const Hand &hand) {
+            return LuaDreamHand(hand, error);
+        },
+        "draw", &LuaDreamHand::safeDraw,
+        "swapout", &LuaDreamHand::safeSwapOut,
+        "spinout", &LuaDreamHand::safeSpinOut,
         sol::base_classes, sol::bases<Hand>()
     );
 }
