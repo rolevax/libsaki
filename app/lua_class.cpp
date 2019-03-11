@@ -460,7 +460,7 @@ void setupLuaForm(sol::environment env, LuaUserErrorHandler &error)
         "dora", &Form::dora,
         "uradora", &Form::uradora,
         "akadora", &Form::akadora,
-        "yakus", [&env](const Form &f) {
+        "yakus", [env](const Form &f) mutable {
             sol::table set = env.create();
             for (const char *key : f.keys())
                 set[key] = true;
