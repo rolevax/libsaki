@@ -21,8 +21,9 @@ namespace util
 Rand::Rand()
     : mDist(0, 2147483647)
 {
-    uint32_t s = std::chrono::system_clock::now().time_since_epoch().count();
-    mGen.seed(s);
+    auto s = std::chrono::system_clock::now().time_since_epoch().count();
+    auto s32 = static_cast<uint32_t>(s);
+    mGen.seed(s32);
 }
 
 int32_t Rand::gen()
@@ -40,7 +41,8 @@ uint32_t Rand::state() const
     std::ostringstream oss;
     oss << mGen;
     std::string str(oss.str());
-    return std::strtoul(str.c_str(), nullptr, 10);
+    auto s = std::strtoul(str.c_str(), nullptr, 10);
+    return static_cast<uint32_t>(s);
 }
 
 void Rand::set(uint32_t state)

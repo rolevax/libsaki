@@ -152,7 +152,7 @@ Explain4::Iter Explain4::x34e() const
 
 int Explain4::numS() const
 {
-    return se() - sb();
+    return static_cast<int>(se() - sb());
 }
 
 int Explain4::numX34() const
@@ -162,22 +162,22 @@ int Explain4::numX34() const
 
 int Explain4::numO3() const
 {
-    return o3e() - o3b();
+    return static_cast<int>(o3e() - o3b());
 }
 
 int Explain4::numC3() const
 {
-    return c3e() - c3b();
+    return static_cast<int>(c3e() - c3b());
 }
 
 int Explain4::numO4() const
 {
-    return o4e() - o4b();
+    return static_cast<int>(o4e() - o4b());
 }
 
 int Explain4::numC4() const
 {
-    return c4e() - c4b();
+    return static_cast<int>(c4e() - c4b());
 }
 
 void Explain4::mapWait(std::vector<Explain4> &res, T34 pick, bool ron, T34 pair,

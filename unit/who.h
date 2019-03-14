@@ -4,8 +4,6 @@
 #include "../util/assume.h"
 #include "../util/int_iter.h"
 
-#define valid_somebody(w) (0 <= w && w < 4)
-
 
 
 namespace saki
@@ -35,29 +33,29 @@ public:
 
     int index() const
     {
-        assert(valid_somebody(mWho));
-        assume_opt_out(valid_somebody(mWho));
+        assert(validSomebody(mWho));
+        assume_opt_out(validSomebody(mWho));
         return mWho;
     }
 
     Who right() const
     {
-        assert(valid_somebody(mWho));
-        assume_opt_out(valid_somebody(mWho));
+        assert(validSomebody(mWho));
+        assume_opt_out(validSomebody(mWho));
         return Who((mWho + 1) % 4);
     }
 
     Who left() const
     {
-        assert(valid_somebody(mWho));
-        assume_opt_out(valid_somebody(mWho));
+        assert(validSomebody(mWho));
+        assume_opt_out(validSomebody(mWho));
         return Who((mWho + 3) % 4);
     }
 
     Who cross() const
     {
-        assert(valid_somebody(mWho));
-        assume_opt_out(valid_somebody(mWho));
+        assert(validSomebody(mWho));
+        assume_opt_out(validSomebody(mWho));
         return Who((mWho + 2) % 4);
     }
 
@@ -80,10 +78,10 @@ public:
     ///
     int looksAt(Who tar) const
     {
-        assert(valid_somebody(mWho));
-        assume_opt_out(valid_somebody(mWho));
-        assert(valid_somebody(tar.mWho));
-        assume_opt_out(valid_somebody(tar.mWho));
+        assert(validSomebody(mWho));
+        assume_opt_out(validSomebody(mWho));
+        assert(validSomebody(tar.mWho));
+        assume_opt_out(validSomebody(tar.mWho));
         assert(mWho != tar.mWho);
         assume_opt_out(mWho != tar.mWho);
         return 3 - (tar.mWho - mWho + 4) % 4;
@@ -96,10 +94,10 @@ public:
     ///
     int turnFrom(Who from) const
     {
-        assert(valid_somebody(mWho));
-        assume_opt_out(valid_somebody(mWho));
-        assert(valid_somebody(from.mWho));
-        assume_opt_out(valid_somebody(from.mWho));
+        assert(validSomebody(mWho));
+        assume_opt_out(validSomebody(mWho));
+        assert(validSomebody(from.mWho));
+        assume_opt_out(validSomebody(from.mWho));
         return (4 + mWho - from.mWho) % 4;
     }
 
@@ -129,6 +127,12 @@ public:
     }
 
     Who &operator=(const Who &assign) = default;
+
+private:
+    static constexpr bool validSomebody(int w) noexcept
+    {
+        return 0 <= w && w < 4;
+    }
 
 private:
     static const int NOBODY = 4;

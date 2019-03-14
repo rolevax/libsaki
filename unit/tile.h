@@ -51,7 +51,7 @@ public:
 
     static bool isValidSuit(char c)
     {
-        c = std::tolower(c);
+        c = static_cast<char>(std::tolower(c));
         return c == 'm' || c == 'p' || c == 's' || c == 'f' || c == 'y';
     }
 
@@ -96,6 +96,11 @@ public:
         assert(mInitialized);
 #endif
         return mId34;
+    }
+
+    unsigned uId34() const
+    {
+        return static_cast<unsigned>(id34());
     }
 
     Suit suit() const
@@ -148,7 +153,7 @@ public:
             "1y", "2y", "3y"
         };
 
-        return STRS[id34()];
+        return STRS[uId34()];
     }
 
     bool isZ() const
@@ -491,27 +496,27 @@ namespace tiles34
 
 constexpr T34 operator""_m(unsigned long long val)
 {
-    return T34(val, Suit::M);
+    return T34(static_cast<int>(val), Suit::M);
 }
 
 constexpr T34 operator""_p(unsigned long long val)
 {
-    return T34(val, Suit::P);
+    return T34(static_cast<int>(val), Suit::P);
 }
 
 constexpr T34 operator""_s(unsigned long long val)
 {
-    return T34(val, Suit::S);
+    return T34(static_cast<int>(val), Suit::S);
 }
 
 constexpr T34 operator""_f(unsigned long long val)
 {
-    return T34(val, Suit::F);
+    return T34(static_cast<int>(val), Suit::F);
 }
 
 constexpr T34 operator""_y(unsigned long long val)
 {
-    return T34(val, Suit::Y);
+    return T34(static_cast<int>(val), Suit::Y);
 }
 
 const std::array<T34, 13> YAO13
@@ -530,9 +535,9 @@ constexpr IntRange<T34, 34> ALL34;
 inline util::Stactor<T34, 34> toStactor(std::bitset<34> bs)
 {
     util::Stactor<T34, 34> res;
-    for (int ti = 0; ti < 34; ti++)
-        if (bs[ti])
-            res.emplaceBack(ti);
+    for (T34 t : ALL34)
+        if (bs[t.uId34()])
+            res.emplaceBack(t);
 
     return res;
 }
@@ -550,27 +555,27 @@ namespace tiles37
 
 constexpr T37 operator""_m(unsigned long long val)
 {
-    return T37(val, Suit::M);
+    return T37(static_cast<int>(val), Suit::M);
 }
 
 constexpr T37 operator""_p(unsigned long long val)
 {
-    return T37(val, Suit::P);
+    return T37(static_cast<int>(val), Suit::P);
 }
 
 constexpr T37 operator""_s(unsigned long long val)
 {
-    return T37(val, Suit::S);
+    return T37(static_cast<int>(val), Suit::S);
 }
 
 constexpr T37 operator""_f(unsigned long long val)
 {
-    return T37(val, Suit::F);
+    return T37(static_cast<int>(val), Suit::F);
 }
 
 constexpr T37 operator""_y(unsigned long long val)
 {
-    return T37(val, Suit::Y);
+    return T37(static_cast<int>(val), Suit::Y);
 }
 
 const std::array<T37, 37> ORDER37

@@ -55,17 +55,17 @@ TileCount::TileCount(std::initializer_list<T37> t37s)
 
 int TileCount::ct(T34 t) const
 {
-    return mCounts[t.id34()];
+    return mCounts[t.uId34()];
 }
 
 int TileCount::ct(const T37 &t) const
 {
     if (t.val() == 5) {
-        int red = mAka5s[static_cast<int>(t.suit())];
-        return t.isAka5() ? red : mCounts[t.id34()] - red;
+        int red = mAka5s[static_cast<size_t>(t.suit())];
+        return t.isAka5() ? red : mCounts[t.uId34()] - red;
     }
 
-    return mCounts[t.id34()];
+    return mCounts[t.uId34()];
 }
 
 int TileCount::ct(Suit s) const
@@ -126,26 +126,26 @@ void TileCount::inc(const T37 &t, int delta)
 {
     assert(ct(t) + delta >= 0);
 
-    mCounts[t.id34()] += delta;
+    mCounts[t.uId34()] += delta;
     if (t.isAka5())
-        mAka5s[static_cast<int>(t.suit())] += delta;
+        mAka5s[static_cast<size_t>(t.suit())] += delta;
 }
 
 void TileCount::clear(T34 t)
 {
-    mCounts[t.id34()] = 0;
+    mCounts[t.uId34()] = 0;
     if (t.val() == 5)
-        mAka5s[static_cast<int>(t.suit())] = 0;
+        mAka5s[static_cast<size_t>(t.suit())] = 0;
 }
 
 TileCount &TileCount::operator-=(const TileCount &rhs)
 {
-    for (int ti = 0; ti < 34; ti++) {
+    for (size_t ti = 0; ti < 34; ti++) {
         mCounts[ti] -= rhs.mCounts[ti];
         assert(mCounts[ti] >= 0);
     }
 
-    for (int s = 0; s < 3; s++) {
+    for (size_t s = 0; s < 3; s++) {
         mAka5s[s] -= rhs.mAka5s[s];
         assert(mAka5s[s] >= 0);
     }
@@ -175,9 +175,9 @@ int TileCount::step4(int barkCt) const
     int min = 8;
 
     // having-birdhead case
-    for (int ti = 0; ti < 34; ti++) {
+    for (size_t ti = 0; ti < 34; ti++) {
         if (mCounts[ti] >= 2) {
-            T34Delta guard(mutableCounts(), T34(ti), -2);
+            T34Delta guard(mutableCounts(), T34(static_cast<int>(ti)), -2);
             (void) guard;
             int comin = 7 - cutMeld(0, maxCut) - 2 * barkCt;
             min = std::min(min, comin);
@@ -196,7 +196,7 @@ int TileCount::step7() const
     int pair = 0;
     int needKind = 7;
 
-    for (int ti = 0; ti < 34; ti++) {
+    for (size_t ti = 0; ti < 34; ti++) {
         if (mCounts[ti] > 0) {
             needKind--;
             if (mCounts[ti] >= 2)
@@ -213,7 +213,7 @@ int TileCount::step7() const
 int TileCount::step7Gb() const
 {
     int pair = 0;
-    for (int ti = 0; ti < 34; ti++)
+    for (size_t ti = 0; ti < 34; ti++)
         pair += (mCounts[ti] / 2);
 
     return 6 - pair;
@@ -225,9 +225,9 @@ int TileCount::step13() const
     bool gotPair = false;
 
     for (T34 t : tiles34::YAO13) {
-        if (mCounts[t.id34()] > 0) {
+        if (mCounts[t.uId34()] > 0) {
             res--;
-            if (!gotPair && mCounts[t.id34()] >= 2) {
+            if (!gotPair && mCounts[t.uId34()] >= 2) {
                 gotPair = true;
                 res--;
             }
@@ -317,7 +317,7 @@ util::Stactor<T37, 13> TileCount::t37s13(bool allowDup) const
 ///
 bool TileCount::dislike4(T34 t) const
 {
-    int ti = t.id34();
+    size_t ti = t.uId34();
 
     if (mCounts[ti] > 0) // can make a pair
         return false;
@@ -402,7 +402,7 @@ Parsed7 TileCount::parse7() const
     std::bitset<34> plurals;
     std::bitset<34> floats;
 
-    for (int ti = 0; ti < 34; ti++) {
+    for (size_t ti = 0; ti < 34; ti++) {
         if (mCounts[ti] >= 2)
             plurals.set(ti);
         else if (mCounts[ti] == 1)
@@ -418,9 +418,9 @@ Parsed13 TileCount::parse13() const
     bool hasYaoPair = false;
 
     for (T34 t : tiles34::YAO13) {
-        int ct = mCounts[t.id34()];
+        int ct = mCounts[t.uId34()];
         if (ct > 0) {
-            yaos.set(t.id34());
+            yaos.set(t.uId34());
             if (ct >= 2)
                 hasYaoPair = true;
         }
@@ -439,12 +439,11 @@ std::vector<TileCount::Explain4Closed> TileCount::explain4(T34 pick) const
     std::vector<Explain4Closed> res;
 
     // enumerate for all possible birdheads
-    for (int ti = 0; ti < 34; ti++) {
-        if (mCounts[ti] >= 2) {
-            T34Delta guard(mutableCounts(), T34(ti), -2);
+    for (T34 pick : tiles34::ALL34) {
+        if (mCounts[pick.uId34()] >= 2) {
+            T34Delta guard(mutableCounts(), pick, -2);
             (void) guard;
 
-            T34 pick(ti);
             Explain4Closed exp(pick);
             if (decomposeBirdless4(exp, mCounts)) {
                 res.push_back(exp);
@@ -499,14 +498,14 @@ std::vector<TileCount::Explain4Closed> TileCount::explain4(T34 pick) const
 bool TileCount::onlyInTriplet(T34 pick, int barkCt) const
 {
     assert(step(barkCt) == 0); // this algo does not work when step is -1
-    assert(mCounts[pick.id34()] == 3);
+    assert(mCounts[pick.uId34()] == 3);
 
     if (pick.isZ())
         return true;
 
     if (pick.val() <= 7
-        && mCounts[pick.next().id34()] != 0
-        && mCounts[pick.nnext().id34()] != 0) {
+        && mCounts[pick.next().uId34()] != 0
+        && mCounts[pick.nnext().uId34()] != 0) {
         T34Delta guard1(mutableCounts(), pick, -1);
         T34Delta guard2(mutableCounts(), pick.next(), -1);
         T34Delta guard3(mutableCounts(), pick.nnext(), -1);
@@ -518,8 +517,8 @@ bool TileCount::onlyInTriplet(T34 pick, int barkCt) const
     }
 
     if (pick.val() >= 3
-        && mCounts[pick.prev().id34()] != 0
-        && mCounts[pick.pprev().id34()] != 0) {
+        && mCounts[pick.prev().uId34()] != 0
+        && mCounts[pick.pprev().uId34()] != 0) {
         T34Delta guard1(mutableCounts(), pick, -1);
         T34Delta guard2(mutableCounts(), pick.prev(), -1);
         T34Delta guard3(mutableCounts(), pick.pprev(), -1);
@@ -531,8 +530,8 @@ bool TileCount::onlyInTriplet(T34 pick, int barkCt) const
     }
 
     if (2 <= pick.val() && pick.val() <= 8
-        && mCounts[pick.prev().id34()] != 0
-        && mCounts[pick.next().id34()] != 0) {
+        && mCounts[pick.prev().uId34()] != 0
+        && mCounts[pick.next().uId34()] != 0) {
         T34Delta guard1(mutableCounts(), pick, -1);
         T34Delta guard2(mutableCounts(), pick.prev(), -1);
         T34Delta guard3(mutableCounts(), pick.next(), -1);
@@ -543,7 +542,7 @@ bool TileCount::onlyInTriplet(T34 pick, int barkCt) const
             return false;
     }
 
-    if (pick.val() <= 8 && mCounts[pick.next().id34()] != 0) {
+    if (pick.val() <= 8 && mCounts[pick.next().uId34()] != 0) {
         T34Delta guard1(mutableCounts(), pick, -1);
         T34Delta guard2(mutableCounts(), pick.next(), -1);
         (void) guard1; (void) guard2;
@@ -553,7 +552,7 @@ bool TileCount::onlyInTriplet(T34 pick, int barkCt) const
             return false;
     }
 
-    if (pick.val() >= 2 && mCounts[pick.prev().id34()] != 0) {
+    if (pick.val() >= 2 && mCounts[pick.prev().uId34()] != 0) {
         T34Delta guard1(mutableCounts(), pick, -1);
         T34Delta guard2(mutableCounts(), pick.prev(), -1);
         (void) guard1; (void) guard2;
@@ -563,7 +562,7 @@ bool TileCount::onlyInTriplet(T34 pick, int barkCt) const
             return false;
     }
 
-    if (pick.val() <= 7 && mCounts[pick.nnext().id34()] != 0) {
+    if (pick.val() <= 7 && mCounts[pick.nnext().uId34()] != 0) {
         T34Delta guard1(mutableCounts(), pick, -1);
         T34Delta guard2(mutableCounts(), pick.nnext(), -1);
         (void) guard1; (void) guard2;
@@ -573,7 +572,7 @@ bool TileCount::onlyInTriplet(T34 pick, int barkCt) const
             return false;
     }
 
-    if (pick.val() >= 3 && mCounts[pick.pprev().id34()] != 0) {
+    if (pick.val() >= 3 && mCounts[pick.pprev().uId34()] != 0) {
         T34Delta guard1(mutableCounts(), pick, -1);
         T34Delta guard2(mutableCounts(), pick.pprev(), -1);
         (void) guard1; (void) guard2;
@@ -590,7 +589,7 @@ int TileCount::sum(const std::vector<T34> &ts) const
 {
     int res = 0;
     for (T34 t : ts)
-        res += mCounts[t.id34()];
+        res += mCounts[t.uId34()];
 
     return res;
 }
@@ -616,7 +615,7 @@ int TileCount::cutMeld(int id34, int maxCut) const
     if (maxCut == 0)
         return 0;
 
-    while (id34 < 34 && mCounts[id34] == 0)
+    while (id34 < 34 && mCounts[static_cast<size_t>(id34)] == 0)
         id34++;
 
     if (id34 >= 34)
@@ -624,7 +623,7 @@ int TileCount::cutMeld(int id34, int maxCut) const
 
     int maxWork = 0;
 
-    if (mCounts[id34] >= 3) {
+    if (mCounts[static_cast<size_t>(id34)] >= 3) {
         T34Delta guard(mutableCounts(), T34(id34), -3);
         (void) guard;
         int work = 2 + cutMeld(id34, maxCut - 1);
@@ -632,7 +631,9 @@ int TileCount::cutMeld(int id34, int maxCut) const
     }
 
     // is number && value 1~7 (index 0~6) && make a seq
-    if (id34 + 2 < 27 && id34 % 9 <= 6 && mCounts[id34 + 1] > 0 && mCounts[id34 + 2] > 0) {
+    if (id34 + 2 < 27 && id34 % 9 <= 6
+            && mCounts[static_cast<size_t>(id34 + 1)] > 0
+            && mCounts[static_cast<size_t>(id34 + 2)] > 0) {
         T34Delta guard1(mutableCounts(), T34(id34), -1);
         T34Delta guard2(mutableCounts(), T34(id34 + 1), -1);
         T34Delta guard3(mutableCounts(), T34(id34 + 2), -1);
@@ -654,7 +655,7 @@ std::vector<Parsed4::Heads> TileCount::cutMeldOut(int id34, int maxCut) const
     NonEmptyGuard guard(reses);
     (void) guard;
 
-    while (id34 < 34 && mCounts[id34] == 0)
+    while (id34 < 34 && mCounts[static_cast<size_t>(id34)] == 0)
         id34++;
 
     if (id34 >= 34)
@@ -715,7 +716,7 @@ int TileCount::cutSubmeld(int id34, int maxCut) const
     if (maxCut == 0)
         return 0;
 
-    while (id34 < 34 && mCounts[id34] == 0)
+    while (id34 < 34 && mCounts[static_cast<size_t>(id34)] == 0)
         id34++;
 
     if (id34 >= 34)
@@ -723,7 +724,7 @@ int TileCount::cutSubmeld(int id34, int maxCut) const
 
     int maxWork = 0;
 
-    if (mCounts[id34] >= 2) {
+    if (mCounts[static_cast<size_t>(id34)] >= 2) {
         T34Delta guard(mutableCounts(), T34(id34), -2);
         (void) guard;
 
@@ -732,7 +733,7 @@ int TileCount::cutSubmeld(int id34, int maxCut) const
     }
 
     // is number && value 1~8 (index 0~7) && neighbor
-    if (id34 + 1 < 27 && id34 % 9 <= 7 && mCounts[id34 + 1] > 0) {
+    if (id34 + 1 < 27 && id34 % 9 <= 7 && mCounts[static_cast<size_t>(id34 + 1)] > 0) {
         T34Delta guard1(mutableCounts(), T34(id34), -1);
         T34Delta guard2(mutableCounts(), T34(id34 + 1), -1);
         (void) guard1; (void) guard2;
@@ -742,7 +743,7 @@ int TileCount::cutSubmeld(int id34, int maxCut) const
     }
 
     // is number && value 1~7 (index 0~6) && neighbor's neighbor
-    if (id34 + 2 < 27 && id34 % 9 <= 6 && mCounts[id34 + 2] > 0) {
+    if (id34 + 2 < 27 && id34 % 9 <= 6 && mCounts[static_cast<size_t>(id34 + 2)] > 0) {
         T34Delta guard1(mutableCounts(), T34(id34), -1);
         T34Delta guard2(mutableCounts(), T34(id34 + 2), -1);
         (void) guard1; (void) guard2;
@@ -763,7 +764,7 @@ std::vector<Parsed4::Heads> TileCount::cutSubmeldOut(int id34, int maxCut) const
     NonEmptyGuard guard(reses);
     (void) guard;
 
-    while (id34 < 34 && mCounts[id34] == 0)
+    while (id34 < 34 && mCounts[static_cast<size_t>(id34)] == 0)
         id34++;
 
     if (id34 >= 34)
@@ -824,7 +825,7 @@ bool TileCount::decomposeBirdless4(Explain4Closed &exp,
     std::array<int, 3> borrows { 0, 0, 0 };
 
     for (int tj = 0; tj < 34; tj++) {
-        int remain = c[tj] - borrows[0];
+        int remain = c[static_cast<size_t>(tj)] - borrows[0];
         if (remain < 0) // reality conflicts imagination
             return false;
 
@@ -858,13 +859,13 @@ TileCount::T34Delta::T34Delta(std::array<int, 34> &c, T34 t, int delta)
     , mTile(t)
     , mDelta(delta)
 {
-    assert(mCount[mTile.id34()] + mDelta >= 0);
-    mCount[mTile.id34()] += mDelta;
+    assert(mCount[mTile.uId34()] + mDelta >= 0);
+    mCount[mTile.uId34()] += mDelta;
 }
 
 TileCount::T34Delta::~T34Delta()
 {
-    mCount[mTile.id34()] -= mDelta;
+    mCount[mTile.uId34()] -= mDelta;
 }
 
 

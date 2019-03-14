@@ -80,14 +80,14 @@ bool Hand::over4() const
     std::array<int, 34> sum;
 
     for (T34 t : tiles34::ALL34) {
-        sum[t.id34()] = mClosed.ct(t);
-        if (sum[t.id34()] > 4)
+        sum[t.uId34()] = mClosed.ct(t);
+        if (sum[t.uId34()] > 4)
             return true;
     }
 
     for (const M37 &m : mBarks) {
         for (const T37 &t : m.tiles()) {
-            int id = t.id34();
+            auto id = t.uId34();
             sum[id]++;
             if (sum[id] > 4)
                 return true;
@@ -95,8 +95,8 @@ bool Hand::over4() const
     }
 
     if (hasDrawn()) {
-        sum[mDrawn.id34()]++;
-        if (sum[mDrawn.id34()] > 4)
+        sum[mDrawn.uId34()]++;
+        if (sum[mDrawn.uId34()] > 4)
             return true;
     }
 
@@ -254,7 +254,7 @@ bool Hand::canAnkan(util::Stactor<T34, 3> &choices, bool riichi) const
     for (T34 t : tiles34::ALL34) {
         switch (mClosed.ct(t)) {
         case 3:
-            if (t == mDrawn && (!riichi || mClosed.onlyInTriplet(t, mBarks.size())))
+            if (t == mDrawn && (!riichi || mClosed.onlyInTriplet(t, mBarks.iSize())))
                 choices.pushBack(t);
 
             break;
@@ -279,7 +279,7 @@ bool Hand::canKakan(util::Stactor<int, 3> &barkIds) const
     for (size_t i = 0; i < mBarks.size(); i++) {
         if (mBarks[i].type() == M37::Type::PON
             && (mDrawn == mBarks[i][0] || mClosed.ct(T34(mBarks[i][0])) == 1)) {
-            barkIds.pushBack(i);
+            barkIds.pushBack(static_cast<int>(i));
         }
     }
 
@@ -379,7 +379,7 @@ int Hand::step13() const
 bool Hand::hasEffA(T34 t) const
 {
     if (usingCache())
-        return loadCache().effASet()[t.id34()];
+        return loadCache().effASet()[t.uId34()];
 
     return peekStay(&TileCount::hasEffA, mBarks.size(), t);
 }
@@ -387,7 +387,7 @@ bool Hand::hasEffA(T34 t) const
 bool Hand::hasEffA4(T34 t) const
 {
     if (usingCache())
-        return loadCache().effA4Set()[t.id34()];
+        return loadCache().effA4Set()[t.uId34()];
 
     return peekStay(&TileCount::hasEffA4, mBarks.size(), t);
 }
@@ -395,7 +395,7 @@ bool Hand::hasEffA4(T34 t) const
 bool Hand::hasEffA7(T34 t) const
 {
     if (usingCache())
-        return loadCache().effA7Set()[t.id34()];
+        return loadCache().effA7Set()[t.uId34()];
 
     return mBarks.empty() && peekStay(&TileCount::hasEffA7, t);
 }
@@ -403,7 +403,7 @@ bool Hand::hasEffA7(T34 t) const
 bool Hand::hasEffA13(T34 t) const
 {
     if (usingCache())
-        return loadCache().effA13Set()[t.id34()];
+        return loadCache().effA13Set()[t.uId34()];
 
     return mBarks.empty() && peekStay(&TileCount::hasEffA13, t);
 }
@@ -635,7 +635,7 @@ void Hand::kakan(int barkId)
     if (usingCache())
         mParseCache.reset();
 
-    T37 t(mBarks[barkId][0]);
+    T37 t(mBarks[static_cast<size_t>(barkId)][0]);
     if (t == mDrawn) {
         t = mDrawn;
     } else {
@@ -649,7 +649,7 @@ void Hand::kakan(int barkId)
 
     mHasDrawn = false;
 
-    mBarks[barkId].kakan(t);
+    mBarks[static_cast<size_t>(barkId)].kakan(t);
 }
 
 ///

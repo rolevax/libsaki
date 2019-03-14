@@ -113,6 +113,11 @@ public:
         return mSize;
     }
 
+    int iSize() const noexcept
+    {
+        return static_cast<int>(size());
+    }
+
     T *begin() noexcept
     {
         return data();

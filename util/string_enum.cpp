@@ -16,7 +16,7 @@ namespace util
 
 
 
-std::array<const char *, static_cast<int>(ActCode::NUM_ACTCODE)> actCodes
+static std::array<const char *, static_cast<int>(ActCode::NUM_ACTCODE)> actCodes
 {
     "NOTHING", "PASS", "SWAP_OUT", "SPIN_OUT", "SWAP_RIICHI", "SPIN_RIICHI",
     "CHII_AS_LEFT", "CHII_AS_MIDDLE", "CHII_AS_RIGHT",
@@ -27,7 +27,7 @@ std::array<const char *, static_cast<int>(ActCode::NUM_ACTCODE)> actCodes
 
 const char *stringOf(ActCode act)
 {
-    return actCodes[static_cast<int>(act)];
+    return actCodes[static_cast<size_t>(act)];
 }
 
 ActCode actCodeOf(const char *str)
@@ -42,24 +42,24 @@ ActCode actCodeOf(const char *str)
     return static_cast<ActCode>(it - actCodes.begin());
 }
 
-std::array<const char *, 5> m37Types
+static std::array<const char *, 5> m37Types
 {
     "CHII", "PON", "DAIMINKAN", "ANKAN", "KAKAN"
 };
 
 const char *stringOf(M37::Type type)
 {
-    return m37Types[static_cast<int>(type)];
+    return m37Types[static_cast<size_t>(type)];
 }
 
-std::array<const char *, static_cast<int>(RoundResult::NUM_ROUNDRES)> roundResults
+static std::array<const char *, static_cast<int>(RoundResult::NUM_ROUNDRES)> roundResults
 {
     "TSUMO", "RON", "HP", "KSKP", "SFRT", "SKSR", "SCRC", "SCHR", "NGSMG", "ABORT"
 };
 
 const char *stringOf(RoundResult result)
 {
-    return roundResults[static_cast<int>(result)];
+    return roundResults[static_cast<size_t>(result)];
 }
 
 RoundResult roundResultOf(const char *str)
@@ -74,7 +74,7 @@ RoundResult roundResultOf(const char *str)
     return static_cast<RoundResult>(it - roundResults.begin());
 }
 
-std::array<const char *, static_cast<int>(Fan::NUM_FANS)> fans
+static std::array<const char *, static_cast<int>(Fan::NUM_FANS)> fans
 {
     "Dsy88", "Dsx88", "Jlbd88", "Lqd88", "Sg88", "Lys88", "Ssy88",
     "Qyj64", "Xsy64", "Xsx64", "Zys64", "Sak64", "Ysslh64",
@@ -96,10 +96,10 @@ std::array<const char *, static_cast<int>(Fan::NUM_FANS)> fans
 
 const char *stringOf(Fan f)
 {
-    return fans[static_cast<int>(f)];
+    return fans[static_cast<size_t>(f)];
 }
 
-std::array<const char *, static_cast<int>(TableEvent::Type::POPPED_UP) + 1> tableEventTypes
+static std::array<const char *, static_cast<int>(TableEvent::Type::POPPED_UP) + 1> tableEventTypes
 {
     "table-started", "first-dealer-chosen", "round-started", "cleaned",
     "diced", "dealt", "flipped", "drawn", "discarded",
@@ -109,7 +109,7 @@ std::array<const char *, static_cast<int>(TableEvent::Type::POPPED_UP) + 1> tabl
 
 const char *stringOf(TableEvent::Type type)
 {
-    return tableEventTypes[static_cast<int>(type)];
+    return tableEventTypes[static_cast<size_t>(type)];
 }
 
 

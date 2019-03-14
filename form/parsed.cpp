@@ -135,16 +135,16 @@ void Parsed4::computeEffA4() const
     const auto seq2End = std::find_if_not(meldEnd, mHeads.end(), isSeq2);
     for (auto it = meldEnd; it != seq2End; ++it)
         for (T34 t : it->effA4())
-            res.set(t.id34());
+            res.set(t.uId34());
 
-    int faceCt = seq2End - mHeads.begin();
+    int faceCt = static_cast<int>(seq2End - mHeads.begin());
     const auto pairEnd = std::find_if_not(seq2End, mHeads.end(), isPair);
-    int pairCt = pairEnd - seq2End;
+    int pairCt = static_cast<int>(pairEnd - seq2End);
     if (faceCt < 4 - mBarkCt) { // lacking of faces except pairs
         // regard all pair as triplet candidates
         // sacrificing bird-head candidates does not affect effA
         for (auto it = seq2End; it != pairEnd; ++it)
-            res.set(it->head().id34());
+            res.set(it->head().uId34());
 
         // floating tiles affects effA only when
         // non-floats are less than '5 - barkCt'
@@ -153,12 +153,12 @@ void Parsed4::computeEffA4() const
             for (auto it = pairEnd; it != mHeads.end(); ++it) {
                 assert(it->type() == C34::Type::FREE);
                 for (T34 t : it->effA4())
-                    res.set(t.id34());
+                    res.set(t.uId34());
             }
         }
     } else if (pairCt == 0) { // full face and isoride shape
         for (auto it = pairEnd; it != mHeads.end(); ++it)
-            res.set(it->head().id34());
+            res.set(it->head().uId34());
     }
 
     mEffA4SetCache = res;
@@ -180,7 +180,7 @@ const Parsed4s::Container &Parsed4s::data() const
 
 int Parsed4s::size() const
 {
-    return mParseds.size();
+    return static_cast<int>(mParseds.size());
 }
 
 int Parsed4s::barkCt() const
@@ -242,7 +242,7 @@ Parsed7::Parsed7(const std::bitset<34> &plurals, const std::bitset<34> &floats)
 
 int Parsed7::step7() const
 {
-    return 6 - mPlurals.count() + mNeedKind;
+    return 6 - static_cast<int>(mPlurals.count()) + mNeedKind;
 }
 
 ///
@@ -267,7 +267,7 @@ Parsed13::Parsed13(const std::bitset<34> &yaos, bool hasYaoPair)
 
 int Parsed13::step13() const
 {
-    return 13 - mYaos.count() - mHasYaoPair;
+    return 13 - static_cast<int>(mYaos.count()) - mHasYaoPair;
 }
 
 std::bitset<34> Parsed13::effA13Set() const
@@ -275,8 +275,8 @@ std::bitset<34> Parsed13::effA13Set() const
     if (!mEffA13SetCache.has_value()) {
         std::bitset<34> res;
         for (T34 t : tiles34::YAO13)
-            if (!mHasYaoPair || !mYaos[t.id34()])
-                res.set(t.id34());
+            if (!mHasYaoPair || !mYaos[t.uId34()])
+                res.set(t.uId34());
 
         mEffA13SetCache = res;
     }

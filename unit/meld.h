@@ -79,7 +79,7 @@ public:
 
     const T37 &operator[](int i) const
     {
-        return mTiles[i];
+        return mTiles[static_cast<size_t>(i)];
     }
 
     bool isCpdmk() const
@@ -123,7 +123,8 @@ private:
 inline int operator%(T34 ind, const M37 &m)
 {
     const auto &ts = m.tiles();
-    return std::count(ts.begin(), ts.end(), ind.dora());
+    auto res = std::count(ts.begin(), ts.end(), ind.dora());
+    return static_cast<int>(res);
 }
 
 inline std::ostream &operator<<(std::ostream &os, const M37 &m)

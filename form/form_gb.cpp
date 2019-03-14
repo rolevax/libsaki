@@ -1,4 +1,5 @@
 #include "form_gb.h"
+#include "form_common.h"
 #include "../util/misc.h"
 
 
@@ -191,7 +192,7 @@ FormGb::Fans FormGb::calcFansF7(const FormCtx &ctx, const Hand &hand) const
 
     std::array<bool, 5> suits { false, false, false, false, false };
     for (T34 t : ts)
-        suits[static_cast<int>(t.suit())] = true;
+        suits[static_cast<size_t>(t.suit())] = true;
 
     // Hunyise
     if (suits[3] + suits[4] > 0 && suits[0] + suits[1] + suits[2] == 1)
@@ -276,17 +277,13 @@ void FormGb::checkV8864F4(Fans &res, const Hand &hand, const Explain4 &exp, bool
     const std::array<T34, 4> &heads = exp.heads();
 
     // Dasanyuan Xiaosanyuan
-    int yCt = std::count_if(exp.x34b(), exp.x34e(),
-                            [](T34 t) { return t.suit() == Suit::Y; });
-    if (yCt == 3)
+    if (auto yCt = std::count_if(exp.x34b(), exp.x34e(), isY); yCt == 3)
         res.push_back(Fan::DSY88);
     else if (yCt == 2 && exp.pair().suit() == Suit::Y)
         res.push_back(Fan::XSY64);
 
     // Dasixi Xiaosixi
-    int fCt = std::count_if(exp.x34b(), exp.x34e(),
-                            [](T34 t) { return t.suit() == Suit::F; });
-    if (fCt == 4)
+    if (auto fCt = std::count_if(exp.x34b(), exp.x34e(), isF); fCt == 4)
         res.push_back(Fan::DSX88);
     else if (fCt == 3 && exp.pair().suit() == Suit::F)
         res.push_back(Fan::XSX64);
@@ -515,7 +512,6 @@ void FormGb::checkV12F4(FormGb::Fans &res, const Explain4 &exp) const
     }
 
     // Sanfengke
-    auto isF = [](T34 t) { return t.suit() == Suit::F; };
     if (!util::has(res, Fan::XSX64) && std::count_if(exp.x34b(), exp.x34e(), isF) == 3)
         res.push_back(Fan::SFK12);
 }
@@ -608,9 +604,9 @@ void FormGb::checkV6F4(FormGb::Fans &res, const Explain4 &exp, const Hand &hand)
         res.push_back(Fan::PPH6);
 
     std::array<bool, 5> suits { false, false, false, false, false };
-    suits[static_cast<int>(exp.pair().suit())] = true;
+    suits[static_cast<size_t>(exp.pair().suit())] = true;
     for (T34 t : h)
-        suits[static_cast<int>(t.suit())] = true;
+        suits[static_cast<size_t>(t.suit())] = true;
 
     // Hunyise
     if (!util::has(res, Fan::LYS88)
@@ -653,7 +649,7 @@ void FormGb::checkV6F4(FormGb::Fans &res, const Explain4 &exp, const Hand &hand)
         res.push_back(Fan::SAG6);
 
     // Shuangjianke
-    int yCt = std::count_if(exp.x34b(), exp.x34e(), [](T34 t) { return t.suit() == Suit::Y; });
+    auto yCt = std::count_if(exp.x34b(), exp.x34e(), isY);
     if (!util::has(res, Fan::XSY64) && yCt == 2)
         res.push_back(Fan::SJK6);
 }
@@ -696,9 +692,7 @@ void FormGb::checkV2F4(FormGb::Fans &res, const Explain4 &exp,
                        const FormCtx &ctx, const Hand &hand, const T37 &pick) const
 {
     // Jianke
-    int yCt = std::count_if(exp.x34b(), exp.x34e(),
-                            [](T34 t) { return t.suit() == Suit::Y; });
-    if (yCt == 1)
+    if (auto yCt = std::count_if(exp.x34b(), exp.x34e(), isY); yCt == 1)
         res.push_back(Fan::JK2);
 
     // Quanfengke
@@ -794,8 +788,8 @@ void FormGb::checkV1F4(FormGb::Fans &res, const Explain4 &exp,
         for (auto &arr : edges)
             arr.fill(false);
 
-        for (int i = 0; i + 1 < exp.numS(); i++) {
-            for (int j = i + 1; j < exp.numS(); j++) {
+        for (size_t i = 0; static_cast<int>(i + 1) < exp.numS(); i++) {
+            for (size_t j = i + 1; static_cast<int>(j) < exp.numS(); j++) {
                 // prevent loop
                 if (i == 1) {
                     if (edges[0][i] && edges[0][j])
@@ -851,9 +845,9 @@ void FormGb::checkV1F4(FormGb::Fans &res, const Explain4 &exp,
 
     // Queyimen
     std::array<bool, 3> hasSuits { false, false, false };
-    hasSuits[static_cast<int>(exp.pair().suit())] = true;
+    hasSuits[static_cast<size_t>(exp.pair().suit())] = true;
     for (T34 t : exp.heads())
-        hasSuits[static_cast<int>(t.suit())] = true;
+        hasSuits[static_cast<size_t>(t.suit())] = true;
 
     int hasSuitCt = hasSuits[0] + hasSuits[1] + hasSuits[2];
     std::vector<Fan> implyQym {

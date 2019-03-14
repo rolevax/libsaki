@@ -1,4 +1,5 @@
 #include "form.h"
+#include "form_common.h"
 #include "explain.h"
 #include "../util/misc.h"
 #include "../util/rand.h"
@@ -31,7 +32,7 @@ std::array<const char *, NUM_YAKUS> YAKU_STRS {
     "W13", "W4a", "W9r"
 };
 
-std::array<const char *, NUM_YAKUS> YAKU_UNIQUES {
+static std::array<const char *, NUM_YAKUS> YAKU_UNIQUES {
     "rci", "ipt", "tmo", "tny", "pnf",
     "y1y", "y2y", "y3y",
     "jk1", "jk2", "jk3", "jk4",
@@ -135,7 +136,7 @@ std::vector<const char *> Form::keys() const
 {
     std::vector<const char *> res;
 
-    for (int i = 0; i < NUM_YAKUS; i++)
+    for (size_t i = 0; i < NUM_YAKUS; i++)
         if (mYakus[i])
             res.push_back(YAKU_UNIQUES[i]);
 
@@ -213,7 +214,7 @@ std::string Form::spell() const
     if (mYakuman) {
         // forgot why I even append spaces at the end
         // maybe it does or does not matter for the gui layout
-        for (int i = Yaku::KKSMS; i < NUM_YAKUS; i++)
+        for (size_t i = Yaku::KKSMS; i < NUM_YAKUS; i++)
             if (mYakus[i])
                 oss << YAKU_STRS[i] << "  ";
     } else {
@@ -304,7 +305,7 @@ std::string Form::spell() const
             oss << "W4f";
         }
 
-        for (int i = 0; i < Yaku::KKSMS; i++)
+        for (size_t i = 0; i < Yaku::KKSMS; i++)
             if (copy[i])
                 oss << YAKU_STRS[i];
 
@@ -565,13 +566,13 @@ void Form::checkDye4(Form::Yakus &ys, const Explain4 &exp, bool menzen) const
     bool hasZ = exp.pair().isZ();
     std::array<bool, 3> hasNum { false, false, false };
     if (exp.pair().isNum())
-        hasNum[static_cast<int>(exp.pair().suit())] = true;
+        hasNum[static_cast<size_t>(exp.pair().suit())] = true;
 
     for (T34 t : exp.heads()) {
         if (t.isZ())
             hasZ = true;
         else
-            hasNum[static_cast<int>(t.suit())] = true;
+            hasNum[static_cast<size_t>(t.suit())] = true;
     }
 
     if (std::accumulate(hasNum.begin(), hasNum.end(), 0) == 1) {
@@ -606,20 +607,20 @@ void Form::checkYakuhai4(Form::Yakus &ys, const FormCtx &ctx, const Explain4 &ex
     for (auto it = exp.x34b(); it != exp.x34e(); ++it) {
         if (it->suit() == Suit::Y) {
             const std::array<Yaku, 3> Y { Yaku::YKH1Y, Yaku::YKH2Y, Yaku::YKH3Y };
-            ys.set(Y.at(it->val() - 1));
+            ys.set(Y.at(static_cast<size_t>(it->val() - 1)));
         } else {
             if (it->suit() == Suit::F && it->val() == ctx.selfWind) {
                 const std::array<Yaku, 4> J {
                     Yaku::JKZ1F, Yaku::JKZ2F, Yaku::JKZ3F, Yaku::JKZ4F,
                 };
-                ys.set(J.at(it->val() - 1));
+                ys.set(J.at(static_cast<size_t>(it->val() - 1)));
             }
 
             if (it->suit() == Suit::F && it->val() == ctx.roundWind) {
                 const std::array<Yaku, 4> B {
                     Yaku::BKZ1F, Yaku::BKZ2F, Yaku::BKZ3F, Yaku::BKZ4F,
                 };
-                ys.set(B.at(it->val() - 1));
+                ys.set(B.at(static_cast<size_t>(it->val() - 1)));
             }
         }
     }
@@ -709,10 +710,9 @@ void Form::checkSanshokudoukou4(Form::Yakus &ys, const Explain4 &exp) const
 
 void Form::checkShousangen(Form::Yakus &ys, const Explain4 &exp) const
 {
-    int ct = std::count_if(exp.x34b(), exp.x34e(),
-                           [](T34 t) { return t.suit() == Suit::Y; });
-    if (exp.pair().suit() == Suit::Y && ct == 2)
-        ys.set(Yaku::SSG);
+    if (exp.pair().suit() == Suit::Y)
+        if (auto ct = std::count_if(exp.x34b(), exp.x34e(), isY); ct == 2)
+            ys.set(Yaku::SSG);
 }
 
 Form::Yakus Form::calcYakuman4(const FormCtx &ctx, const Explain4 &exp,
@@ -736,15 +736,11 @@ Form::Yakus Form::calcYakuman4(const FormCtx &ctx, const Explain4 &exp,
         res.set(exp.wait() == Wait::ISORIDE || anyWait ? Yaku::S4AK_A : Yaku::S4AK);
 
     // Daisangen
-    int yCt = std::count_if(exp.x34b(), exp.x34e(),
-                            [](T34 t) { return t.suit() == Suit::Y; });
-    if (yCt == 3)
+    if (auto yCt = std::count_if(exp.x34b(), exp.x34e(), isY); yCt == 3)
         res.set(Yaku::DSG);
 
     // Shousuushii Daisuushii
-    int fCt = std::count_if(exp.x34b(), exp.x34e(),
-                            [](T34 t) { return t.suit() == Suit::F; });
-    if (fCt == 4)
+    if (auto fCt = std::count_if(exp.x34b(), exp.x34e(), isF); fCt == 4)
         res.set(Yaku::DSS);
     else if (fCt == 3 && exp.pair().suit() == Suit::F)
         res.set(Yaku::SSS);
@@ -862,7 +858,7 @@ int Form::calcHan(const Yakus &ys) const
 {
     int res = 0;
 
-    int i = 0;
+    size_t i = 0;
 
     while (i <= Yaku::HCTYC_K)
         res += ys[i++] * 1;
