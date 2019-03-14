@@ -30,7 +30,7 @@ void TableTester::run(bool fromHalfWay)
 
     for (Who who = pickBusy(); who.somebody(); who = pickBusy()) {
         auto view = mTable.getView(who);
-        auto decision = mDeciders[who.index()]->decide(*view);
+        auto decision = mDeciders[who.uIndex()]->decide(*view);
 
         if (decision.action.act() != ActCode::NOTHING)
             mTable.action(who, decision.action, mTable.getNonce(who));

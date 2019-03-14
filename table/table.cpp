@@ -45,7 +45,7 @@ Table::Table(InitConfig config, std::vector<TableObserver *> obs, const TableEnv
     setupObservers(obs);
 
     // to choose real init dealer
-    mChoicess[mInitDealer.index()].setDice();
+    mChoicess[mInitDealer.uIndex()].setDice();
 }
 
 ///
@@ -54,7 +54,7 @@ Table::Table(InitConfig config, std::vector<TableObserver *> obs, const TableEnv
 Table::Table(const Table &orig, std::vector<TableObserver *> obs)
     : TablePrivate(orig)
 {
-    for (int w = 0; w < 4; w++)
+    for (unsigned w = 0; w < 4; w++)
         mGirls[w] = orig.mGirls[w]->clone();
 
     setupObservers(obs);
@@ -79,7 +79,7 @@ void Table::action(Who who, const Action &act, int nonce)
 {
     assert(check(who, act, nonce) == CheckResult::OK);
 
-    int w = who.index();
+    auto w = who.uIndex();
 
     if (mGirls[w]->irsReady()) {
         bool handled = mGirls[w]->handleIrs(*this, mMount, act);
@@ -121,12 +121,12 @@ Table::CheckResult Table::check(Who who, const Action &action, int nonce) const
 
 const Hand &Table::getHand(Who who) const
 {
-    return mHands[who.index()];
+    return mHands[who.uIndex()];
 }
 
 const River &Table::getRiver(Who who) const
 {
-    return mRivers[who.index()];
+    return mRivers[who.uIndex()];
 }
 
 std::unique_ptr<TableView> Table::getView(Who who) const
@@ -137,12 +137,12 @@ std::unique_ptr<TableView> Table::getView(Who who) const
 
 const Furiten &Table::getFuriten(Who who) const
 {
-    return mFuritens[who.index()];
+    return mFuritens[who.uIndex()];
 }
 
 const Girl &Table::getGirl(Who who) const
 {
-    return *mGirls[who.index()];
+    return *mGirls[who.uIndex()];
 }
 
 const std::array<int, 4> &Table::getPoints() const
@@ -164,22 +164,22 @@ TileCount Table::visibleRemain(Who who) const
 {
     TileCount res(mRule.akadora);
 
-    for (int w = 0; w < 4; w++) {
+    for (unsigned w = 0; w < 4; w++) {
         for (const T37 &t : mRivers[w])
             res.inc(t, -1);
 
         for (const M37 &m : mHands[w].barks()) {
             const auto &ts = m.tiles();
-            for (int i = 0; i < static_cast<int>(ts.size()); i++)
-                if (i != m.layIndex()) // exclude picked tiles (counted in river)
+            for (unsigned i = 0; i < ts.size(); i++)
+                if (i != m.uLayIndex()) // exclude picked tiles (counted in river)
                     res.inc(ts[i], -1);
         }
     }
 
-    res -= mHands[who.index()].closed();
+    res -= mHands[who.uIndex()].closed();
 
-    if (mHands[who.index()].hasDrawn())
-        res.inc(mHands[who.index()].drawn(), -1);
+    if (mHands[who.uIndex()].hasDrawn())
+        res.inc(mHands[who.uIndex()].drawn(), -1);
 
     for (const T37 &t : mMount.getDrids())
         res.inc(t, -1);
@@ -190,13 +190,13 @@ TileCount Table::visibleRemain(Who who) const
 int Table::riverRemain(T34 t) const
 {
     int res = 4;
-    for (int w = 0; w < 4; w++) {
+    for (unsigned w = 0; w < 4; w++) {
         res -= std::count(mRivers[w].begin(), mRivers[w].end(), t);
 
         for (const M37 &m : mHands[w].barks()) {
             const auto &ts = m.tiles();
-            for (int i = 0; i < static_cast<int>(ts.size()); i++)
-                if (i != m.layIndex() && ts[i] == t)
+            for (unsigned i = 0; i < ts.size(); i++)
+                if (i != m.uLayIndex() && ts[i] == t)
                     res--;
         }
     }
@@ -216,9 +216,9 @@ int Table::riverRemain(T34 t) const
 int Table::getRank(Who who) const
 {
     int rank = 1;
-    int myPoint = mPoints[who.index()];
-    for (int w = 0; w < 4; w++) {
-        if (w == who.index())
+    int myPoint = mPoints[who.uIndex()];
+    for (unsigned w = 0; w < 4; w++) {
+        if (w == who.uIndex())
             continue;
 
         int herPoint = mPoints[w];
@@ -242,9 +242,9 @@ const TableFocus &Table::getFocus() const
 
 const T37 &Table::getFocusTile() const
 {
-    int w = mFocus.who().index();
+    auto w = mFocus.who().uIndex();
     return mFocus.isDiscard() ? mRivers[w].back()
-                              : mHands[w].barks()[mFocus.barkId()][3];
+                              : mHands[w].barks()[mFocus.uBarkId()][3];
 }
 
 ///
@@ -252,7 +252,7 @@ const T37 &Table::getFocusTile() const
 ///
 bool Table::genbutsu(Who whose, T34 t) const
 {
-    return mGenbutsuFlags[whose.index()].test(t.id34());
+    return mGenbutsuFlags[whose.uIndex()].test(t.uId34());
 }
 
 ///
@@ -262,13 +262,13 @@ bool Table::genbutsu(Who whose, T34 t) const
 bool Table::lastDiscardLay() const
 {
     assert(mFocus.isDiscard());
-    int w = mFocus.who().index();
+    auto w = mFocus.who().uIndex();
     return static_cast<int>(mRivers[w].size()) - 1 == mLayPositions[w];
 }
 
 bool Table::riichiEstablished(Who who) const
 {
-    return mRiichiHans[who.index()] != 0;
+    return mRiichiHans[who.uIndex()] != 0;
 }
 
 ///
@@ -308,7 +308,7 @@ bool Table::anyActivated() const
 
 Who Table::findGirl(Girl::Id id) const
 {
-    for (int w = 0; w < 4; w++)
+    for (unsigned w = 0; w < 4; w++)
         if (mGirls[w]->getId() == id)
             return Who(w);
 
@@ -346,7 +346,7 @@ int Table::getRoundWind() const
 
 int Table::getNonce(Who who) const
 {
-    return mNonces[who.index()];
+    return mNonces[who.uIndex()];
 }
 
 const Rule &Table::getRule() const
@@ -364,11 +364,11 @@ FormCtx Table::getFormCtx(Who who) const
     FormCtx ctx;
 
     if (riichiEstablished(who)) {
-        ctx.riichi = mRiichiHans[who.index()];
-        ctx.ippatsu = mIppatsuFlags.test(who.index());
+        ctx.riichi = mRiichiHans[who.uIndex()];
+        ctx.ippatsu = mIppatsuFlags.test(who.uIndex());
     }
 
-    ctx.bless = noBarkYet() && mRivers[who.index()].empty();
+    ctx.bless = noBarkYet() && mRivers[who.uIndex()].empty();
     ctx.duringKan = mKanContext.during();
     ctx.emptyMount = mMount.remainPii() == 0;
 
@@ -381,7 +381,7 @@ FormCtx Table::getFormCtx(Who who) const
 
 const Choices &Table::getChoices(Who who) const
 {
-    int w = who.index();
+    auto w = who.uIndex();
     return mGirls[w]->irsReady() ? mGirls[w]->irsChoices() : mChoicess[w];
 }
 
@@ -426,7 +426,7 @@ bool Table::checkLegality(Who who, const Action &action) const
     case Choices::Mode::DRAWN:
         switch (action.act()) {
         case AC::SWAP_OUT:
-            return util::has(mHands[who.index()].closed().t37s13(), action.t37());
+            return util::has(mHands[who.uIndex()].closed().t37s13(), action.t37());
         case AC::SWAP_RIICHI:
             return util::has(choices.drawn().swapRiichis, action.t37());
         case AC::ANKAN:
@@ -439,7 +439,7 @@ bool Table::checkLegality(Who who, const Action &action) const
 
     case Choices::Mode::BARK:
         if (action.isCp())
-            return mHands[who.index()].canCp(getFocusTile(), action);
+            return mHands[who.uIndex()].canCp(getFocusTile(), action);
 
         return true;
     default:
@@ -455,7 +455,7 @@ void Table::process()
     // select out those actions with highest priority
     util::Stactor<Who, 4> actors;
     ActCode maxAct = ActCode::NOTHING;
-    for (int w = 0; w < 4; w++) {
+    for (unsigned w = 0; w < 4; w++) {
         if (mActionInbox[w].act() > maxAct) {
             actors.clear();
             maxAct = mActionInbox[w].act();
@@ -483,7 +483,7 @@ void Table::process()
         everyonePassed();
     } else {
         assert(actors.size() == 1);
-        singleAction(actors[0], mActionInbox[actors[0].index()]);
+        singleAction(actors[0], mActionInbox[actors[0].uIndex()]);
     }
 }
 
@@ -589,7 +589,7 @@ void Table::nextRound()
 
     mMount = Mount(mRule.akadora);
 
-    mChoicess[mDealer.index()].setDice();
+    mChoicess[mDealer.uIndex()].setDice();
     for (auto &g : mGirls)
         g->onDice(mRand, *this);
 }
@@ -599,7 +599,7 @@ void Table::nextRound()
 ///
 void Table::clean()
 {
-    for (int w = 0; w < 4; w++) {
+    for (unsigned w = 0; w < 4; w++) {
         mFuritens[w] = Furiten();
         mRivers[w].clear();
         mPickeds[w].reset();
@@ -706,7 +706,7 @@ void Table::tryDraw(Who who)
             return;
 
     bool rinshan = mKanContext.during();
-    int w = who.index();
+    auto w = who.uIndex();
 
     if (mMount.remainPii() > 0) {
         for (auto &g : mGirls)
@@ -750,7 +750,7 @@ void Table::tryDraw(Who who)
             exhaustRound(RoundResult::NGSMG, swimmers);
         } else {
             util::Stactor<Who, 4> openers;
-            for (int w = 0; w < 4; w++)
+            for (unsigned w = 0; w < 4; w++)
                 if (mHands[w].ready())
                     openers.emplaceBack(w);
 
@@ -768,8 +768,8 @@ void Table::swapOut(Who who, const T37 &out)
 {
     mKanContext.leave();
 
-    mRivers[who.index()].pushBack(out);
-    mHands[who.index()].swapOut(out);
+    mRivers[who.uIndex()].pushBack(out);
+    mHands[who.uIndex()].swapOut(out);
 
     discardEffects(who, false);
 }
@@ -782,9 +782,9 @@ void Table::spinOut(Who who)
 {
     mKanContext.leave();
 
-    const T37 &out = mHands[who.index()].drawn();
-    mRivers[who.index()].pushBack(out);
-    mHands[who.index()].spinOut();
+    const T37 &out = mHands[who.uIndex()].drawn();
+    mRivers[who.uIndex()].pushBack(out);
+    mHands[who.uIndex()].spinOut();
 
     discardEffects(who, true);
 }
@@ -796,8 +796,8 @@ void Table::spinOut(Who who)
 ///
 void Table::barkOut(Who who, const T37 &out)
 {
-    mRivers[who.index()].pushBack(out);
-    mHands[who.index()].barkOut(out);
+    mRivers[who.uIndex()].pushBack(out);
+    mHands[who.uIndex()].barkOut(out);
 
     discardEffects(who, false);
 }
@@ -815,8 +815,8 @@ void Table::discardEffects(Who who, bool spin)
     for (auto ob : mObservers)
         ob->onTableEvent(*this, event);
 
-    mIppatsuFlags.reset(mFocus.who().index());
-    mFuritens[mFocus.who().index()].doujun = false;
+    mIppatsuFlags.reset(mFocus.who().uIndex());
+    mFuritens[mFocus.who().uIndex()].doujun = false;
 
     if (checkDeathWinds()) {
         util::Stactor<Who, 4> openers; // those who wasted 1000 points
@@ -833,10 +833,10 @@ void Table::discardEffects(Who who, bool spin)
         flipKandoraIndic();
     }
 
-    mGenbutsuFlags[mFocus.who().index()].set(getFocusTile().id34());
-    for (int w = 0; w < 4; w++)
+    mGenbutsuFlags[mFocus.who().uIndex()].set(getFocusTile().uId34());
+    for (unsigned w = 0; w < 4; w++)
         if (riichiEstablished(Who(w)))
-            mGenbutsuFlags[w].set(getFocusTile().id34());
+            mGenbutsuFlags[w].set(getFocusTile().uId34());
 
     checkSutehaiFuriten();
     checkBarkRon();
@@ -853,7 +853,7 @@ void Table::discardEffects(Who who, bool spin)
 void Table::declareRiichi(Who who, const Action &action)
 {
     mToEstablishRiichi = true;
-    mLayPositions[who.index()] = mRivers[who.index()].size();
+    mLayPositions[who.uIndex()] = static_cast<int>(mRivers[who.uIndex()].size());
 
     TableEvent event = TableEvent::RiichiCalled { who };
     for (auto ob : mObservers)
@@ -874,7 +874,7 @@ void Table::declareRiichi(Who who, const Action &action)
 bool Table::finishRiichi()
 {
     assert(mFocus.isDiscard());
-    int w = mFocus.who().index();
+    auto w = mFocus.who().uIndex();
     mPoints[w] -= 1000;
     mDeposit += 1000;
     mToEstablishRiichi = false;
@@ -920,9 +920,9 @@ void Table::chii(Who who, ActCode dir, const T37 &out, bool showAka5)
     pChii = dir == L ? &Hand::chiiAsLeft
                      : dir == M ? &Hand::chiiAsMiddle : &Hand::chiiAsRight;
 
-    (mHands[who.index()].*pChii)(getFocusTile(), showAka5);
+    (mHands[who.uIndex()].*pChii)(getFocusTile(), showAka5);
 
-    TableEvent event = TableEvent::Barked { who, mHands[who.index()].barks().back(), false };
+    TableEvent event = TableEvent::Barked { who, mHands[who.uIndex()].barks().back(), false };
     for (auto ob : mObservers)
         ob->onTableEvent(*this, event);
 
@@ -940,9 +940,9 @@ void Table::pon(Who who, const T37 &out, int showAka5)
     pick();
 
     int layIndex = who.looksAt(mFocus.who());
-    mHands[who.index()].pon(getFocusTile(), showAka5, layIndex);
+    mHands[who.uIndex()].pon(getFocusTile(), showAka5, layIndex);
 
-    TableEvent event = TableEvent::Barked { who, mHands[who.index()].barks().back(), false };
+    TableEvent event = TableEvent::Barked { who, mHands[who.uIndex()].barks().back(), false };
     for (auto ob : mObservers)
         ob->onTableEvent(*this, event);
 
@@ -960,9 +960,9 @@ void Table::daiminkan(Who who)
     pick();
 
     int layIndex = who.looksAt(mFocus.who());
-    mHands[who.index()].daiminkan(getFocusTile(), layIndex);
+    mHands[who.uIndex()].daiminkan(getFocusTile(), layIndex);
 
-    TableEvent event = TableEvent::Barked { who, mHands[who.index()].barks().back(), false };
+    TableEvent event = TableEvent::Barked { who, mHands[who.uIndex()].barks().back(), false };
     for (auto ob : mObservers)
         ob->onTableEvent(*this, event);
 
@@ -981,7 +981,7 @@ void Table::pick()
     if (mToEstablishRiichi)
         finishRiichi();
 
-    int pickee = mFocus.who().index();
+    auto pickee = mFocus.who().uIndex();
     mPickeds[pickee][mRivers[pickee].size() - 1] = true;
     if (lastDiscardLay())
         mLayPositions[pickee]++;
@@ -1005,12 +1005,12 @@ void Table::ankan(Who who, T34 tile)
         flipKandoraIndic();
     }
 
-    int w = who.index();
+    auto w = who.uIndex();
     bool spin = mHands[w].drawn() == tile;
     mHands[w].ankan(tile);
-    mFocus.focusOnChankan(who, mHands[who.index()].barks().size() - 1);
+    mFocus.focusOnChankan(who, mHands[w].barks().iSize() - 1);
 
-    TableEvent event = TableEvent::Barked { who, mHands[who.index()].barks().back(), spin };
+    TableEvent event = TableEvent::Barked { who, mHands[w].barks().back(), spin };
     for (auto ob : mObservers)
         ob->onTableEvent(*this, event);
 
@@ -1036,12 +1036,13 @@ void Table::kakan(Who who, int barkId)
         flipKandoraIndic();
     }
 
-    int w = who.index();
-    bool spin = mHands[w].drawn() == mHands[w].barks()[barkId][0];
+    auto w = who.uIndex();
+    auto uBarkId = static_cast<size_t>(barkId);
+    bool spin = mHands[w].drawn() == mHands[w].barks()[uBarkId][0];
 
     mHands[w].kakan(barkId);
     mFocus.focusOnChankan(who, barkId);
-    const M37 &kanMeld = mHands[who.index()].barks()[barkId];
+    const M37 &kanMeld = mHands[w].barks()[uBarkId];
 
     TableEvent event = TableEvent::Barked { who, kanMeld, spin };
     for (auto ob : mObservers)
@@ -1094,7 +1095,7 @@ void Table::activate()
         for (auto &g : mGirls)
             g->onActivateDice(*this);
 
-    for (int w = 0; w < 4; w++)
+    for (unsigned w = 0; w < 4; w++)
         if (mChoicess[w].any())
             mGirls[w]->onActivate(*this);
 }
@@ -1122,13 +1123,13 @@ bool Table::filterChoices()
     bool hadBarker = util::any(mChoicess, isBark);
 
     for (Who actor : whos::ALL4) {
-        Choices &choices = mChoicess[actor.index()];
+        Choices &choices = mChoicess[actor.uIndex()];
         if (choices.any()) {
             bool couldRon = choices.can(ActCode::RON);
 
             ChoiceFilter filter;
             for (Who f : whos::ALL4)
-                mGirls[f.index()]->onFilterChoice(*this, actor, filter);
+                mGirls[f.uIndex()]->onFilterChoice(*this, actor, filter);
 
             choices.filter(filter);
 
@@ -1159,7 +1160,7 @@ bool Table::kanOverflow(Who kanner)
         return true;
 
     if (kanCt == 4) {
-        const auto &barks = mHands[kanner.index()].barks();
+        const auto &barks = mHands[kanner.uIndex()].barks();
         auto isKan = [](const M37 &m) { return m.isKan(); };
         return !(barks.size() == 4 && util::all(barks, isKan));
     }
@@ -1203,7 +1204,7 @@ bool Table::checkDeathWinds() const
 ///
 void Table::checkChankan(bool only13)
 {
-    for (int w = 0; w < 4; w++) {
+    for (unsigned w = 0; w < 4; w++) {
         if (Who(w) == mFocus.who())
             continue;
 
@@ -1226,7 +1227,7 @@ void Table::checkBarkRon()
 {
     const T37 &focus = getFocusTile();
 
-    for (int w = 0; w < 4; w++) {
+    for (unsigned w = 0; w < 4; w++) {
         if (Who(w) == mFocus.who())
             continue;
 
@@ -1265,7 +1266,7 @@ void Table::checkBarkRon()
 void Table::checkSutehaiFuriten()
 {
     Who dropper = mFocus.who();
-    int w = dropper.index();
+    auto w = dropper.uIndex();
 
     if (!mHands[w].ready())
         return;
@@ -1287,9 +1288,9 @@ void Table::checkSutehaiFuriten()
 void Table::passRon(Who who)
 {
     if (riichiEstablished(who))
-        mFuritens[who.index()].riichi = true;
+        mFuritens[who.uIndex()].riichi = true;
     else
-        mFuritens[who.index()].doujun = true;
+        mFuritens[who.uIndex()].doujun = true;
 }
 
 ///
@@ -1299,7 +1300,7 @@ void Table::passRon(Who who)
 ///
 bool Table::checkNagashimangan(Who who) const
 {
-    int w = who.index();
+    auto w = who.uIndex();
     return util::all(mRivers[w], [](const T37 &t) { return t.isYao(); })
            && mPickeds[w].none();
 }
@@ -1314,11 +1315,11 @@ void Table::exhaustRound(RoundResult result, const util::Stactor<Who, 4> &opener
     if (result == RoundResult::HP) {
         std::array<bool, 4> tenpai { false, false, false, false };
         for (Who who : openers)
-            tenpai[who.index()] = true;
+            tenpai[who.uIndex()] = true;
 
-        int ct = openers.size();
+        int ct = openers.iSize();
         if (ct % 4 != 0) {
-            for (int w = 0; w < 4; w++)
+            for (unsigned w = 0; w < 4; w++)
                 mPoints[w] += tenpai[w] ? (3000 / ct) : -(3000 / (4 - ct));
         }
 
@@ -1326,13 +1327,13 @@ void Table::exhaustRound(RoundResult result, const util::Stactor<Who, 4> &opener
     } else if (result == RoundResult::NGSMG) {
         for (Who who : openers) {
             if (who == mDealer)
-                for (int l = 0; l < 4; ++l)
-                    mPoints[l] += l == who.index() ? 12000 : -4000;
+                for (unsigned l = 0; l < 4; ++l)
+                    mPoints[l] += l == who.uIndex() ? 12000 : -4000;
 
             else
-                for (int l = 0; l < 4; ++l)
-                    mPoints[l] += l == who.index() ? 8000
-                                                   : -(l == mDealer.index() ? 4000 : 2000);
+                for (unsigned l = 0; l < 4; ++l)
+                    mPoints[l] += l == who.uIndex() ? 8000
+                                                    : -(l == mDealer.uIndex() ? 4000 : 2000);
         }
 
         mToChangeDealer = !util::has(openers, mDealer);
@@ -1377,7 +1378,7 @@ void Table::finishRound(const util::Stactor<Who, 4> &openers_, Who gunner)
         std::sort(openers.begin(), openers.end(), compDist);
     }
 
-    int ticket = mRule.headJump ? 1 : openers.size();
+    int ticket = mRule.headJump ? 1 : openers.iSize();
     assert(ticket == 1 || ticket == 2); // no '3-ron' yet
 
     // dig uradora-indicator if some winner established riichi
@@ -1391,8 +1392,8 @@ void Table::finishRound(const util::Stactor<Who, 4> &openers_, Who gunner)
 
     util::Stactor<Form, 2> forms;
     for (int i = 0; i < ticket; i++) {
-        Who who = openers[i];
-        int w = who.index();
+        Who who = openers[static_cast<size_t>(i)];
+        auto w = who.uIndex();
         if (isRon) {
             forms.emplaceBack(mHands[w], getFocusTile(), getFormCtx(who), mRule,
                               mMount.getDrids(), mMount.getUrids());
@@ -1411,23 +1412,23 @@ void Table::finishRound(const util::Stactor<Who, 4> &openers_, Who gunner)
         ob->onTableEvent(*this, eventEnd);
 
     // the closest player (or the tsumo player) takes deposit
-    mPoints[openers[0].index()] += mDeposit;
+    mPoints[openers[0].uIndex()] += mDeposit;
     mDeposit = 0;
 
     // pay the form value
     if (isRon) {
         for (size_t i = 0; i < forms.size(); i++) {
-            mPoints[gunner.index()] -= forms[i].loss(false); // 'false' unused
-            mPoints[openers[i].index()] += forms[i].gain();
+            mPoints[gunner.uIndex()] -= forms[i].loss(false); // 'false' unused
+            mPoints[openers[i].uIndex()] += forms[i].gain();
         }
     } else if (mRule.daiminkanPao
                && mKanContext.during()
                && mKanContext.pao().somebody()) {
         int loss = 2 * forms[0].loss(false) + forms[0].loss(true);
-        mPoints[mKanContext.pao().index()] -= loss;
-        mPoints[openers[0].index()] += forms[0].gain();
+        mPoints[mKanContext.pao().uIndex()] -= loss;
+        mPoints[openers[0].uIndex()] += forms[0].gain();
     } else { // tsumo
-        for (int i = 0; i < 4; ++i) {
+        for (unsigned i = 0; i < 4; ++i) {
             Who who(i);
             if (who == openers[0])
                 mPoints[i] += forms[0].gain();
@@ -1455,7 +1456,7 @@ void Table::checkNextRound()
     bool topDealer = getRank(mDealer) == 1;
     bool end = fly || (mAllLast && !hasWest && (mToChangeDealer || topDealer));
 
-    for (int w = 0; w != 4; w++) {
+    for (unsigned w = 0; w != 4; w++) {
         bool flog = Who(w) == mDealer && !fly && mAllLast && !mToChangeDealer && topDealer;
         Choices::ModeEnd mode;
         mode.end = end;
@@ -1471,12 +1472,12 @@ void Table::endTable()
 {
     std::array<Who, 4> rank;
     for (int w = 0; w != 4; ++w)
-        rank[getRank(Who(w)) - 1] = Who(w);
+        rank[static_cast<size_t>(getRank(Who(w)) - 1)] = Who(w);
 
-    mPoints[rank[0].index()] += mDeposit;
+    mPoints[rank[0].uIndex()] += mDeposit;
 
     std::array<int, 4> scores(mPoints);
-    scores[rank[0].index()] += mRule.hill;
+    scores[rank[0].uIndex()] += mRule.hill;
 
     for (int &sc : scores) {
         sc -= mRule.returnLevel;

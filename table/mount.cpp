@@ -20,9 +20,9 @@ Exist::Exist()
 void Exist::incMk(const T37 &t, int delta)
 {
     if (t.isAka5())
-        mRed[static_cast<int>(t.suit())] += delta;
+        mRed[static_cast<size_t>(t.suit())] += delta;
     else
-        mBlack[t.id34()] += delta;
+        mBlack[t.uId34()] += delta;
 }
 
 void Exist::incMk(T34 t, int delta)
@@ -30,10 +30,10 @@ void Exist::incMk(T34 t, int delta)
     if (t.val() == 5) {
         int red = delta / 4;
         int black = delta - red;
-        mRed[static_cast<int>(t.suit())] += red;
-        mBlack[t.id34()] += black;
+        mRed[static_cast<size_t>(t.suit())] += red;
+        mBlack[t.uId34()] += black;
     } else {
-        mBlack[t.id34()] += delta;
+        mBlack[t.uId34()] += delta;
     }
 }
 
@@ -59,10 +59,10 @@ Exist::Polar Exist::polarize(const TileCount &stoch) const
     // *INDENT-ON*
 
     for (int ti = 0; ti < 34; ti++)
-        add(T37(ti), mBlack[ti]);
+        add(T37(ti), mBlack[static_cast<size_t>(ti)]);
 
     for (Suit s : { Suit::M, Suit::P, Suit::S })
-        add(T37(s, 0), mRed[static_cast<int>(s)]);
+        add(T37(s, 0), mRed[static_cast<size_t>(s)]);
 
     return res;
 }
@@ -298,7 +298,7 @@ std::vector<T37> Mount::popPolar(util::Rand &rand, Exist::Polar &polar,
                                  TileCount &stoch, int need)
 {
     std::vector<T37> res;
-    res.reserve(need);
+    res.reserve(static_cast<size_t>(need));
     int sum = 0;
 
     if (!polar.pos.empty()) { // init pos-polar
@@ -308,13 +308,13 @@ std::vector<T37> Mount::popPolar(util::Rand &rand, Exist::Polar &polar,
 
     while (need-- > 0) {
         T37 pop;
-        int index;
+        size_t index;
         if (polar.pos.empty()) {
             assert(!polar.npos.empty());
             using Cy = Exist::Polar::Cy;
             auto less = [](const Cy &l, const Cy &r) { return l.e < r.e; };
             auto it = std::max_element(polar.npos.begin(), polar.npos.end(), less);
-            index = it - polar.npos.begin();
+            index = static_cast<size_t>(it - polar.npos.begin());
             pop = polar.npos[index].t;
         } else {
             int r = rand.gen(sum);
@@ -334,7 +334,7 @@ std::vector<T37> Mount::popPolar(util::Rand &rand, Exist::Polar &polar,
                     polar.npos[index].e = std::numeric_limits<int>::min();
                 } else {
                     sum -= polar.pos[index].e;
-                    polar.pos.erase(polar.pos.begin() + index);
+                    polar.pos.erase(polar.pos.begin() + static_cast<ptrdiff_t>(index));
                 }
             } else if (!polar.pos.empty()) {
                 // match the probablity

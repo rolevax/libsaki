@@ -72,6 +72,11 @@ public:
         return mLay;
     }
 
+    unsigned uLayIndex() const
+    {
+        return static_cast<unsigned>(mLay);
+    }
+
     const util::Stactor<T37, 4> &tiles() const
     {
         return mTiles;

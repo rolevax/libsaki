@@ -13,9 +13,6 @@ namespace saki
 class TableEnvStub : public TableEnv
 {
 public:
-    TableEnvStub() = default;
-    virtual ~TableEnvStub() = default;
-
     int hour24() const override;
 };
 

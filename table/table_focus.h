@@ -31,6 +31,11 @@ public:
         return mBarkId;
     }
 
+    unsigned uBarkId() const
+    {
+        return static_cast<unsigned>(mBarkId);
+    }
+
     void focusOnDiscard(Who who)
     {
         mWho = who;

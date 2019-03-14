@@ -249,7 +249,7 @@ void Girl::eraseRivered(util::Stactor<T34, 34> &ts, const River &river)
 void Girl::eraseRivered(std::bitset<34> &ts, const River &river)
 {
     for (const T37 &t: river)
-        ts.reset(t.id34());
+        ts.reset(t.uId34());
 }
 
 void Girl::accelerate(Mount &mount, const Hand &hand, const River &river, int delta)

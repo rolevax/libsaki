@@ -85,14 +85,14 @@ public:
     void setAbleAt(int index, bool v)
     {
         Choices::ModeIrsCheck mode = mChoices.irsCheck();
-        mode.list[index].setAble(v);
+        mode.list[static_cast<size_t>(index)].setAble(v);
         mChoices.setIrsCheck(mode);
     }
 
     void setOnAt(int index, bool v)
     {
         Choices::ModeIrsCheck mode = mChoices.irsCheck();
-        mode.list[index].setOn(v);
+        mode.list[static_cast<size_t>(index)].setOn(v);
         mChoices.setIrsCheck(mode);
     }
 

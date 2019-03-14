@@ -38,6 +38,11 @@ public:
         return mWho;
     }
 
+    unsigned uIndex() const
+    {
+        return static_cast<unsigned>(index());
+    }
+
     Who right() const
     {
         assert(validSomebody(mWho));

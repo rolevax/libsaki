@@ -61,12 +61,12 @@ void Princess::debugCheat(std::array<TileCount, 4> &res)
 void Princess::raid(std::array<TileCount, 4> &inits)
 {
     std::array<std::optional<HrhInitFix>, 4> fixes;
-    for (int w = 0; w < 4; w++)
+    for (unsigned w = 0; w < 4; w++)
         fixes[w] = mGirls[w]->onHrhRaid(mTable);
 
     using Pri = HrhInitFix::Priority;
     for (Pri pri : { Pri::HIGH, Pri::LOW }) {
-        for (int w = 0; w < 4; w++) {
+        for (unsigned w = 0; w < 4; w++) {
             const auto &opt = fixes[w];
             if (opt.has_value() && opt->priority == pri) {
                 fixInit(inits[w], *opt);
@@ -80,7 +80,7 @@ void Princess::bargain()
     util::Stactor<HrhBargainer *, 4> bargainers;
     util::Stactor<Who, 4> whos;
     int totalPlanCt = 1;
-    for (int w = 0; w < 4; w++) {
+    for (unsigned w = 0; w < 4; w++) {
         auto bargainer = mGirls[w]->onHrhBargain(mTable);
         if (bargainer != nullptr) {
             assert(bargainer->hrhBargainPlanCt() > 0);
@@ -99,10 +99,10 @@ void Princess::bargain()
         util::Stactor<int, 4> currPlans;
 
         for (const auto &perm : perms) {
-            int planSize = perm.size();
+            int planSize = static_cast<int>(perm.size());
             int index = bigPlan % planSize;
             bigPlan /= planSize;
-            currPlans.pushBack(perm[index]);
+            currPlans.pushBack(perm[static_cast<size_t>(index)]);
         }
 
         return currPlans;
@@ -112,12 +112,12 @@ void Princess::bargain()
         for (T34 t : tiles34::ALL34) {
             using Claim = HrhBargainer::Claim;
             util::Stactor<Claim, 4> claims;
-            for (size_t i = 0; i < bargainers.size(); i++)
+            for (unsigned i = 0; i < bargainers.size(); i++)
                 claims.pushBack(bargainers[i]->hrhBargainClaim(plans[i], t));
 
-            int any = std::count(claims.begin(), claims.end(), Claim::ANY);
-            int all = std::count(claims.begin(), claims.end(), Claim::ALL);
-            int four = std::count(claims.begin(), claims.end(), Claim::FOUR);
+            auto any = std::count(claims.begin(), claims.end(), Claim::ANY);
+            auto all = std::count(claims.begin(), claims.end(), Claim::ALL);
+            auto four = std::count(claims.begin(), claims.end(), Claim::FOUR);
 
             // claimer must be unique
             if (all + four > 1)
@@ -142,11 +142,11 @@ void Princess::bargain()
     for (int bigPlan = 0; bigPlan < totalPlanCt; bigPlan++) {
         auto currPlans = getCurrPlans(bigPlan);
         if (checkPlans(currPlans)) {
-            for (size_t i = 0; i < bargainers.size(); i++) {
+            for (unsigned i = 0; i < bargainers.size(); i++) {
                 HrhBargainer *bargainer = bargainers[i];
                 int plan = currPlans[i];
                 bargainer->onHrhBargained(plan, mMount);
-                mBargainResults[whos[i].index()].set(bargainer, plan);
+                mBargainResults[whos[i].uIndex()].set(bargainer, plan);
             }
 
             return;
@@ -164,7 +164,7 @@ void Princess::beg(std::array<TileCount, 4> &inits)
             if (begger == rival)
                 continue;
 
-            int r = rival.index();
+            auto r = rival.uIndex();
             if (!mBargainResults[r].active())
                 continue;
 
@@ -178,9 +178,9 @@ void Princess::beg(std::array<TileCount, 4> &inits)
             }
         }
 
-        std::optional<HrhInitFix> fix = mGirls[begger.index()]->onHrhBeg(mRand, mTable, stock);
+        std::optional<HrhInitFix> fix = mGirls[begger.uIndex()]->onHrhBeg(mRand, mTable, stock);
         if (fix.has_value()) // ppriority ignored in 'beg' stage
-            fixInit(inits[begger.index()], *fix);
+            fixInit(inits[begger.uIndex()], *fix);
     }
 }
 
@@ -204,7 +204,7 @@ std::array<Hand, 4> Princess::monkey(std::array<TileCount, 4> &inits)
 
     // checkInit() should never rely on a moutain remaining status
     // because hands are checked sequentially but not globally
-    for (int w = 0; w < 4; w++) {
+    for (unsigned w = 0; w < 4; w++) {
         for (int iter = 0; true; iter++) {
             Mount mount(mMount);
             TileCount init(inits[w]); // copy
@@ -215,7 +215,7 @@ std::array<Hand, 4> Princess::monkey(std::array<TileCount, 4> &inits)
 
             // *INDENT-OFF*
             auto pass = [&](Who checker) {
-                return mGirls[checker.index()]->checkInit(Who(w), hand, mTable, iter);
+                return mGirls[checker.uIndex()]->checkInit(Who(w), hand, mTable, iter);
             };
             // *INDENT-ON*
 
