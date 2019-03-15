@@ -728,7 +728,7 @@ Form::Yakus Form::calcYakuman4(const FormCtx &ctx, const Explain4 &exp,
     }
 
     const std::array<T34, 4> &heads = exp.heads();
-    if (util::all(heads, [](T34 h) { return h.isZ(); }) && exp.pair().isZ())
+    if (util::all(heads, isZ) && exp.pair().isZ())
         res.set(Yaku::TIS);
 
     // Suuankou
@@ -746,7 +746,7 @@ Form::Yakus Form::calcYakuman4(const FormCtx &ctx, const Explain4 &exp,
         res.set(Yaku::SSS);
 
     // Chinroutou
-    if (exp.numX34() == 4 && util::all(heads, [](T34 t) { return t.isNum19(); })
+    if (exp.numX34() == 4 && util::all(heads, isNum19)
         && exp.pair().isNum19())
         res.set(Yaku::CRT);
 

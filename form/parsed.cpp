@@ -1,4 +1,5 @@
 #include "parsed.h"
+#include "../util/dismember.h"
 
 #include <numeric>
 #include <algorithm>
@@ -127,12 +128,10 @@ void Parsed4::computeEffA4() const
 {
     std::bitset<34> res;
 
-    auto is3 = [](C34 c) { return c.is3(); };
-    auto isSeq2 = [](C34 c) { return c.isSeq2(); };
     auto isPair = [](C34 c) { return c.type() == C34::Type::PAIR; };
 
-    const auto meldEnd = std::find_if_not(mHeads.begin(), mHeads.end(), is3);
-    const auto seq2End = std::find_if_not(meldEnd, mHeads.end(), isSeq2);
+    const auto meldEnd = std::find_if_not(mHeads.begin(), mHeads.end(), PredThis(&C34::is3));
+    const auto seq2End = std::find_if_not(meldEnd, mHeads.end(), PredThis(&C34::isSeq2));
     for (auto it = meldEnd; it != seq2End; ++it)
         for (T34 t : it->effA4())
             res.set(t.uId34());

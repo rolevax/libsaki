@@ -1,6 +1,7 @@
 #include "hand.h"
 #include "../form/form.h"
 #include "../util/assume.h"
+#include "../util/dismember.h"
 #include "../util/misc.h"
 
 #include <array>
@@ -132,8 +133,7 @@ int Hand::ctAka5() const
     // *INDENT-OFF*
     auto aka5InMeld = [](int s, const M37 &m) {
         const auto &ts = m.tiles();
-        auto isAka5 = [](const T37 &t) { return t.isAka5(); };
-        return s + std::count_if(ts.begin(), ts.end(), isAka5);
+        return s + std::count_if(ts.begin(), ts.end(), PredThis(&T37::isAka5));
     };
     // *INDENT-ON*
     int inBarks = std::accumulate(mBarks.begin(), mBarks.end(), 0, aka5InMeld);

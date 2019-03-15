@@ -1,6 +1,7 @@
 #include "himematsu_kyouko.h"
 #include "../table/table.h"
 #include "../table/princess.h"
+#include "../util/dismember.h"
 #include "../util/misc.h"
 
 
@@ -57,10 +58,8 @@ void Kyouko::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         util::Stactor<T34, 34> myEffs = table.getHand(mSelf).effA4(); // exclude 7/13
         util::Stactor<T34, 34> herEffs = table.getHand(who).effA();
 
-        if (mCourse == TANYAO) {
-            std::remove_if(myEffs.begin(), myEffs.end(),
-                           [](T34 t) { return t.isYao(); });
-        }
+        if (mCourse == TANYAO)
+            std::remove_if(myEffs.begin(), myEffs.end(), PredThis(&T34::isYao));
 
         for (T34 t : myEffs) {
             if (who == mSelf.left() && myHand.canChii(t)) {

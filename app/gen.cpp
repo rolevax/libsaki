@@ -1,4 +1,5 @@
 #include "gen.h"
+#include "../util/dismember.h"
 #include "../util/rand.h"
 #include "../util/misc.h"
 
@@ -269,7 +270,7 @@ void Gen::genInfo(util::Rand &rand, FormCtx &ctx, T34 pick, const Hand &h, bool 
     }
 
     if (!ctx.ippatsu) {
-        bool hasKan = util::any(h.barks(), [](const M37 &m) { return m.isKan(); });
+        bool hasKan = util::any(h.barks(), PredThis(&M37::isKan));
 
         // *INDENT-OFF*
         if (!ron && hasKan && rand.gen(100) < RINSHAN_CENT)

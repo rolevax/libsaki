@@ -20,6 +20,21 @@ inline bool isF(T34 t)
     return t.suit() == Suit::F;
 }
 
+inline bool isZ(T34 t)
+{
+    return t.isZ();
+}
+
+inline bool isYao(T34 t)
+{
+    return t.isYao();
+}
+
+inline bool isNum19(T34 t)
+{
+    return t.isNum19();
+}
+
 
 
 } // namepace saki

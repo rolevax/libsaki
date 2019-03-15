@@ -1,4 +1,5 @@
 #include "choices.h"
+#include "../util/dismember.h"
 #include "../util/misc.h"
 
 
@@ -10,7 +11,7 @@ namespace saki
 
 bool Choices::ModeIrsCheck::any() const
 {
-    return util::any(list, [](const IrsCheckItem &i) { return i.able(); });
+    return util::any(list, PredThis(&IrsCheckItem::able));
 }
 
 

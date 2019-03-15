@@ -142,21 +142,6 @@ inline void p(T t, Args... args)
     p(args...);
 }
 
-template<typename C>
-class PredThis
-{
-public:
-    constexpr explicit PredThis(bool (C::*predMem)()) noexcept : mPredMem(predMem) {}
-
-    bool operator()(const C &thiz)
-    {
-        return (thiz.*mPredMem)();
-    }
-
-private:
-    bool (C::*mPredMem)();
-};
-
 
 
 } // namespace util

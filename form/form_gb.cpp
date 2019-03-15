@@ -203,10 +203,8 @@ FormGb::Fans FormGb::calcFansF7(const FormCtx &ctx, const Hand &hand) const
         res.push_back(Fan::WMQ6);
 
     // Duanyao
-    if (!util::has(res, Fan::QZ24)
-        && util::none(ts, [](T34 t) { return t.isYao(); })) {
+    if (!util::has(res, Fan::QZ24) && util::none(ts, isYao))
         res.push_back(Fan::DY2);
-    }
 
     // Siguiyi
     if (!util::has(res, Fan::YSSTS48))
@@ -223,10 +221,8 @@ FormGb::Fans FormGb::calcFansF7(const FormCtx &ctx, const Hand &hand) const
         Fan::LQD88, Fan::QYS24, Fan::QDA24, Fan::QZ24, Fan::QX24,
         Fan::DYW12, Fan::XYW12, Fan::DY2
     };
-    if (!util::common(res, implyWz)
-        && util::none(ts, [](T34 t) { return t.isZ(); })) {
+    if (!util::common(res, implyWz) && util::none(ts, isZ))
         res.push_back(Fan::WZ1);
-    }
 
     // Zimo
     if (!mDianpao)
@@ -321,12 +317,12 @@ void FormGb::checkV8864F4(Fans &res, const Hand &hand, const Explain4 &exp, bool
         res.push_back(Fan::LYS88);
 
     // Qingyaojiu
-    if (exp.numX34() == 4 && util::all(heads, [](T34 t) { return t.isNum19(); })
+    if (exp.numX34() == 4 && util::all(heads, isNum19)
         && exp.pair().isNum19())
         res.push_back(Fan::QYJ64);
 
     // Ziyise
-    if (util::all(heads, [](T34 h) { return h.isZ(); }) && exp.pair().isZ())
+    if (util::all(heads, isZ) && exp.pair().isZ())
         res.push_back(Fan::ZYS64);
 
     // Si'anke
@@ -374,7 +370,7 @@ void FormGb::checkV4832F4(Fans &res, const Explain4 &exp, bool pureNumMelds) con
     // Hunyaojiu
     const std::vector<Fan> implyHyj { Fan::QYJ64, Fan::ZYS64 };
     if (!util::common(res, implyHyj) && exp.numX34() == 4 && exp.pair().isYao()
-        && util::all(hs, [](T34 t) { return t.isYao(); })) {
+        && util::all(hs, isYao)) {
         res.push_back(Fan::HYJ32);
     }
 }
@@ -669,7 +665,7 @@ void FormGb::checkV4F4(FormGb::Fans &res, const Explain4 &exp, bool mqq, bool hj
     if (!util::common(res, implyQdy)
         && exp.pair().isYao()
         && util::all(exp.sb(), exp.se(), [](T34 t) { return t.val() == 1 || t.val() == 7; })
-        && util::all(exp.x34b(), exp.x34e(), [](T34 t) { return t.isYao(); })) {
+        && util::all(exp.x34b(), exp.x34e(), isYao)) {
         res.push_back(Fan::QDY4);
     }
 
@@ -748,7 +744,7 @@ void FormGb::checkV2F4(FormGb::Fans &res, const Explain4 &exp,
     const std::vector<Fan> implyDy { Fan::QSK24, Fan::QZ24, Fan::QDW16 };
     if (!util::common(res, implyDy)
         && util::none(exp.sb(), exp.se(), [](T34 t) { return t.val() == 1 || t.val() == 7; })
-        && util::none(exp.x34b(), exp.x34e(), [](T34 t) { return t.isYao(); })
+        && util::none(exp.x34b(), exp.x34e(), isYao)
         && !exp.pair().isYao()) {
         res.push_back(Fan::DY2);
     }
@@ -865,7 +861,7 @@ void FormGb::checkV1F4(FormGb::Fans &res, const Explain4 &exp,
     };
     if (!util::common(res, implyWz)
         && !exp.pair().isZ()
-        && util::none(exp.heads(), [](T34 t) { return t.isZ(); })) {
+        && util::none(exp.heads(), isZ)) {
         res.push_back(Fan::WZ1);
     }
 

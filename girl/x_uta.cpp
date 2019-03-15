@@ -1,5 +1,6 @@
 #include "x_uta.h"
 #include "../table/table.h"
+#include "../util/dismember.h"
 #include "../util/misc.h"
 
 
@@ -65,10 +66,8 @@ void Uta::power3sk(const Hand &hand, const River &river, Mount &mount)
         if (needA.size() < needB.size())
             return true;
 
-        if (needA.size() == needB.size()) {
-            auto isYao = [](T34 t) { return t.isYao(); };
-            return util::any(needA, isYao) && util::none(needB, isYao);
-        }
+        if (needA.size() == needB.size())
+            return util::any(needA, PredThis(&T34::isYao)) && util::none(needB, PredThis(&T34::isYao));
 
         return false;
     };

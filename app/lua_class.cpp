@@ -1,6 +1,7 @@
 #include "lua_class.h"
 #include "lua_dream_hand.h"
 #include "../table/table.h"
+#include "../util/dismember.h"
 #include "../util/string_enum.h"
 
 namespace saki
@@ -56,26 +57,6 @@ public:
     Table operator()(Class &thiz, Args... args)
     {
         return sol::as_table((thiz.*mMethod)(args...));
-    }
-
-private:
-    Method mMethod;
-};
-
-template<typename Class, typename Ret, typename... Args>
-class ReturnCopy
-{
-public:
-    using Method = Ret (Class::*)(Args...) const;
-
-    explicit ReturnCopy(Method method)
-        : mMethod(method)
-    {
-    }
-
-    std::remove_reference_t<Ret> operator()(Class &thiz, Args &&... args)
-    {
-        return (thiz.*mMethod)(std::forward<Args>(args)...);
     }
 
 private:

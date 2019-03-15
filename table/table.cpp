@@ -1,8 +1,9 @@
 #include "table.h"
 #include "princess.h"
 #include "table_view_real.h"
-#include "../util/misc.h"
 #include "../util/debug_cheat.h"
+#include "../util/dismember.h"
+#include "../util/misc.h"
 
 #include <numeric>
 #include <cstdlib>
@@ -1161,8 +1162,7 @@ bool Table::kanOverflow(Who kanner)
 
     if (kanCt == 4) {
         const auto &barks = mHands[kanner.uIndex()].barks();
-        auto isKan = [](const M37 &m) { return m.isKan(); };
-        return !(barks.size() == 4 && util::all(barks, isKan));
+        return !(barks.size() == 4 && util::all(barks, PredThis(&M37::isKan)));
     }
 
     return false;
@@ -1301,8 +1301,7 @@ void Table::passRon(Who who)
 bool Table::checkNagashimangan(Who who) const
 {
     auto w = who.uIndex();
-    return util::all(mRivers[w], [](const T37 &t) { return t.isYao(); })
-           && mPickeds[w].none();
+    return util::all(mRivers[w], PredThis(&T37::isYao)) && mPickeds[w].none();
 }
 
 ///

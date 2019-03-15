@@ -1,4 +1,5 @@
 #include "parsed_view.h"
+#include "../util/dismember.h"
 
 namespace saki
 {
@@ -54,8 +55,7 @@ util::Stactor<C34, 2> ParsedView4Ready::get2s() const
     decltype(get2s()) res;
 
     const auto &heads = mParsed.heads();
-    auto is2 = [](const C34 &c) { return c.is2(); };
-    std::copy_if(heads.begin(), heads.end(), std::back_inserter(res), is2);
+    std::copy_if(heads.begin(), heads.end(), std::back_inserter(res), PredThis(&C34::is2));
 
     return res;
 }

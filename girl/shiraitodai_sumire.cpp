@@ -3,6 +3,7 @@
 #include "../table/table.h"
 #include "../table/table_view_hand.h"
 #include "../ai/ai.h"
+#include "../util/dismember.h"
 #include "../util/misc.h"
 
 #include <sstream>
@@ -36,8 +37,7 @@ bool Sumire::checkInit(Who who, const Hand &init, const Table &table, int iter)
                 return true;
 
     const auto &ts = init.closed().t34s13();
-    auto isYao = [](T34 t) { return t.isYao(); };
-    return std::count_if(ts.begin(), ts.end(), isYao) <= 3;
+    return std::count_if(ts.begin(), ts.end(), PredThis(&T34::isYao)) <= 3;
 }
 
 void Sumire::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
