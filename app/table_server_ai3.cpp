@@ -88,7 +88,7 @@ void TableServerAi3::filterUserMsg(const TableMsg &msg, TableServerAi3::MsgBackI
             if (msg.to.human()) {
                 *it++ = msg.content;
             } else {
-                auto d = mAis[msg.to.index() - 1]->decide(*view);
+                auto d = mAis[msg.to.uIndex() - 1]->decide(*view);
                 int nonce = msg.content.args()["nonce"];
                 addBotAction(msg.to, d.action, nonce, it);
             }

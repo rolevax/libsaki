@@ -28,7 +28,7 @@ void Kasumi::onMonkey(std::array<Exist, 4> &exists, const Table &table)
     if (!mIrsCtrl.itemAt(0).on())
         return;
 
-    for (int w = 0; w < 4; w++) {
+    for (unsigned w = 0; w < 4; w++) {
         for (T34 t : tiles34::ALL34) {
             // isNum && (rivals' 1-lack || self's 2-lack)
             if (t.isNum()
@@ -47,7 +47,7 @@ void Kasumi::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     if (rinshan || !mIrsCtrl.itemAt(0).on())
         return;
 
-    int turn = table.getRiver(mSelf).size();
+    int turn = table.getRiver(mSelf).iSize();
     if (turn > 12)
         return;
 

@@ -23,10 +23,9 @@ void rotate(T &arr)
 
 TableServer::TableServer(Table::InitConfig config,
                          std::vector<TableObserver *> obs, const TableEnv &env)
-    : mTable(std::move(config), (obs.push_back(this), obs), env)
+    : mTable(std::move(config), (static_cast<void>(obs.push_back(this)), obs), env)
     , mNonces{0, 0, 0, 0}
 {
-
 }
 
 TableServer::Msgs TableServer::start()
@@ -70,7 +69,7 @@ TableServer::Msgs TableServer::resume(Who comer)
     if (mTable.getDice() > 0) {
         for (Who who : whos::ALL4) {
             const Hand &hand = mTable.getHand(who);
-            int pers = who.turnFrom(comer);
+            auto pers = static_cast<unsigned>(who.turnFrom(comer));
             if (hand.hasDrawn()) {
                 args["whoDrawn"] = pers;
                 if (who == comer)
@@ -90,10 +89,10 @@ TableServer::Msgs TableServer::resume(Who comer)
 
     const auto &pts = mTable.getPoints();
     args["points"] = json {
-        pts[comer.index()],
-        pts[comer.right().index()],
-        pts[comer.cross().index()],
-        pts[comer.left().index()],
+        pts[comer.uIndex()],
+        pts[comer.right().uIndex()],
+        pts[comer.cross().uIndex()],
+        pts[comer.left().uIndex()],
     };
 
     args["girlKeys"] = json::array();
@@ -370,10 +369,10 @@ void TableServer::pushActivationMsg(Who who, bool isResume)
     const auto view = mTable.getView(who);
     const Choices &choices = view->myChoices();
 
-    if (!isResume && mTable.getNonce(who) == mNonces[who.index()])
+    if (!isResume && mTable.getNonce(who) == mNonces[who.uIndex()])
         return; // still waiting for input
 
-    mNonces[who.index()] = mTable.getNonce(who);
+    mNonces[who.uIndex()] = mTable.getNonce(who);
 
     if (view->riichiEstablished(who) && choices.spinOnly()) {
         json args;

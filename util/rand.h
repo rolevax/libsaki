@@ -26,6 +26,7 @@ public:
 
     int32_t gen();
     int32_t gen(int32_t mod);
+    uint32_t uGen(size_t mod);
     uint32_t state() const;
     void set(uint32_t state);
 

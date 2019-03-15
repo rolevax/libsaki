@@ -22,6 +22,10 @@ public:
     virtual ~TokiEvent() = default;
     virtual bool isDiscard() const;
     virtual void print(std::ostream &os, Who toki) const = 0;
+
+protected:
+    TokiEvent() = default;
+    TokiEvent(const TokiEvent &copy) = default;
 };
 
 struct TokiEvents
@@ -401,7 +405,7 @@ TokiHumanSimulator::TokiHumanSimulator(const Action &firstAction,
                                        const std::array<Girl::Id, 4> &ids)
     : mFirstAction(firstAction)
 {
-    for (int w = 0; w < 4; w++) {
+    for (unsigned w = 0; w < 4; w++) {
         if (ids[w] == Girl::Id::ONJOUJI_TOKI)
             mAis[w] = nullptr;
         else
@@ -502,7 +506,7 @@ void Toki::onInbox(Who who, const Action &action)
         mCheckNextAction = false;
 
         auto it = std::find(mRecords.begin(), mRecords.end(), action);
-        mCd = 2 * (it - mRecords.begin());
+        mCd = 2 * static_cast<int>(it - mRecords.begin());
         mRecords.clear();
     }
 }
@@ -539,7 +543,7 @@ std::array<Girl::Id, 4> Toki::makeIdArray(const Table &table)
 {
     std::array<Girl::Id, 4> ids;
 
-    for (int w = 0; w < 4; w++)
+    for (unsigned w = 0; w < 4; w++)
         ids[w] = table.getGirl(Who(w)).getId();
 
     return ids;

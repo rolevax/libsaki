@@ -126,9 +126,9 @@ Gen Gen::genForm4F110Horse(util::Rand &rand, int selfWind, const Rule &rule, boo
         closed.inc(T37(Suit::F, selfWind), 2);
 
         // extactly two ankans
-        T37 t(tiles34::YAO13[rand.gen(13)].id34());
+        T37 t(tiles34::YAO13[rand.uGen(13)].id34());
         barks.pushBack(M37::ankan(t, t, t, t));
-        t = T37(tiles34::YAO13[rand.gen(13)].id34());
+        t = T37(tiles34::YAO13[rand.uGen(13)].id34());
         barks.pushBack(M37::ankan(t, t, t, t));
 
         // monkeyly gen the rest things
@@ -163,7 +163,7 @@ Gen Gen::genForm4F110Horse(util::Rand &rand, int selfWind, const Rule &rule, boo
 
         // drop one as pick, store as drawn
         util::Stactor<T37, 13> ts = closed.t37s13();
-        int drop = rand.gen(ts.size());
+        auto drop = rand.uGen(ts.size());
         closed.inc(ts[drop], -1);
         Hand h(closed, barks);
         h.draw(ts[drop]);
@@ -239,7 +239,7 @@ Hand Gen::genWild4(util::Rand &rand, int triCent, int quadCent, int openCent)
 
     // drop one as pick, store as drawn
     auto ts = closed.t37s13();
-    int drop = rand.gen(ts.size());
+    auto drop = rand.uGen(ts.size());
     closed.inc(ts[drop], -1);
     Hand res(closed, barks);
     res.draw(ts[drop]);

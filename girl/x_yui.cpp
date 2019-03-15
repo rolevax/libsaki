@@ -18,7 +18,7 @@ void Yui::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     if (hand.barks().size() > 0)
         return;
 
-    const int turn = table.getRiver(mSelf).size();
+    const int turn = table.getRiver(mSelf).iSize();
     const int s7 = hand.step7();
 
     // *INDENT-OFF*

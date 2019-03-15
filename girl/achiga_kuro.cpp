@@ -18,14 +18,14 @@ void Kuro::onMonkey(std::array<Exist, 4> &exists, const Table &table)
 
     using namespace tiles37;
 
-    int self = mSelf.index();
+    auto self = mSelf.uIndex();
     if (mCd) {
         exists[self].incMk(dora, -EJECT_MK);
         exists[self].incMk(0_m, -EJECT_MK);
         exists[self].incMk(0_p, -EJECT_MK);
         exists[self].incMk(0_s, -EJECT_MK);
     } else {
-        for (int w = 0; w < 4; w++) {
+        for (unsigned w = 0; w < 4; w++) {
             int doraDelta = w == self ? 150 : -EJECT_MK;
             int akadoraDelta = w == self ? 60 : -EJECT_MK;
             exists[w].incMk(dora, doraDelta);
@@ -70,7 +70,7 @@ void Kuro::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         mount.lightA(0_s, -EJECT_MK, rinshan);
     } else {
         if (who == mSelf) {
-            int turn = table.getRiver(mSelf).size();
+            int turn = table.getRiver(mSelf).iSize();
             const Hand &hand = table.getHand(mSelf);
 
             for (T34 d : doras) {

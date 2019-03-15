@@ -26,7 +26,7 @@ void Awai::onMonkey(std::array<Exist, 4> &exists, const Table &table)
     if (!usingDaburii())
         return;
 
-    int self = mSelf.index();
+    auto self = mSelf.uIndex();
 
     T34 dora = table.getMount().getDrids().front().dora();
     exists[self].incMk(dora, -EJECT_MK);
@@ -65,7 +65,7 @@ void Awai::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         }
     } else {
         const auto &barks = table.getHand(mSelf).barks();
-        int barkCt = barks.size();
+        int barkCt = barks.iSize();
         if (barkCt > 0
             && util::any(barks, [](const M37 &m) { return m.type() == M37::Type::ANKAN; })
             && mount.remainPii() <= lastCorner(table.getDice(), 4 - mount.remainRinshan())) {
@@ -245,7 +245,7 @@ T34 Awai::kanuraOfPlan(int plan) const
         1_s, 2_s, 3_s, 4_s, 6_s, 7_s, 8_s, 9_s,
     };
 
-    return plan < 24 ? noFives[plan] : mSomeGuestWind;
+    return plan < 24 ? noFives[static_cast<size_t>(plan)] : mSomeGuestWind;
 }
 
 ///
@@ -302,7 +302,7 @@ Awai::InitSketch Awai::sketch(util::Rand &rand, const util::Stactor<Suit, 3> &av
     InitSketch res;
 
     // (1)
-    int yaoSuitId = rand.gen(avaiSuits.size());
+    auto yaoSuitId = rand.uGen(avaiSuits.size());
     Suit yaoS = avaiSuits[yaoSuitId];
     int yaoV = rand.gen(2) == 0 ? 1 : 7;
     T37 yaoSeq(yaoS, yaoV);
@@ -320,7 +320,7 @@ Awai::InitSketch Awai::sketch(util::Rand &rand, const util::Stactor<Suit, 3> &av
 
     // (2)
     if (rand.gen(3) > 0) { // 2/3 sequence
-        T37 lastSeq(avaiSuits[rand.gen(avaiSuits.size())], rand.gen(7) + 1);
+        T37 lastSeq(avaiSuits[rand.uGen(avaiSuits.size())], rand.gen(7) + 1);
         // avoid 1pk by mapping 123567 to 765321, and 4 to 3
         if (lastSeq == yaoSeq || lastSeq == midSeq)
             lastSeq = T37(lastSeq.suit(), lastSeq.val() == 4 ? 3 : 8 - lastSeq.val());
@@ -331,14 +331,14 @@ Awai::InitSketch Awai::sketch(util::Rand &rand, const util::Stactor<Suit, 3> &av
         res.need.inc(T37(lastSeq.next().id34()), 1);
         res.need.inc(T37(lastSeq.nnext().id34()), 1);
     } else {
-        T37 lastTri(avaiSuits[rand.gen(avaiSuits.size())], rand.gen(9) + 1);
+        T37 lastTri(avaiSuits[rand.uGen(avaiSuits.size())], rand.gen(9) + 1);
         res.thirdIsTri = true;
         res.heads[2] = lastTri;
         res.need.inc(lastTri, 3);
     }
 
     // (3)
-    T37 pair(avaiSuits[rand.gen(avaiSuits.size())], rand.gen(9) + 1);
+    T37 pair(avaiSuits[rand.uGen(avaiSuits.size())], rand.gen(9) + 1);
     res.pair = pair;
     res.need.inc(pair, 2);
 
@@ -374,7 +374,7 @@ bool Awai::pickWait(HrhInitFix &fix, util::Rand &rand, InitSketch &ske, const Ti
     if (kickables.empty())
         return false;
 
-    const T37 &kick3 = kickables[rand.gen(kickables.size())];
+    const T37 &kick3 = kickables[rand.uGen(kickables.size())];
     ske.need.inc(kick3, -1);
 
     // check if the kanura is ankanable after riichi
@@ -400,7 +400,7 @@ bool Awai::pickWait(HrhInitFix &fix, util::Rand &rand, InitSketch &ske, const Ti
     // make step-1 (or step-0 if lucky)
     util::Stactor<T37, 13> kick1ables = ske.need.t37s13();
     mNeedFirstDraw = true;
-    mFirstDraw = kick1ables[rand.gen(kick1ables.size())];
+    mFirstDraw = kick1ables[rand.uGen(kick1ables.size())];
     ske.need.inc(mFirstDraw, -1);
     fix.loads.emplaceBack(mFirstDraw, 1);
 

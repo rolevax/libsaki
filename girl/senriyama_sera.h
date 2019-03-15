@@ -10,6 +10,10 @@ namespace saki
 
 
 
+///
+/// "Sera" is more commonly used than "Seira".
+/// "Se-ra" is better, and say fuck to ascii and identifier syntax.
+///
 class Sera : public Girl
 {
 public:

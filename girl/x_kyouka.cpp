@@ -22,7 +22,7 @@ void Kyouka::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     for (T34 t : tiles34::ALL34) {
         int ct = closed.ct(t);
         const std::array<int, 5> deltas { 0, 40, 140, 0, 0 };
-        mount.lightA(t, deltas[ct]);
+        mount.lightA(t, deltas[static_cast<size_t>(ct)]);
     }
 }
 

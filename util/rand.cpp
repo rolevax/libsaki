@@ -36,6 +36,11 @@ int32_t Rand::gen(int32_t mod)
     return gen() % mod;
 }
 
+uint32_t Rand::uGen(size_t mod)
+{
+    return static_cast<uint32_t>(gen(static_cast<int32_t>(mod)));
+}
+
 uint32_t Rand::state() const
 {
     std::ostringstream oss;

@@ -64,7 +64,7 @@ bool Ai::Limits::noOut(const T37 &t) const
     if (mNoOutAka5 && t.isAka5())
         return true;
 
-    return mNoOut34s[t.id34()];
+    return mNoOut34s[t.uId34()];
 }
 
 void Ai::Limits::addNoBark()
@@ -89,7 +89,7 @@ void Ai::Limits::addNoOutAka5()
 
 void Ai::Limits::addNoOut(T34 t)
 {
-    mNoOut34s[t.id34()] = true;
+    mNoOut34s[t.uId34()] = true;
 }
 
 
@@ -373,8 +373,8 @@ bool Ai::afraid(const TableView &view, util::Stactor<Who, 3> &threats)
             if (who == self)
                 continue;
 
-            int riverCt = view.getRiver(who).size();
-            int barkCt = view.getBarks(who).size();
+            int riverCt = view.getRiver(who).iSize();
+            int barkCt = view.getBarks(who).iSize();
             if (view.riichiEstablished(who)
                 || (riverCt > 5 && barkCt >= 2)
                 || (riverCt > 12 && barkCt >= 1))

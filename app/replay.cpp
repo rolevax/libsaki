@@ -61,7 +61,7 @@ namespace saki
 
 void Replay::onTableEvent(const Table &table, const TE::TableStarted &event)
 {
-    for (int w = 0; w < 4; w++)
+    for (unsigned w = 0; w < 4; w++)
         girls[w] = table.getGirl(Who(w)).getId();
 
     initPoints = table.getPoints();
@@ -97,10 +97,10 @@ void Replay::onTableEvent(const Table &table, const TE::Dealt &event)
 {
     (void) event;
 
-    for (int w = 0; w < 4; w++) {
+    for (unsigned w = 0; w < 4; w++) {
         const auto &ts = table.getHand(Who(w)).closed().t37s13(true);
         assert(ts.size() == 13);
-        for (int i = 0; i < 13; i++)
+        for (unsigned i = 0; i < 13; i++)
             rounds.back().tracks[w].init[i] = ts[i];
     }
 }
@@ -116,7 +116,7 @@ void Replay::onTableEvent(const Table &table, const TE::Flipped &event)
 void Replay::onTableEvent(const Table &table, const TE::Drawn &event)
 {
     const T37 &drawn = table.getHand(event.who).drawn();
-    rounds.back().tracks[event.who.index()].in.emplace_back(In::DRAW, drawn);
+    rounds.back().tracks[event.who.uIndex()].in.emplace_back(In::DRAW, drawn);
 }
 
 void Replay::onTableEvent(const Table &table, const TE::Discarded &event)
@@ -132,9 +132,9 @@ void Replay::onTableEvent(const Table &table, const TE::Discarded &event)
     }
 
     if (event.spin)
-        rounds.back().tracks[who.index()].out.emplace_back(act);
+        rounds.back().tracks[who.uIndex()].out.emplace_back(act);
     else
-        rounds.back().tracks[who.index()].out.emplace_back(act, table.getFocusTile());
+        rounds.back().tracks[who.uIndex()].out.emplace_back(act, table.getFocusTile());
 }
 
 void Replay::onTableEvent(const Table &table, const TE::RiichiCalled &event)
@@ -147,7 +147,7 @@ void Replay::onTableEvent(const Table &table, const TE::RiichiCalled &event)
 
 void Replay::onTableEvent(const Table &table, const TE::Barked &event)
 {
-    int w = event.who.index();
+    auto w = event.who.uIndex();
     const auto &bark = event.bark;
 
     if (bark.isCpdmk())
@@ -155,7 +155,7 @@ void Replay::onTableEvent(const Table &table, const TE::Barked &event)
 
     if (bark.type() == M37::Type::CHII) {
         bool showAka5 = false;
-        size_t lay = bark.layIndex();
+        size_t lay = bark.uLayIndex();
 
         for (size_t i = 0; i < bark.tiles().size(); i++) {
             if (i != lay && bark.tiles().at(i).isAka5()) {
@@ -170,8 +170,8 @@ void Replay::onTableEvent(const Table &table, const TE::Barked &event)
         rounds.back().tracks[w].in.emplace_back(act, showAka5);
     } else if (bark.type() == M37::Type::PON) {
         int showAka5 = 0;
-        for (int i = 0; i < static_cast<int>(bark.tiles().size()); i++)
-            showAka5 += (i != bark.layIndex() && bark.tiles().at(i).isAka5());
+        for (unsigned i = 0; i < bark.tiles().size(); i++)
+            showAka5 += (i != bark.uLayIndex() && bark.tiles().at(i).isAka5());
 
         rounds.back().tracks[w].in.emplace_back(In::PON, showAka5);
     } else if (bark.type() == M37::Type::DAIMINKAN) {
@@ -198,17 +198,17 @@ void Replay::onTableEvent(const Table &table, const TE::RoundEnded &event)
     }
 
     if (event.result == RoundResult::KSKP) {
-        rounds.back().tracks[event.openers[0].index()].out.emplace_back(Out::RYUUKYOKU);
+        rounds.back().tracks[event.openers[0].uIndex()].out.emplace_back(Out::RYUUKYOKU);
     } else if (event.result == RoundResult::TSUMO) {
-        rounds.back().tracks[event.openers[0].index()].out.emplace_back(Out::TSUMO);
+        rounds.back().tracks[event.openers[0].uIndex()].out.emplace_back(Out::TSUMO);
     } else if (event.result == RoundResult::RON || event.result == RoundResult::SCHR) {
         // no need to add skip from gunner because there is nothing after ron
         for (Who who = event.gunner.right(); who != event.gunner; who = who.right()) {
             if (util::has(event.openers, who)) {
-                rounds.back().tracks[who.index()].in.emplace_back(In::RON);
+                rounds.back().tracks[who.uIndex()].in.emplace_back(In::RON);
             } else { // not an opener, turn-fly
-                rounds.back().tracks[who.index()].in.emplace_back(In::SKIP_IN);
-                rounds.back().tracks[who.index()].out.emplace_back(Out::SKIP_OUT);
+                rounds.back().tracks[who.uIndex()].in.emplace_back(In::SKIP_IN);
+                rounds.back().tracks[who.uIndex()].out.emplace_back(Out::SKIP_OUT);
             }
         }
     }
@@ -225,7 +225,7 @@ TableSnap Replay::look(int roundId, int turn)
 {
     TableSnap snap;
     std::array<TileCount, 4> hands;
-    const Round &round = rounds[roundId];
+    const Round &round = rounds[static_cast<size_t>(roundId)];
     const std::array<Track, 4> &tracks = round.tracks;
 
     snap.round = round.round;
@@ -237,10 +237,10 @@ TableSnap Replay::look(int roundId, int turn)
     snap.die1 = round.die1;
     snap.die2 = round.die2;
     snap.result = round.result;
-    snap.points = roundId == 0 ? initPoints : rounds[roundId - 1].resultPoints;
+    snap.points = roundId == 0 ? initPoints : rounds[static_cast<size_t>(roundId - 1)].resultPoints;
 
     // deal stage
-    for (int w = 0; w < 4; w++)
+    for (unsigned w = 0; w < 4; w++)
         for (const T37 &t : tracks[w].init)
             hands[w].inc(t, 1);
 
@@ -260,19 +260,19 @@ TableSnap Replay::look(int roundId, int turn)
     Who lastDiscarder;
 
     for (bool inStage = true; turn-- > 0; inStage = !inStage) {
-        int step = steps[who.index()];
+        int step = steps[who.uIndex()];
 
         // in-stage
         if (inStage) {
-            if (step >= int(tracks[who.index()].in.size()))
+            if (step >= int(tracks[who.uIndex()].in.size()))
                 break;
 
-            const InAct &in = tracks[who.index()].in[step];
+            const InAct &in = tracks[who.uIndex()].in[static_cast<size_t>(step)];
 
             if (toRiichi && in.act != In::RON) {
                 toRiichi = false;
-                snap[lastDiscarder.index()].riichiBar = true;
-                snap.points[lastDiscarder.index()] -= 1000;
+                snap[lastDiscarder.uIndex()].riichiBar = true;
+                snap.points[lastDiscarder.uIndex()] -= 1000;
             }
 
             switch (in.act) {
@@ -287,14 +287,14 @@ TableSnap Replay::look(int roundId, int turn)
             case In::CHII_AS_LEFT:
             case In::CHII_AS_MIDDLE:
             case In::CHII_AS_RIGHT:
-                lookChii(snap, hands[who.index()], in, who, lastDiscarder);
+                lookChii(snap, hands[who.uIndex()], in, who, lastDiscarder);
                 break;
             case In::PON:
-                lookPon(snap, hands[who.index()], in.showAka5, who, lastDiscarder);
+                lookPon(snap, hands[who.uIndex()], in.showAka5, who, lastDiscarder);
                 break;
             case In::DAIMINKAN:
                 kanContext = true;
-                lookDaiminkan(snap, hands[who.index()], who, lastDiscarder);
+                lookDaiminkan(snap, hands[who.uIndex()], who, lastDiscarder);
                 toFlip = true;
                 break;
             case In::RON:
@@ -302,26 +302,26 @@ TableSnap Replay::look(int roundId, int turn)
                 snap.openers.emplace_back(who);
 
                 if (kanContext) {
-                    snap.cannon = snap[snap.gunner.index()].barks.back()[3];
+                    snap.cannon = snap[snap.gunner.uIndex()].barks.back()[3];
                 } else {
-                    snap.cannon = snap[snap.gunner.index()].river.back();
+                    snap.cannon = snap[snap.gunner.uIndex()].river.back();
                 }
 
                 [[fallthrough]];
             case In::SKIP_IN:
                 turn++; // no consume
                 inStage = !inStage; // stay in in-stage
-                steps[who.index()]++;
+                steps[who.uIndex()]++;
                 next();
                 break;
             }
         } else { // out-stage
-            if (step >= int(tracks[who.index()].out.size()))
+            if (step >= int(tracks[who.uIndex()].out.size()))
                 break;
 
-            const OutAct &out = tracks[who.index()].out[step];
+            const OutAct &out = tracks[who.uIndex()].out[static_cast<size_t>(step)];
 
-            steps[who.index()]++;
+            steps[who.uIndex()]++;
 
             // *INDENT-OFF*
             auto checkFlip = [&snap, &round, &toFlip]() {
@@ -338,14 +338,14 @@ TableSnap Replay::look(int roundId, int turn)
             switch (out.act) {
             case Out::ADVANCE:
                 kanContext = false;
-                lookAdvance(snap, hands[who.index()], out.t37, who);
+                lookAdvance(snap, hands[who.uIndex()], out.t37, who);
                 lastDiscarder = who;
                 checkFlip();
                 next();
                 break;
             case Out::SPIN:
                 kanContext = false;
-                snap[who.index()].river.emplace_back(snap.drawn);
+                snap[who.uIndex()].river.emplace_back(snap.drawn);
                 snap.whoDrawn = Who();
                 lastDiscarder = who;
                 checkFlip();
@@ -354,8 +354,8 @@ TableSnap Replay::look(int roundId, int turn)
             case Out::RIICHI_ADVANCE:
                 kanContext = false;
                 toRiichi = true;
-                snap[who.index()].riichiPos = snap[who.index()].river.size();
-                lookAdvance(snap, hands[who.index()], out.t37, who);
+                snap[who.uIndex()].riichiPos = static_cast<int>(snap[who.uIndex()].river.size());
+                lookAdvance(snap, hands[who.uIndex()], out.t37, who);
                 lastDiscarder = who;
                 checkFlip();
                 next();
@@ -363,15 +363,15 @@ TableSnap Replay::look(int roundId, int turn)
             case Out::RIICHI_SPIN:
                 kanContext = false;
                 toRiichi = true;
-                snap[who.index()].riichiPos = snap[who.index()].river.size();
-                snap[who.index()].river.emplace_back(snap.drawn);
+                snap[who.uIndex()].riichiPos = static_cast<int>(snap[who.uIndex()].river.size());
+                snap[who.uIndex()].river.emplace_back(snap.drawn);
                 snap.whoDrawn = Who();
                 lastDiscarder = who;
                 checkFlip();
                 next();
                 break;
             case Out::ANKAN:
-                lookAnkan(snap, hands[who.index()], out.t37, who);
+                lookAnkan(snap, hands[who.uIndex()], out.t37, who);
                 kanContext = true;
                 checkFlip(); // flipping of previous kan
                 if (snap.drids.size() < round.drids.size()) // flip this kan
@@ -379,7 +379,7 @@ TableSnap Replay::look(int roundId, int turn)
 
                 break;
             case Out::KAKAN:
-                lookKakan(snap, hands[who.index()], out.t37, who);
+                lookKakan(snap, hands[who.uIndex()], out.t37, who);
                 kanContext = true;
                 checkFlip(); // flipping of previous kan
                 toFlip = true; // flip this kan
@@ -400,7 +400,7 @@ TableSnap Replay::look(int roundId, int turn)
         }
     }
 
-    for (int w = 0; w < 4; w++)
+    for (unsigned w = 0; w < 4; w++)
         snap[w].hand = hands[w].t37s13(true);
 
     if (turn > 0) // exit before consumed all turns, means an abort
@@ -420,7 +420,7 @@ TableSnap Replay::look(int roundId, int turn)
 void Replay::addSkip(Who who, Who fromWhom)
 {
     for (Who skippee = fromWhom.right(); skippee != who; skippee = skippee.right()) {
-        int s = skippee.index();
+        auto s = skippee.uIndex();
         rounds.back().tracks[s].in.emplace_back(In::SKIP_IN);
         rounds.back().tracks[s].out.emplace_back(Out::SKIP_OUT);
     }
@@ -428,7 +428,7 @@ void Replay::addSkip(Who who, Who fromWhom)
 
 void Replay::lookAdvance(TableSnap &snap, TileCount &hand, const T37 &t37, Who who)
 {
-    snap[who.index()].river.emplace_back(t37);
+    snap[who.uIndex()].river.emplace_back(t37);
     hand.inc(t37, -1);
     if (snap.whoDrawn.somebody()) {
         hand.inc(snap.drawn, 1);
@@ -439,7 +439,7 @@ void Replay::lookAdvance(TableSnap &snap, TileCount &hand, const T37 &t37, Who w
 void Replay::lookChii(TableSnap &snap, TileCount &hand, const InAct &in,
                       Who who, Who lastDiscarder)
 {
-    T37 pick = snap[lastDiscarder.index()].river.back();
+    T37 pick = snap[lastDiscarder.uIndex()].river.back();
     T37 t1, t2;
     if (in.act == In::CHII_AS_LEFT) {
         t1 = T37(pick.next().id34());
@@ -462,21 +462,21 @@ void Replay::lookChii(TableSnap &snap, TileCount &hand, const InAct &in,
     }
 
     if (in.act == In::CHII_AS_LEFT)
-        snap[who.index()].barks.pushBack(M37::chii(pick, t1, t2, 0));
+        snap[who.uIndex()].barks.pushBack(M37::chii(pick, t1, t2, 0));
     else if (in.act == In::CHII_AS_MIDDLE)
-        snap[who.index()].barks.pushBack(M37::chii(t1, pick, t2, 1));
+        snap[who.uIndex()].barks.pushBack(M37::chii(t1, pick, t2, 1));
     else // in.act == In::CHII_AS_RIGHT
-        snap[who.index()].barks.pushBack(M37::chii(t1, t2, pick, 2));
+        snap[who.uIndex()].barks.pushBack(M37::chii(t1, t2, pick, 2));
 
     hand.inc(t1, -1);
     hand.inc(t2, -1);
-    snap[lastDiscarder.index()].river.pop_back();
+    snap[lastDiscarder.uIndex()].river.pop_back();
 }
 
 void Replay::lookPon(TableSnap &snap, TileCount &hand, int showAka5,
                      Who who, Who lastDiscarder)
 {
-    T37 pick = snap[lastDiscarder.index()].river.back();
+    T37 pick = snap[lastDiscarder.uIndex()].river.back();
     T37 t1(pick.id34());
     T37 t2(pick.id34());
     if (showAka5 >= 1)
@@ -487,30 +487,30 @@ void Replay::lookPon(TableSnap &snap, TileCount &hand, int showAka5,
 
     int openIndex = who.looksAt(lastDiscarder);
     if (openIndex == 0)
-        snap[who.index()].barks.pushBack(M37::pon(pick, t1, t2, openIndex));
+        snap[who.uIndex()].barks.pushBack(M37::pon(pick, t1, t2, openIndex));
     else if (openIndex == 1)
-        snap[who.index()].barks.pushBack(M37::pon(t1, pick, t2, openIndex));
+        snap[who.uIndex()].barks.pushBack(M37::pon(t1, pick, t2, openIndex));
     else // openIndex == 2
-        snap[who.index()].barks.pushBack(M37::pon(t1, t2, pick, openIndex));
+        snap[who.uIndex()].barks.pushBack(M37::pon(t1, t2, pick, openIndex));
 
     hand.inc(t1, -1);
     hand.inc(t2, -1);
-    snap[lastDiscarder.index()].river.pop_back();
+    snap[lastDiscarder.uIndex()].river.pop_back();
 }
 
 void Replay::lookDaiminkan(TableSnap &snap, TileCount &hand, Who who, Who lastDiscarder)
 {
-    T37 pick = snap[lastDiscarder.index()].river.back();
+    T37 pick = snap[lastDiscarder.uIndex()].river.back();
 
     std::array<T37, 3> pushes;
     pushes.fill(T37(pick.id34()));
     if (pick.val() == 5)
         for (int i = 0; i < 3; i++)
             if (i < hand.ct(pick.toAka5()))
-                pushes[i] = pushes[i].toAka5();
+                pushes[static_cast<size_t>(i)] = pushes[static_cast<size_t>(i)].toAka5();
 
     int lay = who.looksAt(lastDiscarder);
-    int w = who.index();
+    auto w = who.uIndex();
     if (lay == 0)
         snap[w].barks.pushBack(M37::daiminkan(pick, pushes[0], pushes[1], pushes[2], lay));
     else if (lay == 1)
@@ -518,21 +518,21 @@ void Replay::lookDaiminkan(TableSnap &snap, TileCount &hand, Who who, Who lastDi
     else // lay == 2
         snap[w].barks.pushBack(M37::daiminkan(pushes[0], pushes[1], pick, pushes[2], lay));
 
-    for (const T37 t : pushes)
+    for (const T37 &t : pushes)
         hand.inc(t, -1);
 
-    snap[lastDiscarder.index()].river.pop_back();
+    snap[lastDiscarder.uIndex()].river.pop_back();
 }
 
 void Replay::lookAnkan(TableSnap &snap, TileCount &hand, T34 t34, Who who)
 {
-    int w = who.index();
+    auto w = who.uIndex();
     if (hand.ct(t34) == 4) {
         std::array<T37, 4> pushes;
         pushes.fill(T37(t34.id34()));
         if (t34.val() == 5)
-            for (int i = 0; i < 4; i++)
-                if (i < hand.ct(pushes[i].toAka5()))
+            for (unsigned i = 0; i < 4; i++)
+                if (i < static_cast<unsigned>(hand.ct(pushes[i].toAka5())))
                     pushes[i] = pushes[i].toAka5();
 
         // four in hand
@@ -551,8 +551,8 @@ void Replay::lookAnkan(TableSnap &snap, TileCount &hand, T34 t34, Who who)
         std::array<T37, 3> pushes;
         pushes.fill(T37(t34.id34()));
         if (t34.val() == 5)
-            for (int i = 0; i < 3; i++)
-                if (i < hand.ct(pushes[i].toAka5()))
+            for (unsigned i = 0; i < 3; i++)
+                if (i < static_cast<unsigned>(hand.ct(pushes[i].toAka5())))
                     pushes[i] = pushes[i].toAka5();
 
         snap[w].barks.pushBack(M37::ankan(pushes[0], pushes[1], pushes[2], snap.drawn));
@@ -574,7 +574,7 @@ void Replay::lookKakan(TableSnap &snap, TileCount &hand, const T37 &t37, Who who
 
     snap.whoDrawn = Who();
 
-    auto &barks = snap[who.index()].barks;
+    auto &barks = snap[who.uIndex()].barks;
     auto same = [&t37](const M37 &m) { return m[0] == t37; };
     auto it = std::find_if(barks.begin(), barks.end(), same);
     assert(it != barks.end());

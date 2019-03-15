@@ -33,10 +33,10 @@ void Suzu::onMonkey(std::array<Exist, 4> &exists, const Table &table)
 
     for (Suit s : { Suit::M, Suit::P, Suit::S })
         for (int i = 0; i < 4; i++)
-            exists[mSelf.index()].incMk(T34(s, 6 + i), POWERS[i]);
+            exists[mSelf.uIndex()].incMk(T34(s, 6 + i), POWERS[static_cast<size_t>(i)]);
 
     for (T34 t : tiles34::Z7)
-        exists[mSelf.index()].incMk(t, Z_POWER);
+        exists[mSelf.uIndex()].incMk(t, Z_POWER);
 }
 
 bool Suzu::checkInit(Who who, const Hand &init, const Table &table, int iter)
@@ -65,7 +65,7 @@ void Suzu::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
         for (int i = 0; i < 4; i++) {
             T34 t(s, 6 + i);
             if (closed.ct(t) < 3)
-                mount.lightA(t, POWERS[i]);
+                mount.lightA(t, POWERS[static_cast<size_t>(i)]);
         }
     }
 

@@ -91,7 +91,7 @@ void Yue::dye(const TileCount &closed, Mount &mount, int mk)
     // *INDENT-ON*
     std::array<int, 3> sums;
     std::transform(ofss.begin(), ofss.end(), sums.begin(), sum);
-    int ofs = ofss[std::max_element(sums.begin(), sums.end()) - sums.begin()];
+    int ofs = ofss[static_cast<size_t>(std::max_element(sums.begin(), sums.end()) - sums.begin())];
     for (int i = 0; i < 9; i++)
         mount.lightA(T34(ofs + i), mk);
 }

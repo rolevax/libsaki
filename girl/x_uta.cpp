@@ -111,7 +111,7 @@ bool Uta::tryPowerDye(const Hand &hand, Mount &mount)
     if (*it + closed.ctZ() < 9)
         return false;
 
-    Suit s = mps[it - sums.begin()];
+    Suit s = mps[static_cast<size_t>(it - sums.begin())];
     for (int v = 1; v <= 9; v++) {
         T34 t(s, v);
         int doraVal = mount.getDrids() % t;

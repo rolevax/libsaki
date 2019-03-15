@@ -125,7 +125,7 @@ bool Huiyu::expand(Mount &mount, const TileCount &total)
     assert(minDist >= 0);
     if (0 < minDist && minDist < 14)
         for (T34 t : tiles34::ALL34)
-            mount.lightA(t, minReqs.test(t.id34()) ? 100 : -10);
+            mount.lightA(t, minReqs.test(t.uId34()) ? 100 : -10);
 
     return minDist == 0;
 }
@@ -134,7 +134,7 @@ int Huiyu::yssbg(std::bitset<34> &reqs, const TileCount &total)
 {
     int maxMatch = 0;
     T34 maxHead;
-    int maxStep;
+    int maxStep = 13; // unused init value, supress warning
 
     for (Suit s : { Suit::M, Suit::P, Suit::S }) {
         for (int v = 1; v <= 3; v++) { // 2-step
@@ -189,7 +189,7 @@ int Huiyu::yssbg(std::bitset<34> &reqs, const TileCount &total)
         if (maxStep == 3) {
             for (int v = 1; v <= 9; v++)
                 if (total.ct(T34(s, v)) < 1)
-                    reqs.set(T34(s, v).id34());
+                    reqs.set(T34(s, v).uId34());
         } else if (maxStep == 2) {
             std::array<T34, 5> need1s {
                 T34(s, v), T34(s, v + 1), T34(s, v + 3), T34(s, v + 5), T34(s, v + 6)
@@ -197,11 +197,11 @@ int Huiyu::yssbg(std::bitset<34> &reqs, const TileCount &total)
             std::array<T34, 2> need2s { T34(s, v + 2), T34(s, v + 4) };
             for (T34 t : need1s)
                 if (total.ct(t) < 1)
-                    reqs.set(t.id34());
+                    reqs.set(t.uId34());
 
             for (T34 t : need2s)
                 if (total.ct(t) < 2)
-                    reqs.set(t.id34());
+                    reqs.set(t.uId34());
         } else if (maxStep == 1) {
             T34 t1(s, v);
             T34 t2(s, v + 1);
@@ -209,19 +209,19 @@ int Huiyu::yssbg(std::bitset<34> &reqs, const TileCount &total)
             T34 t4(s, v + 3);
             T34 t5(s, v + 4);
             if (total.ct(t1) < 1)
-                reqs.set(t1.id34());
+                reqs.set(t1.uId34());
 
             if (total.ct(t2) < 2)
-                reqs.set(t2.id34());
+                reqs.set(t2.uId34());
 
             if (total.ct(t3) < 3)
-                reqs.set(t3.id34());
+                reqs.set(t3.uId34());
 
             if (total.ct(t4) < 2)
-                reqs.set(t4.id34());
+                reqs.set(t4.uId34());
 
             if (total.ct(t5) < 1)
-                reqs.set(t5.id34());
+                reqs.set(t5.uId34());
         }
     }
 
@@ -248,7 +248,7 @@ int Huiyu::colors(std::bitset<34> &reqs, const TileCount &total)
             res.reset();
             for (T34 t : tars)
                 if (!hasOne(t))
-                    res.set(t.id34());
+                    res.set(t.uId34());
         }
     };
     // *INDENT-ON*
@@ -306,13 +306,13 @@ int Huiyu::sssjg(std::bitset<34> &reqs, const TileCount &total)
                 maxMatch = match;
                 maxReqs.reset();
                 if (total.ct(m) < 3)
-                    maxReqs.set(m.id34());
+                    maxReqs.set(m.uId34());
 
                 if (total.ct(p) < 3)
-                    maxReqs.set(p.id34());
+                    maxReqs.set(p.uId34());
 
                 if (total.ct(s) < 3)
-                    maxReqs.set(s.id34());
+                    maxReqs.set(s.uId34());
             }
         }
     }
@@ -332,7 +332,7 @@ int Huiyu::tbd(std::bitset<34> &reqs, const TileCount &total)
     };
 
     for (T34 t : tumbler)
-        reqs.set(t.id34());
+        reqs.set(t.uId34());
 
     return 14 - total.ct(tumbler);
 }
@@ -353,20 +353,20 @@ int Huiyu::qdqzqx(std::bitset<34> &reqs, const TileCount &total)
     if (big > middle && big > small) {
         for (Suit s : { Suit::M, Suit::P, Suit::S })
             for (int v = 7; v <= 9; v++)
-                reqs.set(T34(s, v).id34());
+                reqs.set(T34(s, v).uId34());
 
         return 14 - big;
     } else if (middle > big && middle > small) {
         for (Suit s : { Suit::M, Suit::P, Suit::S })
             for (int v = 4; v <= 6; v++)
-                reqs.set(T34(s, v).id34());
+                reqs.set(T34(s, v).uId34());
 
         return 14 - middle;
     } else {
         if (small >= 9)
             for (Suit s : { Suit::M, Suit::P, Suit::S })
                 for (int v = 1; v <= 3; v++)
-                    reqs.set(T34(s, v).id34());
+                    reqs.set(T34(s, v).uId34());
 
         return 14 - small;
     }
@@ -390,13 +390,13 @@ int Huiyu::gtlt5(std::bitset<34> &reqs, const TileCount &total)
     if (gt > lt) {
         for (Suit s : { Suit::M, Suit::P, Suit::S })
             for (int v = 6; v <= 9; v++)
-                reqs.set(T34(s, v).id34());
+                reqs.set(T34(s, v).uId34());
 
         return 14 - gt;
     } else {
         for (Suit s : { Suit::M, Suit::P, Suit::S })
             for (int v = 1; v <= 4; v++)
-                reqs.set(T34(s, v).id34());
+                reqs.set(T34(s, v).uId34());
 
         return 14 - lt;
     }

@@ -56,16 +56,16 @@ void Sawaya::onMonkey(std::array<Exist, 4> &exists, const Table &table)
 
     if (usingCloud(Cloud::RED) && usingCloud(Cloud::RED_RIVALS)) {
         for (T34 t : tiles34::Z7)
-            for (int w = 0; w < 4; w++)
-                exists[w].incMk(t, w == mSelf.index() ? 100 : -1000);
+            for (unsigned w = 0; w < 4; w++)
+                exists[w].incMk(t, w == mSelf.uIndex() ? 100 : -1000);
     } else if (usingCloud(Cloud::RED) && usingCloud(Cloud::RED_SELF)) {
         for (T34 t : tiles34::Z7)
-            exists[mSelf.index()].incMk(t, -1000);
+            exists[mSelf.uIndex()].incMk(t, -1000);
     }
 
     if (usingCloud(Cloud::WHITE))
         for (int i = 18; i < 27; i++) // bamboo
-            exists[mSelf.index()].incMk(T34(i), 70);
+            exists[mSelf.uIndex()].incMk(T34(i), 70);
 }
 
 void Sawaya::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
@@ -163,7 +163,7 @@ void Sawaya::onIrsChecked(const Table &table, Mount &mount)
         if (usingKamuy(Kamuy::AT_KOR)) {
             // make dora red
             // too many Superposition does not matter
-            for (int pos = 0; pos < 5; pos++) {
+            for (unsigned pos = 0; pos < 5; pos++) {
                 for (T34 t : tiles34::ALL34) {
                     int mk = t.suit() == Suit::M ? 1000 : -50;
                     mount.incMk(Mount::DORAHYOU, pos, t, mk, false);

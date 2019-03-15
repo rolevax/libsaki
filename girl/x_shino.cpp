@@ -143,20 +143,20 @@ void Shino::powerIipei(const Hand &hand, const River &river, Mount &mount, int p
                 maxIpkSum = sum;
                 drags.reset();
                 if (l < 2)
-                    drags.set(lt.id34());
+                    drags.set(lt.uId34());
 
                 if (m < 2)
-                    drags.set(mt.id34());
+                    drags.set(mt.uId34());
 
                 if (r < 2)
-                    drags.set(rt.id34());
+                    drags.set(rt.uId34());
             }
         }
     }
 
     eraseRivered(drags, river);
     for (T34 t : tiles34::ALL34)
-        mount.lightA(t, drags.test(t.id34()) ? posMk : negMk);
+        mount.lightA(t, drags.test(t.uId34()) ? posMk : negMk);
 }
 
 bool Shino::power3sk(const Hand &hand, Mount &mount, int posMk, int negMk)
@@ -184,14 +184,14 @@ bool Shino::power3sk(const Hand &hand, Mount &mount, int posMk, int negMk)
         } else if (5 <= sum && sum > maxSum) {
             maxSum = sum;
             powerSsk.reset();
-            for (int i = 0; i < 9; i++)
+            for (unsigned i = 0; i < 9; i++)
                 if (!having[i])
-                    powerSsk.set(ts[i].id34());
+                    powerSsk.set(ts[i].uId34());
         }
     }
 
     for (T34 t : tiles34::ALL34)
-        mount.lightA(t, powerSsk.test(t.id34()) ? posMk : negMk);
+        mount.lightA(t, powerSsk.test(t.uId34()) ? posMk : negMk);
 
     return maxSum == 9;
 }
@@ -206,7 +206,7 @@ void Shino::powerChanta(const Hand &hand, Mount &mount, int mk)
     const std::array<T34, 6> heads { 1_m, 7_m, 1_p, 7_p, 1_s, 7_s };
     std::array<int, 6> totalHaving;
     totalHaving.fill(0);
-    for (int i = 0; i < 6; i++) {
+    for (unsigned i = 0; i < 6; i++) {
         std::array<T34, 3> ts { heads[i], heads[i].next(), heads[i].nnext() };
         std::array<int, 3> cts { closed.ct(ts[0]), closed.ct(ts[1]), closed.ct(ts[2]) };
         std::array<bool, 3> having2 { cts[0] >= 2, cts[1] >= 2, cts[2] >= 2 };
@@ -220,10 +220,10 @@ void Shino::powerChanta(const Hand &hand, Mount &mount, int mk)
     }
 
     if (std::accumulate(totalHaving.begin(), totalHaving.end(), 0) >= 3) {
-        for (int i = 0; i < 6; i++) {
+        for (unsigned i = 0; i < 6; i++) {
             if (totalHaving[i] > 0) {
                 std::array<T34, 3> ts { heads[i], heads[i].next(), heads[i].nnext() };
-                for (int j = 0; j < 3; j++)
+                for (unsigned j = 0; j < 3; j++)
                     if (closed.ct(ts[j]) == 0)
                         mount.lightA(ts[j], mk);
             }

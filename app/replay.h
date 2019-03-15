@@ -47,8 +47,8 @@ struct TableSnap
     std::vector<std::string> spells;
     std::vector<std::string> charges;
 
-    PlayerSnap &operator[](int w) { return players[w]; }
-    const PlayerSnap &operator[](int w) const { return players[w]; }
+    PlayerSnap &operator[](size_t w) { return players[w]; }
+    const PlayerSnap &operator[](size_t w) const { return players[w]; }
 };
 
 class Replay : public TableObserverDispatched
@@ -116,7 +116,7 @@ public:
 
     Replay() = default;
     Replay(const Replay &copy) = default;
-    ~Replay() = default;
+    ~Replay() override = default;
     Replay &operator=(const Replay &assign) = default;
 
     void onTableEvent(const Table &table, const TE::TableStarted &event) override;

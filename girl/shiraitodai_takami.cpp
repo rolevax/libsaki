@@ -56,7 +56,7 @@ int Takami::d3gNeed(T34 t) const
         return 0;
 
     T37 t37(t.id34());
-    int ct = std::count(mSlots.begin(), mSlots.end(), t37);
+    int ct = static_cast<int>(std::count(mSlots.begin(), mSlots.end(), t37));
     return ct >= 3 ? 0 : 3 - ct;
 }
 
