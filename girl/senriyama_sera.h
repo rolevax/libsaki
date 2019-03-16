@@ -14,10 +14,10 @@ namespace saki
 /// "Sera" is more commonly used than "Seira".
 /// "Se-ra" is better, and say fuck to ascii and identifier syntax.
 ///
-class Sera : public Girl
+class Sera : public GirlCrtp<Sera>
 {
 public:
-    GIRL_CTORS(Sera)
+    using GirlCrtp<Sera>::GirlCrtp;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
 };
 

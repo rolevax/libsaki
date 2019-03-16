@@ -11,10 +11,10 @@ namespace saki
 
 
 
-class Sumire : public Girl
+class Sumire : public GirlCrtp<Sumire>
 {
 public:
-    GIRL_CTORS(Sumire)
+    using GirlCrtp<Sumire>::GirlCrtp;
 
     void onDice(util::Rand &rand, const Table &table) override;
     bool checkInit(Who who, const Hand &init, const Table &table, int iter) override;

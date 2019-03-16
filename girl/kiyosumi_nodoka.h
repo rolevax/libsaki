@@ -10,10 +10,10 @@ namespace saki
 
 
 
-class Nodoka : public Girl
+class Nodoka : public GirlCrtp<Nodoka>
 {
 public:
-    GIRL_CTORS(Nodoka)
+    using GirlCrtp<Nodoka>::GirlCrtp;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
 };
 

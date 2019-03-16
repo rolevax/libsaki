@@ -10,10 +10,10 @@ namespace saki
 
 
 
-class Takami : public Girl
+class Takami : public GirlCrtp<Takami>
 {
 public:
-    GIRL_CTORS(Takami)
+    using GirlCrtp<Takami>::GirlCrtp;
 
     std::optional<HrhInitFix> onHrhRaid(const Table &table) override;
     void onTableEvent(const Table &table, const TableEvent &event) override;

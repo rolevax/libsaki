@@ -11,10 +11,10 @@ namespace saki
 
 
 
-class Sawaya : public Girl, public HrhBargainer
+class Sawaya : public GirlCrtp<Sawaya>, public HrhBargainer
 {
 public:
-    GIRL_CTORS(Sawaya)
+    using GirlCrtp<Sawaya>::GirlCrtp;
 
     bool checkInit(Who who, const Hand &init, const Table &table, int iter) override;
     void onDice(util::Rand &rand, const Table &table) override;

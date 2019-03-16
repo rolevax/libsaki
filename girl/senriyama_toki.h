@@ -13,10 +13,10 @@ namespace saki
 
 
 
-class Toki : public Girl
+class Toki : public GirlCrtp<Toki>
 {
 public:
-    GIRL_CTORS(Toki)
+    using GirlCrtp<Toki>::GirlCrtp;
 
     bool checkInit(Who who, const Hand &init, const Table &table, int iter) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;

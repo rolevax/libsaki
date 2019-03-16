@@ -10,10 +10,10 @@ namespace saki
 
 
 
-class Yui : public Girl
+class Yui : public GirlCrtp<Yui>
 {
 public:
-    GIRL_CTORS(Yui)
+    using GirlCrtp<Yui>::GirlCrtp;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
 
 };

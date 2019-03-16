@@ -11,10 +11,10 @@ namespace saki
 
 
 
-class Awai : public Girl, public HrhBargainer
+class Awai : public GirlCrtp<Awai>, public HrhBargainer
 {
 public:
-    GIRL_CTORS(Awai)
+    using GirlCrtp<Awai>::GirlCrtp;
 
     bool checkInit(Who who, const Hand &init, const Table &table, int iter) override;
     void onMonkey(std::array<Exist, 4> &exists, const Table &table) override;

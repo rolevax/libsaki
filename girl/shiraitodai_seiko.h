@@ -10,10 +10,10 @@ namespace saki
 
 
 
-class Seiko : public Girl
+class Seiko : public GirlCrtp<Seiko>
 {
 public:
-    GIRL_CTORS(Seiko)
+    using GirlCrtp<Seiko>::GirlCrtp;
 
     bool checkInit(Who who, const Hand &init, const Table &table, int iter) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;

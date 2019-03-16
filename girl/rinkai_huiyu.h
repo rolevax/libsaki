@@ -11,10 +11,10 @@ namespace saki
 
 
 
-class Huiyu : public Girl
+class Huiyu : public GirlCrtp<Huiyu>
 {
 public:
-    GIRL_CTORS(Huiyu)
+    using GirlCrtp<Huiyu>::GirlCrtp;
 
     static void skill(Mount &mount, const Hand &hand, const FormCtx &ctx);
 

@@ -10,10 +10,10 @@ namespace saki
 
 
 
-class Yuu : public Girl
+class Yuu : public GirlCrtp<Yuu>
 {
 public:
-    GIRL_CTORS(Yuu)
+    using GirlCrtp<Yuu>::GirlCrtp;
     void onMonkey(std::array<Exist, 4> &exists, const Table &table) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
 

@@ -10,10 +10,10 @@ namespace saki
 
 
 
-class Hatsumi : public Girl, public HrhBargainer
+class Hatsumi : public GirlCrtp<Hatsumi>, public HrhBargainer
 {
 public:
-    GIRL_CTORS(Hatsumi)
+    using GirlCrtp<Hatsumi>::GirlCrtp;
 
     bool checkInit(Who who, const Hand &init, const Table &table, int iter) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;

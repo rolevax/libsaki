@@ -10,10 +10,10 @@ namespace saki
 
 
 
-class Toyone : public Girl
+class Toyone : public GirlCrtp<Toyone>
 {
 public:
-    GIRL_CTORS(Toyone)
+    using GirlCrtp<Toyone>::GirlCrtp;
 
     void onDice(util::Rand &rand, const Table &table) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;

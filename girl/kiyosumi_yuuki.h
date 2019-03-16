@@ -10,10 +10,10 @@ namespace saki
 
 
 
-class Yuuki : public Girl
+class Yuuki : public GirlCrtp<Yuuki>
 {
 public:
-    GIRL_CTORS(Yuuki)
+    using GirlCrtp<Yuuki>::GirlCrtp;
     bool checkInit(Who who, const Hand &init, const Table &table, int iter) override;
     void onDraw(const Table &table, Mount &mount, Who who, bool rinshan) override;
     void onChooseFirstDealer(util::Rand &rand, Who tempDealer, int &die1, int &die2) override;

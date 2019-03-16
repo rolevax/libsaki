@@ -11,15 +11,6 @@
 
 
 
-#define GIRL_CTORS(Name) \
-    Name(Who who, Id id) : Girl(who, id) {} \
-    std::unique_ptr<Girl> clone() const override \
-    { \
-        return std::make_unique<Name>(*this); \
-    }
-
-
-
 namespace saki
 {
 
@@ -215,6 +206,24 @@ protected:
 
 private:
     IrsCtrlGetter mIrsCtrlGetter = nullptr;
+};
+
+template<typename Derived>
+class GirlCrtp : public Girl
+{
+public:
+    using Girl::Girl;
+
+    std::unique_ptr<Girl> clone() const final
+    {
+        if constexpr (std::is_base_of_v<GirlCrtp<Derived>, Derived>)
+            return std::make_unique<Derived>(static_cast<const Derived &>(*this));
+        else // NOLINT
+            static_assert(False<Derived>::value, "Must follow CRTP");
+    }
+
+private:
+    template<typename T> struct False : std::false_type {};
 };
 
 
