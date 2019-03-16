@@ -910,7 +910,7 @@ void Table::chii(Who who, ActCode dir, const T37 &out, bool showAka5)
     // save typing
     const ActCode L = ActCode::CHII_AS_LEFT;
     const ActCode M = ActCode::CHII_AS_MIDDLE;
-    const ActCode R = ActCode::CHII_AS_RIGHT;
+    [[maybe_unused]] const ActCode R = ActCode::CHII_AS_RIGHT;
 
     assert(who == mFocus.who().right());
     assert(dir == L || dir == M || dir == R);

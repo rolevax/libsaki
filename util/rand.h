@@ -20,9 +20,6 @@ class Rand
 {
 public:
     Rand();
-    Rand(const Rand &copy) = default;
-    Rand &operator=(const Rand &assign) = default;
-    ~Rand() = default;
 
     int32_t gen();
     int32_t gen(int32_t mod);

@@ -51,9 +51,6 @@ class StactorBase
 {
 public:
     StactorBase() = default;
-    StactorBase(const StactorBase &copy) = default;
-    StactorBase &operator=(const StactorBase &assign) = default;
-    ~StactorBase() = default;
 
     StactorBase(std::initializer_list<T> inits) noexcept
     {
@@ -221,8 +218,8 @@ public:
     }
 
 protected:
-    static const size_t ALIGN = std::alignment_of<T>::value;
-    typename std::aligned_storage<sizeof(T), ALIGN>::type mData[MAX];
+    static const size_t ALIGN = std::alignment_of_v<T>;
+    std::aligned_storage_t<sizeof(T), ALIGN> mData[MAX];
     size_t mSize = 0;
 };
 
@@ -252,18 +249,17 @@ class Stactor;
 
 
 template<typename T, size_t MAX>
-class Stactor<T, MAX, typename std::enable_if<std::is_trivially_copyable<T>::value>::type>
+class Stactor<T, MAX, std::enable_if_t<std::is_trivially_copyable_v<T>>>
     : public StactorBase<T, MAX>
 {
 public:
     using StactorBase<T, MAX>::StactorBase;
-    ~Stactor() = default;
 };
 
 
 
 template<typename T, size_t MAX>
-class Stactor<T, MAX, typename std::enable_if<!std::is_trivially_copyable<T>::value>::type>
+class Stactor<T, MAX, std::enable_if_t<!std::is_trivially_copyable_v<T>>>
     : public StactorBase<T, MAX>
 {
 public:
@@ -282,11 +278,22 @@ public:
             pushBack(e);
     }
 
+    Stactor(Stactor &&move) noexcept
+        : Stactor(static_cast<const Stactor &>(move))
+    {
+    }
+
     Stactor &operator=(const Stactor &that)
     {
         Base::clear();
         for (const auto &e : that)
             pushBack(e);
+    }
+
+    Stactor &operator=(Stactor &&that) noexcept
+    {
+        *this = static_cast<const Stactor &>(that);
+        return *this;
     }
 };
 

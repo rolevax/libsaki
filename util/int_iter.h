@@ -15,8 +15,6 @@ class IntIter
 {
 public:
     constexpr explicit IntIter(int c) : mCurr(c) {}
-    IntIter(const IntIter &copy) = default;
-    IntIter &operator=(const IntIter &assign) = default;
 
     // std input iterator traits
     using iterator_category = std::input_iterator_tag;
