@@ -535,7 +535,7 @@ void Table::singleAction(Who who, const Action &act)
         rollDice();
         break;
     default:
-        unreached("singleAction: unhandled act");
+        unreached();
     }
 }
 
@@ -865,7 +865,7 @@ void Table::declareRiichi(Who who, const Action &action)
     else if (action.act() == ActCode::SPIN_RIICHI)
         spinOut(who);
     else
-        unreached("Table::declareRiichi: non-riichi action");
+        unreached();
 }
 
 ///

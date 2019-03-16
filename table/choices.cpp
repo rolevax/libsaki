@@ -108,7 +108,7 @@ bool Choices::can(ActCode act) const
         }
 
     default:
-        unreached("Choices::can");
+        unreached();
     }
 }
 
@@ -156,7 +156,7 @@ Action Choices::timeout() const
     case Mode::END:
         return Action(mModeEnd.end ? ActCode::END_TABLE : ActCode::NEXT_ROUND);
     default:
-        unreached("Choices::sweep");
+        unreached();
     }
 }
 

@@ -33,7 +33,7 @@ public:
         case Suit::S: return 's';
         case Suit::F: return 'f';
         case Suit::Y: return 'y';
-        default: unreached("T34::charOf");
+        default: unreached();
         }
     }
 
@@ -45,7 +45,7 @@ public:
         case 's': return Suit::S;
         case 'f': return Suit::F;
         case 'y': return Suit::Y;
-        default: unreached("Tile::charToSuit() error");
+        default: unreached();
         }
     }
 
@@ -123,7 +123,7 @@ public:
         if (31 <= mId34 && mId34 < 34)
             return Suit::Y;
 
-        unreached("T34::suit(): invalid");
+        unreached();
     }
 
     int val() const
@@ -140,7 +140,7 @@ public:
         if (31 <= mId34 && mId34 < 34)
             return mId34 - 31 + 1;
 
-        unreached("T34::val(): invalid");
+        unreached();
     }
 
     const char *str34() const
@@ -279,7 +279,7 @@ public:
         case Suit::Y:
             return 3;
         default:
-            unreached("T34::period");
+            unreached();
         }
     }
 
@@ -417,7 +417,7 @@ public:
             case Suit::M: return "0m";
             case Suit::P: return "0p";
             case Suit::S: return "0s";
-            default: unreached("T37::str(): aka5 but z");
+            default: unreached();
             }
         } else {
             return T34::str34();

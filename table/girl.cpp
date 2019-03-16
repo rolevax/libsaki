@@ -67,7 +67,7 @@ std::unique_ptr<Girl> Girl::create(Who who, Id id)
     case Id::TAKUWA_RIO:        return std::make_unique<Rio>(who, id);
     case Id::KAJINO_YUI:        return std::make_unique<Yui>(who, id);
     default:
-        unreached("unimplemented girl");
+        unreached();
     }
 }
 
@@ -221,7 +221,7 @@ std::optional<HrhInitFix> Girl::onHrhBeg(util::Rand &rand, const Table &table, c
 
 std::string Girl::popUpStr() const
 {
-    unreached("unoverriden popUpStr()");
+    unreached();
 }
 
 ///

@@ -130,7 +130,7 @@ int FormGb::calcFan(const FormGb::Fans &fs)
         else if (Fan::YBG1 <= f && f <= Fan::ZM1)
             res += 1;
         else
-            unreached("FormGb::calcFan");
+            unreached();
     }
 
     return res;

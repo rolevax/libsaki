@@ -90,7 +90,7 @@ public:
         case ActCode::SPIN_OUT:
             return peekSpin(f, std::forward<Args>(args) ...);
         default:
-            unreached("Hand:withAction");
+            unreached();
         }
     }
 

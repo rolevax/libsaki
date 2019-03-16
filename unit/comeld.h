@@ -102,7 +102,7 @@ public:
         case Type::FREE:
             return { h };
         default:
-            unreached("illegal c34 type");
+            unreached();
         }
     }
 
@@ -142,7 +142,7 @@ public:
             else // 3 ~ 7
                 return { h.pprev(), h.prev(), h, h.next(), h.nnext() };
         default:
-            unreached("illegal c34 type");
+            unreached();
         }
     }
 
@@ -234,7 +234,7 @@ inline std::ostream &operator<<(std::ostream &os, C34 c)
     case C34::Type::FREE:
         return os << c.head();
     default:
-        unreached("os << c34");
+        unreached();
     }
 }
 

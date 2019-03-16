@@ -519,7 +519,7 @@ std::string Toki::popUpStr() const
     case PopUpMode::FV:
         return mPredictResult;
     default:
-        unreached("Toki::popUpStr");
+        unreached();
     }
 }
 

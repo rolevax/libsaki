@@ -192,9 +192,9 @@ Action Ai::thinkChoices(const TableView &view, Ai::Limits &limits)
 
     switch (choices.mode()) {
     case Choices::Mode::WATCH:
-        unreached("Ai::think: unexpected watch mode");
+        unreached();
     case Choices::Mode::IRS_CHECK:
-        unreached("Ai::think: unhandled cut mode");
+        unreached();
     case Choices::Mode::DICE:
         return Action(ActCode::DICE);
     case Choices::Mode::DRAWN:
@@ -204,7 +204,7 @@ Action Ai::thinkChoices(const TableView &view, Ai::Limits &limits)
     case Choices::Mode::END:
         return Action(choices.can(ActCode::END_TABLE) ? ActCode::END_TABLE : ActCode::NEXT_ROUND);
     default:
-        unreached("Ai::thinkChoices: illegal mode");
+        unreached();
     }
 }
 

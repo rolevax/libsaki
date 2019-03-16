@@ -52,7 +52,7 @@ const T37 &Hand::outFor(const Action &action) const
     case ActCode::SPIN_RIICHI:
         return drawn();
     default:
-        unreached("Hand::outFor");
+        unreached();
     }
 }
 
@@ -235,7 +235,7 @@ bool Hand::canCp(T34 pick, const Action &action) const
 
         break;
     default:
-        unreached("Hand::canCp");
+        unreached();
     }
 
     return !kuikae && mClosed.ct(out) >= (needShow ? 2 : 1);
@@ -580,7 +580,7 @@ void Hand::pon(const T37 &pick, int showAka5, int layIndex)
     } else if (layIndex == 2) {
         mBarks.pushBack(M37::pon(one, two, pick, layIndex));
     } else {
-        unreached("Hand::pon(): illigal lay index");
+        unreached();
     }
 }
 
@@ -601,7 +601,7 @@ void Hand::daiminkan(const T37 &pick, int layIndex)
     } else if (layIndex == 2) {
         mBarks.pushBack(M37::daiminkan(one, two, pick, three, layIndex));
     } else {
-        unreached("Hand::daiminkan(): illigal lay index");
+        unreached();
     }
 }
 
@@ -774,7 +774,7 @@ Hand::DeltaCp::DeltaCp(Hand &hand, const T37 &pick, const Action &a, const T37 &
         mHand.pon(pick, a.showAka5(), 0);
         break;
     default:
-        unreached("Hand::DeltaCp::ctor");
+        unreached();
     }
 
     mHand.barkOut(a.t37());
