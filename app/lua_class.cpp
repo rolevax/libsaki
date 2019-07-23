@@ -190,7 +190,7 @@ void setupLuaTile(sol::environment env, LuaUserErrorHandler &error)
         sol::meta_function::equal_to, &T34::operator==,
         sol::meta_function::less_than, &T34::operator<,
         sol::meta_function::modulus, &T34::operator%,
-        "all", sol::var(std::vector<T34>(tiles34::ALL34.begin(), tiles34::ALL34.end()))
+        "all", sol::var(sol::as_table(std::vector<T34>(tiles34::ALL34.begin(), tiles34::ALL34.end())))
     );
 
     env.new_usertype<T37>(
