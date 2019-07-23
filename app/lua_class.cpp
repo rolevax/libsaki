@@ -569,15 +569,15 @@ sol::table toLuaTable(sol::environment env, const TableEvent &event)
     case TE::Type::ROUND_ENDED: {
         const auto &a = event.as<TE::RoundEnded>();
         args["result"] = util::stringOf(a.result);
-        args["openers"] = a.openers;
+        args["openers"] = sol::as_table(a.openers);
         args["gunner"] = a.gunner;
-        args["forms"] = a.forms;
+        args["forms"] = sol::as_table(a.forms);
         break;
     }
     case TE::Type::TABLE_ENDED: {
         const auto &a = event.as<TE::TableEnded>();
-        args["ranks"] = a.ranks;
-        args["scores"] = a.scores;
+        args["ranks"] = sol::as_table(a.ranks);
+        args["scores"] = sol::as_table(a.scores);
         break;
     }
     case TE::Type::POPPED_UP:
