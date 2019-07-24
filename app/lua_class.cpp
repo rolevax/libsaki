@@ -226,6 +226,9 @@ void setupLuaTile(sol::environment env, LuaUserErrorHandler &error)
         "lookssame", &T37::looksSame,
         "str37", &T37::str37,
         sol::meta_function::to_string, &T37::str37,
+        sol::meta_function::equal_to, &T37::operator==,
+        sol::meta_function::less_than, &T37::operator<,
+        sol::meta_function::modulus, &T37::operator%,
         sol::base_classes, sol::bases<T34>()
     );
 }
