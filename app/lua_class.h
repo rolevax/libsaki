@@ -26,6 +26,7 @@ public:
 
 
 void setupLuaClasses(const sol::environment &env, LuaUserErrorHandler &error);
+void setupLuaRand(sol::environment env);
 void setupLuaTile(sol::environment env, LuaUserErrorHandler &error);
 void setupLuaWho(sol::environment env);
 void setupLuaMeld(sol::environment env, LuaUserErrorHandler &error);

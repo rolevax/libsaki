@@ -71,6 +71,24 @@ bool GirlX::checkInit(Who who, const Hand &init, const Table &table, int iter)
     return res.is<bool>() ? res.as<bool>() : true;
 }
 
+void GirlX::onDice(util::Rand &rand, const Table &table)
+{
+    sol::object cb = mGirlEnv["ondice"];
+    if (!cb.is<sol::function>())
+        return;
+
+    LuaVarScope scope(
+        mGirlEnv,
+        "game", &table,
+        "rand", &rand
+    );
+
+    (void) scope;
+
+    runInGirlEnv("ondice()");
+    popUpIfAny(table);
+}
+
 void GirlX::onMonkey(std::array<Exist, 4> &exists, const Table &table)
 {
     sol::object cb = mGirlEnv["onmonkey"];

@@ -131,6 +131,7 @@ std::tuple<sol::optional<Who>, sol::optional<T37>, bool> tableGetFocus(const Tab
 
 void setupLuaClasses(const sol::environment &env, LuaUserErrorHandler &error)
 {
+    setupLuaRand(env);
     setupLuaTile(env, error);
     setupLuaWho(env);
     setupLuaMeld(env, error);
@@ -143,6 +144,15 @@ void setupLuaClasses(const sol::environment &env, LuaUserErrorHandler &error)
     setupLuaRule(env);
     setupLuaFormCtx(env);
     setupLuaGame(env);
+}
+
+void setupLuaRand(sol::environment env)
+{
+    env.new_usertype<util::Rand>(
+        "Rand",
+        "gen", [](util::Rand &r, int mod) { return r.gen(mod); },
+        "state", &util::Rand::state
+    );
 }
 
 void setupLuaTile(sol::environment env, LuaUserErrorHandler &error)
@@ -510,6 +520,7 @@ void setupLuaGame(sol::environment env)
         "getdealer", &Table::getDealer,
         "getselfwind", &Table::getSelfWind,
         "getroundwind", &Table::getRoundWind,
+        "getmount", ReturnCopy(&Table::getMount),
         "getriver", AsTable(&Table::getRiver),
         "riichiestablished", &Table::riichiEstablished,
         "getrule", ReturnCopy(&Table::getRule),
