@@ -76,9 +76,9 @@ util::Stactor<T37, 5> tableToDrids(sol::table idsTable)
         if (res.full())
             break;
 
-        if (std::optional<T34> t34 = idsTable[key]; t34)
+        if (sol::optional<T34> t34 = idsTable[key]; t34)
             res.emplaceBack(t34->id34());
-        else if (std::optional<T37> t37 = idsTable[key]; t37)
+        else if (sol::optional<T37> t37 = idsTable[key]; t37)
             res.emplaceBack(*t37);
     }
 
@@ -168,7 +168,7 @@ void setupLuaTile(sol::environment env, LuaUserErrorHandler &error)
 
                 return T34(ti);
             },
-            [&error](const std::string s) {
+            [&error](const std::string &s) {
                 static const std::array<std::string, 34> dict {
                     "1m", "2m", "3m", "4m", "5m", "6m", "7m", "8m", "9m",
                     "1p", "2p", "3p", "4p", "5p", "6p", "7p", "8p", "9p",
@@ -214,7 +214,7 @@ void setupLuaTile(sol::environment env, LuaUserErrorHandler &error)
 
                 return T37(ti);
             },
-            [&error](const std::string s) {
+            [&error](const std::string &s) {
                 if (!T37::isValidStr(s.c_str())) {
                     error.handleUserError("EInvT37Str");
                     return T37();
@@ -332,7 +332,7 @@ void setupLuaMount(sol::environment env, LuaUserErrorHandler &error)
             }
         ),
         "incmk", sol::overload(
-            [&error](Mount &mount, std::string exit, size_t pos, T34 t, int delta, bool bSpace) {
+            [&error](Mount &mount, const std::string &exit, size_t pos, T34 t, int delta, bool bSpace) {
                 auto [e, ok] = parseMountExit(exit);
                 if (!ok) {
                     error.handleUserError("EInvMntExt");
@@ -340,7 +340,7 @@ void setupLuaMount(sol::environment env, LuaUserErrorHandler &error)
                 }
                 mount.incMk(e, pos, t, delta, bSpace);
             },
-            [&error](Mount &mount, std::string exit, size_t pos, const T37 &t, int delta, bool bSpace) {
+            [&error](Mount &mount, const std::string &exit, size_t pos, const T37 &t, int delta, bool bSpace) {
                 auto [e, ok] = parseMountExit(exit);
                 if (!ok) {
                     error.handleUserError("EInvMntExt");
@@ -426,22 +426,22 @@ void setupLuaForm(sol::environment env, LuaUserErrorHandler &error)
         sol::meta_function::construct, sol::factories(
             [&error](const Hand &full, const FormCtx &ctx, const Rule &rule,
                      sol::table drids, sol::table urids) {
-                return formCtor1(error, full, ctx, rule, drids, urids);
+                return formCtor1(error, full, ctx, rule, std::move(drids), std::move(urids));
             },
             [&error](const Hand &full, const FormCtx &ctx, const Rule &rule,
                      sol::table drids) {
-                return formCtor1(error, full, ctx, rule, drids, sol::nil);
+                return formCtor1(error, full, ctx, rule, std::move(drids), sol::nil);
             },
             [&error](const Hand &full, const FormCtx &ctx, const Rule &rule) {
                 return formCtor1(error, full, ctx, rule, sol::nil, sol::nil);
             },
             [&error](const Hand &ready, const T37 &pick, const FormCtx &ctx, const Rule &rule,
                      sol::table drids, sol::table urids) {
-                return formCtor2(error, ready, pick, ctx, rule, drids, urids);
+                return formCtor2(error, ready, pick, ctx, rule, std::move(drids), std::move(urids));
             },
             [&error](const Hand &ready, const T37 &pick, const FormCtx &ctx, const Rule &rule,
                      sol::table drids) {
-                return formCtor2(error, ready, pick, ctx, rule, drids, sol::nil);
+                return formCtor2(error, ready, pick, ctx, rule, std::move(drids), sol::nil);
             },
             [&error](const Hand &ready, const T37 &pick,const FormCtx &ctx, const Rule &rule) {
                 return formCtor2(error, ready, pick, ctx, rule, sol::nil, sol::nil);
