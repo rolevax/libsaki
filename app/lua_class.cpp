@@ -277,10 +277,10 @@ void setupLuaExist(sol::environment env, LuaUserErrorHandler &error)
     env.new_usertype<Exist>(
         "Exist",
         "incmk", sol::overload(
-            [](Exist &exist, T34 t, int delta) {
+            [](Exist &exist, const T37 &t, int delta) {
                 exist.incMk(t, delta);
             },
-            [](Exist &exist, const T37 &t, int delta) {
+            [](Exist &exist, T34 t, int delta) {
                 exist.incMk(t, delta);
             }
         )
@@ -294,45 +294,45 @@ void setupLuaMount(sol::environment env, LuaUserErrorHandler &error)
         "remainpii", &Mount::remainPii,
         "remainrinshan", &Mount::remainRinshan,
         "remaina", sol::overload(
-            [](Mount &mount, T34 t) {
+            [](Mount &mount, const T37 &t) {
                 return mount.remainA(t);
             },
-            [](Mount &mount, const T37 &t) {
+            [](Mount &mount, T34 t) {
                 return mount.remainA(t);
             }
         ),
         "getdrids", AsTable(&Mount::getDrids),
         "geturids", AsTable(&Mount::getUrids),
         "lighta", sol::overload(
-            [](Mount &mount, T34 t, int mk, bool rin) {
-                mount.lightA(t, mk, rin);
-            },
             [](Mount &mount, const T37 &t, int mk, bool rin) {
                 mount.lightA(t, mk, rin);
             },
-            [](Mount &mount, T34 t, int mk) {
-                mount.lightA(t, mk);
+            [](Mount &mount, T34 t, int mk, bool rin) {
+                mount.lightA(t, mk, rin);
             },
             [](Mount &mount, const T37 &t, int mk) {
+                mount.lightA(t, mk);
+            },
+            [](Mount &mount, T34 t, int mk) {
                 mount.lightA(t, mk);
             }
         ),
         "lightb", sol::overload(
-            [](Mount &mount, T34 t, int mk, bool rin) {
-                mount.lightB(t, mk, rin);
-            },
             [](Mount &mount, const T37 &t, int mk, bool rin) {
                 mount.lightB(t, mk, rin);
             },
-            [](Mount &mount, T34 t, int mk) {
-                mount.lightB(t, mk);
+            [](Mount &mount, T34 t, int mk, bool rin) {
+                mount.lightB(t, mk, rin);
             },
             [](Mount &mount, const T37 &t, int mk) {
+                mount.lightB(t, mk);
+            },
+            [](Mount &mount, T34 t, int mk) {
                 mount.lightB(t, mk);
             }
         ),
         "incmk", sol::overload(
-            [&error](Mount &mount, const std::string &exit, size_t pos, T34 t, int delta, bool bSpace) {
+            [&error](Mount &mount, const std::string &exit, size_t pos, const T37 &t, int delta, bool bSpace) {
                 auto [e, ok] = parseMountExit(exit);
                 if (!ok) {
                     error.handleUserError("EInvMntExt");
@@ -340,7 +340,7 @@ void setupLuaMount(sol::environment env, LuaUserErrorHandler &error)
                 }
                 mount.incMk(e, pos, t, delta, bSpace);
             },
-            [&error](Mount &mount, const std::string &exit, size_t pos, const T37 &t, int delta, bool bSpace) {
+            [&error](Mount &mount, const std::string &exit, size_t pos, T34 t, int delta, bool bSpace) {
                 auto [e, ok] = parseMountExit(exit);
                 if (!ok) {
                     error.handleUserError("EInvMntExt");
@@ -358,10 +358,10 @@ void setupLuaTileCount(sol::environment env, LuaUserErrorHandler &error)
     env.new_usertype<TileCount>(
         "Tilecount",
         "ct", sol::overload(
-            [](const TileCount &tc, T34 t) {
+            [](const TileCount &tc, const T37 &t) {
                 return tc.ct(t);
             },
-            [](const TileCount &tc, const T37 &t) {
+            [](const TileCount &tc, T34 t) {
                 return tc.ct(t);
             },
             [&error](const TileCount &tc, std::string suit) {
