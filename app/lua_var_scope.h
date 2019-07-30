@@ -11,39 +11,38 @@ namespace saki
 
 
 
+template<typename... Args>
 class LuaVarScope
 {
 public:
-    template<typename... Args>
-    explicit LuaVarScope(sol::environment girl, Args... args)
+    explicit LuaVarScope(sol::environment girl, Args ... args)
+        : mGirl(girl)
+        , mArgs(std::make_tuple(std::move(args) ...))
     {
-        auto seq = std::make_index_sequence<sizeof...(args) / 2>();
-        auto tuple = std::make_tuple(args...);
-        setup(girl, seq, tuple);
-        mDtor = [=]() {
-            clear(girl, seq, tuple);
-        };
+        setup(std::make_index_sequence<sizeof...(args) / 2>());
     }
 
     ~LuaVarScope()
     {
-        mDtor();
+        clear(std::make_index_sequence<std::tuple_size<decltype(mArgs)>() / 2>());
     }
 
-    template<size_t... Is, typename Tuple>
-    void setup(sol::environment girl, std::index_sequence<Is...>, Tuple tuple)
+    template<size_t... Is>
+    void setup(std::index_sequence<Is...>)
     {
-        (girl.raw_set(std::get<2 * Is>(tuple), std::get<2 * Is + 1>(tuple)), ...);
+        // safe to move the lvalue tuple, because the moved value won't be used anymore
+        (mGirl.raw_set(std::get<2 * Is>(mArgs), std::get<2 * Is + 1>(std::move(mArgs))), ...);
     }
 
-    template<size_t... Is, typename Tuple>
-    void clear(sol::environment girl, std::index_sequence<Is...>, Tuple tuple)
+    template<size_t... Is>
+    void clear(std::index_sequence<Is...>)
     {
-        (girl.raw_set(std::get<2 * Is>(tuple), nullptr), ...);
+        (mGirl.raw_set(std::get<2 * Is>(mArgs), nullptr), ...);
     }
 
 private:
-    std::function<void()> mDtor;
+    sol::environment mGirl;
+    std::tuple<Args ...> mArgs;
 };
 
 

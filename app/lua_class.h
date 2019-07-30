@@ -1,6 +1,7 @@
 #ifndef SAKI_APP_LUA_CLASS_H
 #define SAKI_APP_LUA_CLASS_H
 
+#include "lua_user_error_handler.h"
 #include "../3rd/sol.hpp"
 #include "../table/table_event.h"
 
@@ -10,28 +11,13 @@ namespace saki
 
 
 
-class LuaUserErrorHandler
-{
-public:
-    LuaUserErrorHandler() = default;
-    LuaUserErrorHandler(const LuaUserErrorHandler &copy) = default;
-    LuaUserErrorHandler(LuaUserErrorHandler &&move) = default;
-    LuaUserErrorHandler &operator=(const LuaUserErrorHandler &copy) = default;
-    LuaUserErrorHandler &operator=(LuaUserErrorHandler &&move) = default;
-    virtual ~LuaUserErrorHandler() = default;
-
-    virtual void handleUserError(const char *msg) = 0;
-};
-
-
-
 void setupLuaClasses(const sol::environment &env, LuaUserErrorHandler &error);
 void setupLuaRand(sol::environment env);
 void setupLuaTile(sol::environment env, LuaUserErrorHandler &error);
 void setupLuaWho(sol::environment env);
 void setupLuaMeld(sol::environment env, LuaUserErrorHandler &error);
 void setupLuaExist(sol::environment env, LuaUserErrorHandler &error);
-void setupLuaMount(sol::environment env, LuaUserErrorHandler &error);
+void setupLuaMount(sol::environment env);
 void setupLuaTileCount(sol::environment env, LuaUserErrorHandler &error);
 void setupLuaHand(sol::environment env);
 void setupLuaDreamHand(sol::environment env, LuaUserErrorHandler &error);

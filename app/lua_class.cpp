@@ -1,5 +1,6 @@
 #include "lua_class.h"
 #include "lua_dream_hand.h"
+#include "lua_managed_ref.h"
 #include "../table/table.h"
 #include "../util/dismember.h"
 #include "../util/string_enum.h"
@@ -136,7 +137,7 @@ void setupLuaClasses(const sol::environment &env, LuaUserErrorHandler &error)
     setupLuaWho(env);
     setupLuaMeld(env, error);
     setupLuaExist(env, error);
-    setupLuaMount(env, error);
+    setupLuaMount(env);
     setupLuaTileCount(env, error);
     setupLuaHand(env);
     setupLuaDreamHand(env, error);
@@ -287,69 +288,72 @@ void setupLuaExist(sol::environment env, LuaUserErrorHandler &error)
     );
 }
 
-void setupLuaMount(sol::environment env, LuaUserErrorHandler &error)
+void setupLuaMount(sol::environment env)
 {
-    env.new_usertype<Mount>(
+    using LuaMount = LuaManagedRef<Mount>;
+    env.new_usertype<LuaMount>(
         "Mount",
-        "remainpii", &Mount::remainPii,
-        "remainrinshan", &Mount::remainRinshan,
+        "remainpii", LuaMount::makeConstMethod(&Mount::remainPii),
+        "remainrinshan", LuaMount::makeConstMethod(&Mount::remainRinshan),
         "remaina", sol::overload(
-            [](Mount &mount, const T37 &t) {
+            LuaMount::makeConstFunction(+[](const Mount &mount, const T37 &t) {
                 return mount.remainA(t);
-            },
-            [](Mount &mount, T34 t) {
+            }),
+            LuaMount::makeConstFunction(+[](const Mount &mount, T34 t) {
                 return mount.remainA(t);
-            }
+            })
         ),
-        "getdrids", AsTable(&Mount::getDrids),
-        "geturids", AsTable(&Mount::getUrids),
+        "getdrids", LuaMount::makeConstMethodAsTable(&Mount::getDrids),
+        "geturids", LuaMount::makeConstMethodAsTable(&Mount::getUrids),
         "lighta", sol::overload(
-            [](Mount &mount, const T37 &t, int mk, bool rin) {
+            LuaMount::makeMutableFunction(+[](Mount &mount, const T37 &t, int mk, bool rin) {
                 mount.lightA(t, mk, rin);
-            },
-            [](Mount &mount, T34 t, int mk, bool rin) {
+            }),
+            LuaMount::makeMutableFunction(+[](Mount &mount, T34 t, int mk, bool rin) {
                 mount.lightA(t, mk, rin);
-            },
-            [](Mount &mount, const T37 &t, int mk) {
+            }),
+            LuaMount::makeMutableFunction(+[](Mount &mount, const T37 &t, int mk) {
                 mount.lightA(t, mk);
-            },
-            [](Mount &mount, T34 t, int mk) {
+            }),
+            LuaMount::makeMutableFunction(+[](Mount &mount, T34 t, int mk) {
                 mount.lightA(t, mk);
-            }
+            })
         ),
         "lightb", sol::overload(
-            [](Mount &mount, const T37 &t, int mk, bool rin) {
+            LuaMount::makeMutableFunction(+[](Mount &mount, const T37 &t, int mk, bool rin) {
                 mount.lightB(t, mk, rin);
-            },
-            [](Mount &mount, T34 t, int mk, bool rin) {
+            }),
+            LuaMount::makeMutableFunction(+[](Mount &mount, T34 t, int mk, bool rin) {
                 mount.lightB(t, mk, rin);
-            },
-            [](Mount &mount, const T37 &t, int mk) {
+            }),
+            LuaMount::makeMutableFunction(+[](Mount &mount, const T37 &t, int mk) {
                 mount.lightB(t, mk);
-            },
-            [](Mount &mount, T34 t, int mk) {
+            }),
+            LuaMount::makeMutableFunction(+[](Mount &mount, T34 t, int mk) {
                 mount.lightB(t, mk);
-            }
+            })
         ),
         "incmk", sol::overload(
-            [&error](Mount &mount, const std::string &exit, size_t pos, const T37 &t, int delta, bool bSpace) {
+            LuaMount::makeMutableFunctionError(+[](LuaUserErrorHandler &error, Mount &mount, const std::string &exit, size_t pos, const T37 &t, int delta, bool bSpace) {
                 auto [e, ok] = parseMountExit(exit);
                 if (!ok) {
                     error.handleUserError("EInvMntExt");
                     return;
                 }
+
                 mount.incMk(e, pos, t, delta, bSpace);
-            },
-            [&error](Mount &mount, const std::string &exit, size_t pos, T34 t, int delta, bool bSpace) {
+            }),
+            LuaMount::makeMutableFunctionError(+[](LuaUserErrorHandler &error, Mount &mount, const std::string &exit, size_t pos, T34 t, int delta, bool bSpace) {
                 auto [e, ok] = parseMountExit(exit);
                 if (!ok) {
                     error.handleUserError("EInvMntExt");
                     return;
                 }
+
                 mount.incMk(e, pos, t, delta, bSpace);
-            }
+            })
         ),
-        "loadb", &Mount::loadB
+        "loadb", LuaMount::makeMutableMethod(&Mount::loadB)
     );
 }
 

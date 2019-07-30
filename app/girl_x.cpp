@@ -1,4 +1,5 @@
 #include "girl_x.h"
+#include "lua_managed_ref.h"
 #include "lua_var_scope.h"
 #include "../table/table.h"
 
@@ -53,15 +54,17 @@ bool GirlX::checkInit(Who who, const Hand &init, const Table &table, int iter)
     if (iter > 1000)
         return true;
 
+    auto refGame = std::make_unique<LuaManagedRef<Table>>(&table, *this, false);
+    auto refInit = std::make_unique<LuaManagedRef<Hand>>(&init, *this, false);
+
+    LuaDisposeRefGuard refGuard(refGame, refInit);
     LuaVarScope scope(
         mGirlEnv,
-        "game", &table,
-        "init", &init,
+        "game", std::move(refGame),
+        "init", std::move(refInit),
         "who", who,
         "iter", iter
     );
-
-    (void) scope;
 
     auto res = runInGirlEnv("return checkinit()");
     if (!res.is<bool>())
@@ -77,13 +80,14 @@ void GirlX::onDice(util::Rand &rand, const Table &table)
     if (!cb.is<sol::function>())
         return;
 
+    auto refGame = std::make_unique<LuaManagedRef<Table>>(&table, *this, false);
+
+    LuaDisposeRefGuard refGuard(refGame);
     LuaVarScope scope(
         mGirlEnv,
-        "game", &table,
+        "game", std::move(refGame),
         "rand", &rand
     );
-
-    (void) scope;
 
     runInGirlEnv("ondice()");
     popUpIfAny(table);
@@ -97,17 +101,19 @@ void GirlX::onMonkey(std::array<Exist, 4> &exists, const Table &table)
 
     // first use pointers to prevent copy,
     // then use sol::as_table to round off index-out-of-bound
+    // not using LuaManagedRef because sol cannot properly move array-of-unique-pointers yet
     std::array<Exist *, 4> existPtrs;
     std::transform(exists.begin(), exists.end(), existPtrs.begin(),
                    [](Exist &e) { return &e; });
 
+    auto refGame = std::make_unique<LuaManagedRef<Table>>(&table, *this, false);
+
+    LuaDisposeRefGuard refGuard(refGame);
     LuaVarScope scope(
         mGirlEnv,
-        "game", &table,
+        "game", std::move(refGame),
         "exists", sol::as_table(existPtrs)
     );
-
-    (void) scope;
 
     runInGirlEnv("onmonkey()");
     popUpIfAny(table);
@@ -119,15 +125,17 @@ void GirlX::onDraw(const Table &table, Mount &mount, Who who, bool rinshan)
     if (!cb.is<sol::function>())
         return;
 
+    auto refGame = std::make_unique<LuaManagedRef<Table>>(&table, *this, false);
+    auto refMount = std::make_unique<LuaManagedRef<Mount>>(&mount, *this, false, false);
+
+    LuaDisposeRefGuard refGuard(refGame, refMount);
     LuaVarScope scope(
         mGirlEnv,
-        "game", &table,
-        "mount", &mount,
+        "game", std::move(refGame),
+        "mount", std::move(refMount),
         "who", who,
         "rinshan", rinshan
     );
-
-    (void) scope;
 
     runInGirlEnv("ondraw()");
     popUpIfAny(table);
@@ -153,13 +161,14 @@ void GirlX::onTableEvent(const Table &table, const TableEvent &event)
     if (!cb.is<sol::function>())
         return;
 
+    auto refGame = std::make_unique<LuaManagedRef<Table>>(&table, *this, false);
+
+    LuaDisposeRefGuard refGuard(refGame);
     LuaVarScope scope(
         mGirlEnv,
-        "game", &table,
+        "game", std::move(refGame),
         "event", toLuaTable(mGirlEnv, event)
     );
-
-    (void) scope;
 
     runInGirlEnv("ongameevent()");
     popUpIfAny(table);
