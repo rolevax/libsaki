@@ -502,7 +502,7 @@ void FormGb::checkV12F4(FormGb::Fans &res, const Explain4 &exp) const
     auto lt5 = [](T34 t) { return t.isNum() && t.val() < 5; };
     if (!util::has(res, Fan::QX24)
         && lt5(exp.pair())
-        && util::all(exp.sb(), exp.se(), [](T34 t) { return t.val() < 2; })
+        && util::all(exp.sb(), exp.se(), [](T34 t) { return t.val() < 3; })
         && util::all(exp.x34b(), exp.x34e(), lt5)) {
         res.push_back(Fan::XYW12);
     }
