@@ -8,7 +8,7 @@ namespace saki
 
 
 
-[[maybe_unused]] static const char *VERSION = "0.11.2";
+[[maybe_unused]] static const char *VERSION = "0.12.0";
 
 
 

@@ -81,12 +81,13 @@ void GirlX::onDice(util::Rand &rand, const Table &table)
         return;
 
     auto refGame = std::make_unique<LuaManagedRef<Table>>(&table, *this, false);
+    auto refRand = std::make_unique<LuaManagedRef<util::Rand>>(&rand, *this, false, false);
 
     LuaDisposeRefGuard refGuard(refGame);
     LuaVarScope scope(
         mGirlEnv,
         "game", std::move(refGame),
-        "rand", &rand
+        "rand", std::move(refRand)
     );
 
     runInGirlEnv("ondice()");

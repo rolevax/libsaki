@@ -129,10 +129,11 @@ void setupLuaClasses(const sol::environment &env, LuaUserErrorHandler &error)
 
 void setupLuaRand(sol::environment env)
 {
-    env.new_usertype<util::Rand>(
+    using LuaRand = LuaManagedRef<util::Rand>;
+    env.new_usertype<LuaRand>(
         "Rand",
-        "gen", [](util::Rand &r, int mod) { return r.gen(mod); },
-        "state", &util::Rand::state
+        "gen", LuaRand::makeMutableFunction(+[](util::Rand &r, int mod) { return r.gen(mod); }),
+        "state", LuaRand::makeConstMethod(&util::Rand::state)
     );
 }
 
