@@ -1,5 +1,4 @@
 #include "lua_class.h"
-#include "lua_dream_hand.h"
 #include "lua_managed_ref.h"
 #include "../table/table.h"
 #include "../util/dismember.h"
@@ -10,12 +9,12 @@ namespace saki
 
 
 
-bool isValidSuitStr(const std::string &s)
+auto isValidSuitStr(const std::string &s) -> bool
 {
     return s.size() == 1 && T34::isValidSuit(s[0]);
 }
 
-std::string toLower(const char *s)
+auto toLower(const char *s) -> std::string
 {
     std::string res(s);
     std::for_each(res.begin(), res.end(), [](char &c) {
@@ -24,7 +23,7 @@ std::string toLower(const char *s)
     return res;
 }
 
-std::pair<Mount::Exit, bool> parseMountExit(const std::string &s)
+auto parseMountExit(const std::string &s) -> std::pair<Mount::Exit, bool>
 {
     std::pair<Mount::Exit, bool> res;
 
@@ -43,28 +42,7 @@ std::pair<Mount::Exit, bool> parseMountExit(const std::string &s)
     return res;
 }
 
-template<typename Class, typename Ret, typename... Args>
-class AsTable
-{
-public:
-    using Method = Ret (Class::*)(Args...) const;
-    using Table = sol::as_table_t<sol::meta::unqualified_t<Ret>>;
-
-    explicit AsTable(Method method)
-        : mMethod(method)
-    {
-    }
-
-    Table operator()(Class &thiz, Args... args)
-    {
-        return sol::as_table((thiz.*mMethod)(args...));
-    }
-
-private:
-    Method mMethod;
-};
-
-util::Stactor<T37, 5> tableToDrids(sol::table idsTable)
+auto tableToDrids(sol::table idsTable) -> util::Stactor<T37, 5>
 {
     util::Stactor<T37, 5> res;
 
@@ -86,19 +64,20 @@ util::Stactor<T37, 5> tableToDrids(sol::table idsTable)
     return res;
 }
 
-int handMod1(sol::table ids, const Hand &hand)
+auto handMod1(sol::table ids, const LuaManagedRef<Hand> &hand) -> int
 {
-    return tableToDrids(std::move(ids)) % hand;
+    return tableToDrids(std::move(ids)) % *hand.data();
 }
 
-int handMod2(T34 indic, const Hand &hand)
+auto handMod2(T34 indic, const LuaManagedRef<Hand> &hand) -> int
 {
-    return indic % hand;
+    return indic % *hand.data();
 }
 
-sol::optional<Form> formCtor1(LuaUserErrorHandler &error,
-                              const Hand &full, const FormCtx &ctx, const Rule &rule,
-                              sol::table drids, sol::table urids)
+auto formCtor1(LuaUserErrorHandler &error,
+               const Hand &full, const FormCtx &ctx, const Rule &rule,
+               sol::table drids, sol::table urids)
+    -> sol::optional<Form>
 {
     if (full.step() != -1) {
         error.handleUserError("EFrmNoAgr");
@@ -108,11 +87,12 @@ sol::optional<Form> formCtor1(LuaUserErrorHandler &error,
     return Form(full, ctx, rule, tableToDrids(std::move(drids)), tableToDrids(std::move(urids)));
 }
 
-sol::optional<Form> formCtor2(LuaUserErrorHandler &error,
-                              const Hand &ready, const T37 &pick, const FormCtx &ctx, const Rule &rule,
-                              sol::table drids, sol::table urids)
+auto formCtor2(LuaUserErrorHandler &error,
+               const Hand &ready, const T37 &pick, const FormCtx &ctx, const Rule &rule,
+               sol::table drids, sol::table urids)
+    -> sol::optional<Form>
 {
-    if (ready.peekPickStep(pick) != -1) {
+    if (ready.peekPickStep(pick) != -1) { // NOLINT(cppcoreguidelines-slicing)
         error.handleUserError("EFrmNoAgr");
         return sol::nullopt;
     }
@@ -120,7 +100,8 @@ sol::optional<Form> formCtor2(LuaUserErrorHandler &error,
     return Form(ready, pick, ctx, rule, tableToDrids(std::move(drids)), tableToDrids(std::move(urids)));
 }
 
-std::tuple<sol::optional<Who>, sol::optional<T37>, bool> tableGetFocus(const Table &table)
+auto tableGetFocus(const Table &table)
+    -> std::tuple<sol::optional<Who>, sol::optional<T37>, bool>
 {
     using Tuple = decltype(tableGetFocus(*static_cast<Table *>(nullptr)));
     TableFocus focus = table.getFocus();
@@ -138,9 +119,8 @@ void setupLuaClasses(const sol::environment &env, LuaUserErrorHandler &error)
     setupLuaMeld(env, error);
     setupLuaExist(env, error);
     setupLuaMount(env);
-    setupLuaTileCount(env, error);
+    setupLuaTileCount(env);
     setupLuaHand(env);
-    setupLuaDreamHand(env, error);
     setupLuaForm(env, error);
     setupLuaRule(env);
     setupLuaFormCtx(env);
@@ -357,67 +337,82 @@ void setupLuaMount(sol::environment env)
     );
 }
 
-void setupLuaTileCount(sol::environment env, LuaUserErrorHandler &error)
+void setupLuaTileCount(sol::environment env)
 {
-    env.new_usertype<TileCount>(
+    using LuaTc = LuaManagedRef<TileCount>;
+    env.new_usertype<LuaTc>(
         "Tilecount",
         "ct", sol::overload(
-            [](const TileCount &tc, const T37 &t) {
+            LuaTc::makeConstFunction(+[](const TileCount &tc, const T37 &t) {
                 return tc.ct(t);
-            },
-            [](const TileCount &tc, T34 t) {
+            }),
+            LuaTc::makeConstFunction(+[](const TileCount &tc, T34 t) {
                 return tc.ct(t);
-            },
-            [&error](const TileCount &tc, std::string suit) {
+            }),
+            LuaTc::makeConstFunctionError(+[](LuaUserErrorHandler &error, const TileCount &tc, std::string suit) {
                 if (!isValidSuitStr(suit)) {
                     error.handleUserError("EInvSuit");
                     return 0;
                 }
 
                 return tc.ct(T34::suitOf(suit[0]));
-            }
+            })
         )
     );
 }
 
 void setupLuaHand(sol::environment env)
 {
-    env.new_usertype<Hand>(
+    using LuaHand = LuaManagedRef<Hand>;
+    env.new_usertype<LuaHand>(
         "Hand",
-        "closed", &Hand::closed,
-        "ct", &Hand::ct,
-        "ctaka5", &Hand::ctAka5,
-        "ready", &Hand::ready,
-        "step", &Hand::step,
-        "step4", &Hand::step4,
-        "step7", &Hand::step7,
-        "step7gb", &Hand::step7Gb,
-        "step13", &Hand::step13,
-        "effa", AsTable(&Hand::effA),
-        "effa4", AsTable(&Hand::effA4),
-        "ismenzen", &Hand::isMenzen,
-        "barks", AsTable(&Hand::barks),
-        "canchii", &Hand::canChii,
-        "canchiiasleft", &Hand::canChiiAsLeft,
-        "canchiiasmiddle", &Hand::canChiiAsMiddle,
-        "canchiiasright", &Hand::canChiiAsRight,
-        "canpon", &Hand::canPon,
-        "candaiminkan", &Hand::canDaiminkan,
-        sol::meta_function::modulus, sol::overload(handMod1, handMod2)
-    );
-}
-
-void setupLuaDreamHand(sol::environment env, LuaUserErrorHandler &error)
-{
-    env.new_usertype<LuaDreamHand>(
-        "Dreamhand",
-        sol::meta_function::construct, [&error](const Hand &hand) {
-            return LuaDreamHand(hand, error);
+        sol::meta_function::construct, +[](const LuaHand &hand) {
+            return LuaHand(new Hand(*hand.data()), hand.error(), true, false);
         },
-        "draw", &LuaDreamHand::safeDraw,
-        "swapout", &LuaDreamHand::safeSwapOut,
-        "spinout", &LuaDreamHand::safeSpinOut,
-        sol::base_classes, sol::bases<Hand>()
+        "closed", LuaHand::makeConstMethodAsConstRef(&Hand::closed),
+        "ct", LuaHand::makeConstMethod(&Hand::ct),
+        "ctaka5", LuaHand::makeConstMethod(&Hand::ctAka5),
+        "ready", LuaHand::makeConstMethod(&Hand::ready),
+        "step", LuaHand::makeConstMethod(&Hand::step),
+        "step4", LuaHand::makeConstMethod(&Hand::step4),
+        "step7", LuaHand::makeConstMethod(&Hand::step7),
+        "step7gb", LuaHand::makeConstMethod(&Hand::step7Gb),
+        "step13", LuaHand::makeConstMethod(&Hand::step13),
+        "effa", LuaHand::makeConstMethodAsTable(&Hand::effA),
+        "effa4", LuaHand::makeConstMethodAsTable(&Hand::effA4),
+        "ismenzen", LuaHand::makeConstMethod(&Hand::isMenzen),
+        "barks", LuaHand::makeConstMethodAsTable(&Hand::barks),
+        "canchii", LuaHand::makeConstMethod(&Hand::canChii),
+        "canchiiasleft", LuaHand::makeConstMethod(&Hand::canChiiAsLeft),
+        "canchiiasmiddle", LuaHand::makeConstMethod(&Hand::canChiiAsMiddle),
+        "canchiiasright", LuaHand::makeConstMethod(&Hand::canChiiAsRight),
+        "canpon", LuaHand::makeConstMethod(&Hand::canPon),
+        "candaiminkan", LuaHand::makeConstMethod(&Hand::canDaiminkan),
+        sol::meta_function::modulus, sol::overload(handMod1, handMod2),
+        "draw", LuaHand::makeMutableFunctionError(+[](LuaUserErrorHandler &error, Hand &hand, const T37 &in) {
+            if (hand.hasDrawn()) {
+                error.handleUserError("EDrmCntDrw");
+                return;
+            }
+
+            hand.draw(in);
+        }),
+        "swapout", LuaHand::makeMutableFunctionError(+[](LuaUserErrorHandler &error, Hand &hand, const T37 &out) {
+            if (!(hand.closed().ct(out) > 0) && hand.hasDrawn()) {
+                error.handleUserError("EDrmCntSwp");
+                return;
+            }
+
+            hand.swapOut(out);
+        }),
+        "spinout", LuaHand::makeMutableFunctionError(+[](LuaUserErrorHandler &error, Hand &hand) {
+            if (!hand.hasDrawn()) {
+                error.handleUserError("EDrmCntSwp");
+                return;
+            }
+
+            hand.spinOut();
+        })
     );
 }
 
@@ -519,24 +514,25 @@ void setupLuaFormCtx(sol::environment env)
 
 void setupLuaGame(sol::environment env)
 {
-    env.new_usertype<Table>(
+    using LuaGame = LuaManagedRef<Table>;
+    env.new_usertype<LuaGame>(
         "Game",
-        "gethand", &Table::getHand,
-        "getround", &Table::getRound,
-        "getextraround", &Table::getExtraRound,
-        "getdealer", &Table::getDealer,
-        "getselfwind", &Table::getSelfWind,
-        "getroundwind", &Table::getRoundWind,
-        "getmount", ReturnCopy(&Table::getMount),
-        "getriver", AsTable(&Table::getRiver),
-        "riichiestablished", &Table::riichiEstablished,
-        "getrule", ReturnCopy(&Table::getRule),
-        "getformctx", &Table::getFormCtx,
-        "getfocus", tableGetFocus
+        "gethand", LuaGame::makeConstMethodAsConstRef(&Table::getHand),
+        "getround", LuaGame::makeConstMethod(&Table::getRound),
+        "getextraround", LuaGame::makeConstMethod(&Table::getExtraRound),
+        "getdealer", LuaGame::makeConstMethod(&Table::getDealer),
+        "getselfwind", LuaGame::makeConstMethod(&Table::getSelfWind),
+        "getroundwind", LuaGame::makeConstMethod(&Table::getRoundWind),
+        "getmount", LuaGame::makeConstMethodAsConstRef(&Table::getMount),
+        "getriver", LuaGame::makeConstMethodAsTable(&Table::getRiver),
+        "getrule", LuaGame::makeConstFunction(+[](const Table &t) -> Rule { return t.getRule(); }), // return copy
+        "getformctx", LuaGame::makeConstMethod(&Table::getFormCtx),
+        "getfocus", LuaGame::makeConstFunction(tableGetFocus),
+        "riichiestablished", LuaGame::makeConstMethod(&Table::riichiEstablished)
     );
 }
 
-sol::table toLuaTable(sol::environment env, const TableEvent &event)
+auto toLuaTable(sol::environment env, const TableEvent &event) -> sol::table
 {
     using TE = TableEvent;
 

@@ -37,7 +37,7 @@ public:
             delete mData;
     }
 
-    LuaManagedRef(LuaManagedRef &&that)
+    LuaManagedRef(LuaManagedRef &&that) noexcept
         : mData(that.mData)
         , mError(that.mError)
         , mIsOwning(that.mIsOwning)
@@ -51,8 +51,18 @@ public:
         mData = nullptr;
     }
 
+    auto data() const -> const T *
+    {
+        return mData;
+    }
+
+    auto error() const -> LuaUserErrorHandler &
+    {
+        return mError;
+    }
+
     template<typename Ret, typename ... Args>
-    static std::function<Ret(LuaManagedRef *, Args...)> makeConstMethod(Ret (T::*method)(Args...) const)
+    static auto makeConstMethod(Ret (T::*method)(Args...) const) -> std::function<Ret(LuaManagedRef *, Args...)>
     {
         return [method](LuaManagedRef *thiz, Args ... args) {
             if (thiz->isBadReference(false))
@@ -63,7 +73,7 @@ public:
     }
 
     template<typename Ret, typename ... Args>
-    static std::function<Ret(LuaManagedRef *, Args...)> makeMutableMethod(Ret (T::*method)(Args...))
+    static auto makeMutableMethod(Ret (T::*method)(Args...)) -> std::function<Ret(LuaManagedRef *, Args...)>
     {
         return [method](LuaManagedRef *thiz, Args ... args) {
             if (thiz->isBadReference(true))
@@ -98,7 +108,21 @@ public:
     }
 
     template<typename Ret, typename ... Args>
-    static std::function<Ret(LuaManagedRef *, Args...)> makeConstFunction(Ret (*method)(const T &, Args...))
+    static auto makeConstMethodAsConstRef(const Ret &(T::*method)(Args...) const)
+        -> std::function<std::unique_ptr<LuaManagedRef<Ret>>(LuaManagedRef *, Args...)>
+    {
+        return [method](LuaManagedRef *thiz, Args ... args) -> std::unique_ptr<LuaManagedRef<Ret>> {
+            if (thiz->isBadReference(false))
+                return nullptr;
+
+            const Ret &r = (thiz->mData->*method)(args...);
+            return std::make_unique<LuaManagedRef<Ret>>(&r, thiz->mError, false);
+        };
+    }
+
+    template<typename Ret, typename ... Args>
+    static auto makeConstFunction(Ret (*method)(const T &, Args...))
+        -> std::function<Ret(LuaManagedRef *, Args...)>
     {
         return [method](LuaManagedRef *thiz, Args ... args) {
             if (thiz->isBadReference(false))
@@ -109,7 +133,8 @@ public:
     }
 
     template<typename Ret, typename ... Args>
-    static std::function<Ret(LuaManagedRef *, Args...)> makeMutableFunction(Ret (*method)(T &, Args...))
+    static auto makeMutableFunction(Ret (*method)(T &, Args...))
+        -> std::function<Ret(LuaManagedRef *, Args...)>
     {
         return [method](LuaManagedRef *thiz, Args ... args) {
             if (thiz->isBadReference(true))
@@ -120,7 +145,8 @@ public:
     }
 
     template<typename Ret, typename ... Args>
-    static std::function<Ret(LuaManagedRef *, Args...)> makeConstFunctionError(Ret (*method)(LuaUserErrorHandler &, const T &, Args...))
+    static auto makeConstFunctionError(Ret (*method)(LuaUserErrorHandler &, const T &, Args...))
+        -> std::function<Ret(LuaManagedRef *, Args...)>
     {
         return [method](LuaManagedRef *thiz, Args ... args) {
             if (thiz->isBadReference(false))
@@ -131,7 +157,8 @@ public:
     }
 
     template<typename Ret, typename ... Args>
-    static std::function<Ret(LuaManagedRef *, Args...)> makeMutableFunctionError(Ret (*method)(LuaUserErrorHandler &, T &, Args...))
+    static auto makeMutableFunctionError(Ret (*method)(LuaUserErrorHandler &, T &, Args...))
+        -> std::function<Ret(LuaManagedRef *, Args...)>
     {
         return [method](LuaManagedRef *thiz, Args ... args) {
             if (thiz->isBadReference(true))
@@ -142,7 +169,7 @@ public:
     }
 
 private:
-    bool isBadReference(bool modifying)
+    auto isBadReference(bool modifying) -> bool
     {
         if (mData == nullptr) {
             mError.handleUserError("ERefNil");

@@ -18,15 +18,14 @@ void setupLuaWho(sol::environment env);
 void setupLuaMeld(sol::environment env, LuaUserErrorHandler &error);
 void setupLuaExist(sol::environment env, LuaUserErrorHandler &error);
 void setupLuaMount(sol::environment env);
-void setupLuaTileCount(sol::environment env, LuaUserErrorHandler &error);
+void setupLuaTileCount(sol::environment env);
 void setupLuaHand(sol::environment env);
-void setupLuaDreamHand(sol::environment env, LuaUserErrorHandler &error);
 void setupLuaForm(sol::environment env, LuaUserErrorHandler &error);
 void setupLuaRule(sol::environment env);
 void setupLuaFormCtx(sol::environment env);
 void setupLuaGame(sol::environment env);
 
-sol::table toLuaTable(sol::environment env, const TableEvent &event);
+auto toLuaTable(sol::environment env, const TableEvent &event) -> sol::table;
 
 
 } // namespace saki
