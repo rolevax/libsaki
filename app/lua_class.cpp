@@ -75,29 +75,29 @@ auto handMod2(T34 indic, const LuaManagedRef<Hand> &hand) -> int
 }
 
 auto formCtor1(LuaUserErrorHandler &error,
-               const Hand &full, const FormCtx &ctx, const Rule &rule,
+               const LuaManagedRef<Hand> &full, const FormCtx &ctx, const Rule &rule,
                sol::table drids, sol::table urids)
     -> sol::optional<Form>
 {
-    if (full.step() != -1) {
+    if (full.data()->step() != -1) {
         error.handleUserError("EFrmNoAgr");
         return sol::nullopt;
     }
 
-    return Form(full, ctx, rule, tableToDrids(std::move(drids)), tableToDrids(std::move(urids)));
+    return Form(*full.data(), ctx, rule, tableToDrids(std::move(drids)), tableToDrids(std::move(urids)));
 }
 
 auto formCtor2(LuaUserErrorHandler &error,
-               const Hand &ready, const T37 &pick, const FormCtx &ctx, const Rule &rule,
+               const LuaManagedRef<Hand> &ready, const T37 &pick, const FormCtx &ctx, const Rule &rule,
                sol::table drids, sol::table urids)
     -> sol::optional<Form>
 {
-    if (ready.peekPickStep(pick) != -1) { // NOLINT(cppcoreguidelines-slicing)
+    if (ready.data()->peekPickStep(pick) != -1) { // NOLINT(cppcoreguidelines-slicing)
         error.handleUserError("EFrmNoAgr");
         return sol::nullopt;
     }
 
-    return Form(ready, pick, ctx, rule, tableToDrids(std::move(drids)), tableToDrids(std::move(urids)));
+    return Form(*ready.data(), pick, ctx, rule, tableToDrids(std::move(drids)), tableToDrids(std::move(urids)));
 }
 
 auto tableGetFocus(const Table &table)
@@ -421,29 +421,31 @@ void setupLuaForm(sol::environment env, LuaUserErrorHandler &error)
 {
     using namespace std::placeholders;
 
+    using LuaHand = LuaManagedRef<Hand>;
+
     env.new_usertype<Form>(
         "Form",
         sol::meta_function::construct, sol::factories(
-            [&error](const Hand &full, const FormCtx &ctx, const Rule &rule,
+            [&error](const LuaHand &full, const FormCtx &ctx, const Rule &rule,
                      sol::table drids, sol::table urids) {
                 return formCtor1(error, full, ctx, rule, std::move(drids), std::move(urids));
             },
-            [&error](const Hand &full, const FormCtx &ctx, const Rule &rule,
+            [&error](const LuaHand &full, const FormCtx &ctx, const Rule &rule,
                      sol::table drids) {
                 return formCtor1(error, full, ctx, rule, std::move(drids), sol::nil);
             },
-            [&error](const Hand &full, const FormCtx &ctx, const Rule &rule) {
+            [&error](const LuaHand &full, const FormCtx &ctx, const Rule &rule) {
                 return formCtor1(error, full, ctx, rule, sol::nil, sol::nil);
             },
-            [&error](const Hand &ready, const T37 &pick, const FormCtx &ctx, const Rule &rule,
+            [&error](const LuaHand &ready, const T37 &pick, const FormCtx &ctx, const Rule &rule,
                      sol::table drids, sol::table urids) {
                 return formCtor2(error, ready, pick, ctx, rule, std::move(drids), std::move(urids));
             },
-            [&error](const Hand &ready, const T37 &pick, const FormCtx &ctx, const Rule &rule,
+            [&error](const LuaHand &ready, const T37 &pick, const FormCtx &ctx, const Rule &rule,
                      sol::table drids) {
                 return formCtor2(error, ready, pick, ctx, rule, std::move(drids), sol::nil);
             },
-            [&error](const Hand &ready, const T37 &pick,const FormCtx &ctx, const Rule &rule) {
+            [&error](const LuaHand &ready, const T37 &pick,const FormCtx &ctx, const Rule &rule) {
                 return formCtor2(error, ready, pick, ctx, rule, sol::nil, sol::nil);
             }
         ),
